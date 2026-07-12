@@ -1,5 +1,12 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (3) — Sprint 04
+- **Smart Calendar** : vues Mois/Semaine (grille CSS native, semaine commençant lundi), navigation ‹ › / Aujourd'hui / saut mois+année, panneau latéral du jour (bottom sheet sur mobile, dots au lieu de chips sur petits écrans), événements en retard en rouge.
+- **Nouvelle entité `DB.events`** (réunions, livraisons, rappels, personnel) : CRUD complet, init auto rétro-compatible, incluse dans Import/Export et dans la recherche globale.
+- **Data Provider `getCalendarEvents(from,to)`** : seule couche lisant DB (projets+tâches+paiements+events), cache avec clé de plage — prêt pour Supabase.
+- **`invalidateCaches()`** : invalidation générique (Search + Calendar), remplace searchInvalidate (alias rétro-compat conservé).
+- Filtres : catégories (chips), statut, client.
+
 ## 2026-07-13 (2)
 - **Global Search (Ctrl+K / Cmd+K)** : recherche instantanée sur clients, projets, tâches, paiements (y compris notes, ICE, n° facture/BL, montants). Index en mémoire invalidé via hook `save()` (zéro lecture LocalStorage supplémentaire). Navigation clavier (↑↓/Entrée/Échap), surlignage des correspondances, recherches récentes (8 max), catégories, états vide/sans-résultat, bouton 🔍 topbar (mobile), accent-folding ("cafe" trouve "café"). Zéro dépendance.
 - Fix pré-release : câblage paresseux des listeners (l'overlay est après le script dans le DOM).

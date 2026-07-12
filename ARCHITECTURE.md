@@ -4,6 +4,8 @@
 - **Données** : LocalStorage, clé unique `crm_gestion_clients_v1` → `DB = {clients, projets, taches, paiements, factureCounter, blCounter}`.
   Images facture (logos/cachet) : clés séparées `they_fact_ae`, `they_fact_logo`, `they_fact_stamp` (base64).
 - **Couche données** : uniquement `load()` / `save()` — point d'entrée unique pour la future migration Supabase.
+- **Data Providers** : `buildSearchIndex()` et `getCalendarEvents(from,to)` — seules fonctions lisant DB pour leurs modules ; caches invalidés par `invalidateCaches()` (hook dans `save()`).
+- **Entités** : clients, projets, taches, paiements, **events** (réunions/livraisons/rappels/personnel), compteurs facture/BL.
 - **Rendering** : `renderAll()` global (dette acceptée à cette échelle ; optimisation ciblée prévue en Phase 1 #8).
 - **PWA** : `sw.js` — network-first pour HTML, cache-first pour assets. Bump de version obligatoire à chaque release.
 - **Sécurité** : PIN client-side (SHA-256, dissuasif seulement — pas une vraie auth), `esc()` sur toute sortie, try/catch sur storage/JSON.
