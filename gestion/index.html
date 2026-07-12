@@ -456,8 +456,8 @@ body.dark .toast{background:#F1F1EE;color:#111110}
 <div class="toast" id="toast"></div>
 
 <script>
-/* ============ VERROUILLAGE PIN ============ */
-const PIN_KEY='they_pin';
+/* ============ VERROUILLAGE PIN (code fixe) ============ */
+const PIN_HASH='5d0d99f093be28aac802de6e74cb6a246431e9c0ca546a240dff04d3f9554c47';
 async function hashPin(s){
   if(crypto&&crypto.subtle){
     const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('theY:'+s));
@@ -467,8 +467,7 @@ async function hashPin(s){
 }
 function lockInit(){
   if(sessionStorage.getItem('they_unlocked')==='1'){document.getElementById('lockScreen').style.display='none';return}
-  const has=localStorage.getItem(PIN_KEY);
-  document.getElementById('lockTitle').textContent=has?'Dkhel le code PIN':'Marra lewla: sawb code PIN jdid (4 chiffres wla ktar)';
+  document.getElementById('lockTitle').textContent='Dkhel le code PIN';
   document.getElementById('pinInput').focus();
 }
 async function submitPin(){
@@ -476,12 +475,8 @@ async function submitPin(){
   const v=inp.value.trim();
   const msg=document.getElementById('lockMsg');
   if(v.length<4){msg.textContent='Le code khass ikoun 4 chiffres wla ktar';return}
-  const has=localStorage.getItem(PIN_KEY);
   const h=await hashPin(v);
-  if(!has){
-    localStorage.setItem(PIN_KEY,h);
-    unlockApp();
-  }else if(h===has){
+  if(h===PIN_HASH){
     unlockApp();
   }else{
     msg.textContent='Code ghalat — 3awd jerreb';
