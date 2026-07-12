@@ -10,7 +10,7 @@ Application de gestion des clients, projets, tâches et paiements — **THE'Y ST
    - Khtar **Public**
    - Clicki **Create repository**
 3. F la page dyal le repo → clicki **uploading an existing file**
-   - Jbed (drag & drop) ga3 les fichiers dyal had le dossier: `index.html`, `manifest.webmanifest`, `sw.js`, `icon-192.png`, `icon-512.png`
+   - Jbed (drag & drop) ga3 les fichiers dyal had le dossier: `index.html`, `manifest.json`, `sw.js`, `icon-192.png`, `icon-512.png`
    - Clicki **Commit changes**
 4. Sir l **Settings** → **Pages** (f la liste 3la lisser)
    - F **Branch**: khtar `main` o `/ (root)` → **Save**
