@@ -208,6 +208,51 @@ body.dark .bg-projet::before,body.dark .bg-paye::before,body.dark .bg-termine::b
 body.dark .bg-actif,body.dark .bg-encours{background:#2A2A28;color:var(--ink)}
 body.dark .avatar{background:#F1F1EE;color:#111110}
 body.dark .toast{background:#F1F1EE;color:#111110}
+
+/* ===== BACKUP BANNER ===== */
+#backupBanner{display:none;align-items:center;gap:12px;background:#111110;color:#F7F7F4;padding:10px 16px;font-size:12.5px;letter-spacing:.01em}
+#backupBanner b{font-weight:700}
+#backupBanner button{margin-left:auto;background:#F7F7F4;color:#111110;border:0;padding:6px 14px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif}
+#backupBanner .bb-x{margin-left:8px;background:transparent;color:#9A9A96;font-weight:400;padding:6px 4px}
+
+/* ===== FACTURE (Swiss style) ===== */
+#factureWrap{display:none;position:fixed;inset:0;z-index:300;background:rgba(17,17,16,.55);overflow:auto;padding:32px 16px}
+#factureWrap.open{display:block}
+.fact-toolbar{max-width:794px;margin:0 auto 12px;display:flex;gap:10px;justify-content:flex-end}
+.fact-toolbar button{border:0;padding:9px 18px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif}
+.fact-print{background:#F7F7F4;color:#111110}
+.fact-close{background:transparent;color:#F7F7F4;border:1px solid rgba(247,247,244,.4)!important}
+.facture{max-width:794px;min-height:1000px;margin:0 auto;background:#fff;color:#111110;padding:56px 60px;display:flex;flex-direction:column;font-family:'Inter',sans-serif}
+.f-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #111110;padding-bottom:28px}
+.f-brand{font-size:22px;font-weight:800;letter-spacing:-.03em}
+.f-brand span{font-weight:300}
+.f-brand small{display:block;font-size:10px;font-weight:400;letter-spacing:.22em;color:#6F6F6C;margin-top:4px}
+.f-title{text-align:right}
+.f-title h1{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.f-title .f-num{font-size:12.5px;color:#6F6F6C;margin-top:8px}
+.f-meta{display:grid;grid-template-columns:1fr 1fr;gap:32px;padding:28px 0;border-bottom:1px solid #E8E8E5}
+.f-meta h4{font-size:10px;letter-spacing:.2em;color:#9A9A96;font-weight:700;margin-bottom:8px;text-transform:uppercase}
+.f-meta p{font-size:13px;line-height:1.65}
+.f-table{width:100%;border-collapse:collapse;margin-top:34px}
+.f-table th{text-align:left;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#9A9A96;padding:0 0 10px;border-bottom:1px solid #111110}
+.f-table th:last-child,.f-table td:last-child{text-align:right}
+.f-table td{padding:16px 0;border-bottom:1px solid #E8E8E5;font-size:13.5px;vertical-align:top}
+.f-table .f-sub{font-size:11.5px;color:#6F6F6C;margin-top:3px}
+.f-total{display:flex;justify-content:flex-end;margin-top:24px}
+.f-total .box{min-width:260px}
+.f-total .r{display:flex;justify-content:space-between;font-size:13px;padding:6px 0}
+.f-total .r.grand{border-top:2px solid #111110;margin-top:8px;padding-top:12px;font-size:17px;font-weight:800}
+.f-statut{margin-top:26px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
+.f-statut.paye{color:#111110}.f-statut.attente{color:#9A9A96}
+.f-foot{margin-top:auto;padding-top:28px;border-top:1px solid #E8E8E5;display:flex;justify-content:space-between;font-size:11px;color:#6F6F6C;letter-spacing:.02em}
+@media print{
+  body *{visibility:hidden}
+  #factureWrap,#factureWrap *{visibility:visible}
+  #factureWrap{position:absolute;inset:0;background:#fff;padding:0;overflow:visible}
+  .fact-toolbar{display:none}
+  .facture{max-width:none;min-height:auto;padding:24px 8px;box-shadow:none}
+  @page{margin:14mm}
+}
 </style>
 </head>
 <body>
@@ -251,6 +296,7 @@ body.dark .toast{background:#F1F1EE;color:#111110}
   <!-- MAIN -->
   <main class="main">
     <div class="topbar"><span><b>THE’Y STUDIO DESIGN</b> · Espace de gestion</span><span id="topDate"></span></div>
+    <div id="backupBanner"><span>⚠️ <b>Backup:</b> <span id="backupBannerTxt"></span></span><button onclick="exportData()">Export daba</button><button class="bb-x" onclick="dismissBackup()">✕</button></div>
 
     <!-- ====== DASHBOARD ====== -->
     <section id="tab-dash">
@@ -779,6 +825,7 @@ function renderPays(){
       <td>${fdate(p.date)}</td>
       <td><div class="row-acts">
         ${p.statut!=='Payé'?`<button class="icon-btn" title="Tkhelless" onclick="markPaid('${p.id}')">✓</button>`:''}
+        <button class="icon-btn" title="Facture PDF" onclick="openFacture('${p.id}')">🧾</button>
         <button class="icon-btn" onclick="openPayModal('${p.id}')">✏️</button>
         <button class="icon-btn" onclick="delPay('${p.id}')">🗑️</button>
       </div></td></tr>`).join('')}</tbody></table>`
@@ -820,6 +867,8 @@ function exportData(){
   const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='they-studio-crm-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  localStorage.setItem('they_last_backup',Date.now());
+  const bb=document.getElementById('backupBanner');if(bb)bb.style.display='none';
   toast('Backup téléchargé ✓');
 }
 function importData(ev){
@@ -869,8 +918,82 @@ applyTheme();
 function closeModal(id){document.getElementById(id).classList.remove('show');editId=null}
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}));
 function renderAll(){renderDash();renderClients();renderTaches();renderProjets();renderPays()}
-load();renderAll();
+/* ============ FACTURE (Swiss style) ============ */
+const STUDIO={nom:"THE’Y STUDIO",sub:"DESIGN & BRAND IDENTITY",contact:"Moulay Yassine El Fassi",ville:"Aït Melloul — Agadir, Maroc",tel:"+212 604 049 004",site:"theystudiodesign.com"};
+function factureNum(p){
+  if(p.factureNum)return p.factureNum;
+  if(!DB.factureCounter)DB.factureCounter=0;
+  DB.factureCounter++;
+  const y=(p.date||new Date().toISOString()).slice(0,4);
+  p.factureNum='FACT-'+y+'-'+String(DB.factureCounter).padStart(3,'0');
+  save();
+  return p.factureNum;
+}
+function openFacture(id){
+  const p=DB.paiements.find(x=>x.id===id);if(!p)return;
+  const c=clientById(p.clientId)||{};
+  const proj=p.projetId?(DB.projets.find(x=>x.id===p.projetId)||{}):null;
+  const num=factureNum(p);
+  const dv=payDevise(p);
+  const paye=p.statut==='Payé';
+  document.getElementById('factureBody').innerHTML=`
+  <div class="f-head">
+    <div class="f-brand">THE’<b>Y</b> <span>STUDIO</span><small>${esc(STUDIO.sub)}</small></div>
+    <div class="f-title"><h1>FACTURE</h1><div class="f-num">${esc(num)} — ${fdate(p.date)}</div></div>
+  </div>
+  <div class="f-meta">
+    <div><h4>De</h4><p><b>${esc(STUDIO.nom)}</b><br>${esc(STUDIO.contact)}<br>${esc(STUDIO.ville)}<br>${esc(STUDIO.tel)}</p></div>
+    <div><h4>Facturé à</h4><p><b>${esc(c.name||'—')}</b>${c.email?'<br>'+esc(c.email):''}${c.phone?'<br>'+esc(c.phone):''}</p></div>
+  </div>
+  <table class="f-table">
+    <thead><tr><th>Désignation</th><th>Type</th><th>Montant</th></tr></thead>
+    <tbody><tr>
+      <td><b>${esc(p.label)}</b>${proj?'<div class="f-sub">Projet : '+esc(proj.name)+'</div>':''}${p.notes?'<div class="f-sub">'+esc(p.notes)+'</div>':''}</td>
+      <td>${esc(p.type||'—')}</td>
+      <td><b>${money(+p.montant,dv)}</b></td>
+    </tr></tbody>
+  </table>
+  <div class="f-total"><div class="box">
+    <div class="r"><span>Sous-total</span><span>${money(+p.montant,dv)}</span></div>
+    <div class="r grand"><span>TOTAL</span><span>${money(+p.montant,dv)}</span></div>
+  </div></div>
+  <div class="f-statut ${paye?'paye':'attente'}">${paye?'● Payé — '+esc(p.methode||'')+' — '+fdate(p.date):'○ En attente de règlement'+(p.methode?' — '+esc(p.methode):'')}</div>
+  <div class="f-foot"><span>${esc(STUDIO.nom)} — ${esc(STUDIO.site)}</span><span>${esc(STUDIO.tel)}</span></div>`;
+  document.getElementById('factureWrap').classList.add('open');
+  renderPays();
+}
+function closeFacture(){document.getElementById('factureWrap').classList.remove('open')}
+
+/* ============ BACKUP REMINDER ============ */
+const BK_KEY='they_last_backup',BK_SNOOZE='they_backup_snooze',BK_DAYS=7;
+function checkBackup(){
+  const last=+localStorage.getItem(BK_KEY)||0;
+  const snooze=+localStorage.getItem(BK_SNOOZE)||0;
+  const now=Date.now();
+  if(now<snooze)return;
+  const days=last?Math.floor((now-last)/864e5):null;
+  if(days===null||days>=BK_DAYS){
+    document.getElementById('backupBannerTxt').textContent=days===null?'ba9i ma dirti 7ta export — dir wa7ed daba bach ma tdi3ch les données':'akher export dyalek 3ando '+days+' iyam — wa9t t3awd';
+    document.getElementById('backupBanner').style.display='flex';
+  }
+}
+function dismissBackup(){
+  localStorage.setItem(BK_SNOOZE,Date.now()+2*864e5);
+  document.getElementById('backupBanner').style.display='none';
+}
+
+load();renderAll();checkBackup();
 if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
+
+<!-- ===== FACTURE OVERLAY ===== -->
+<div id="factureWrap">
+  <div class="fact-toolbar">
+    <button class="fact-print" onclick="window.print()">🖨 Imprimer / PDF</button>
+    <button class="fact-close" onclick="closeFacture()">Fermer</button>
+  </div>
+  <div class="facture" id="factureBody"></div>
+</div>
+
 </body>
 </html>
