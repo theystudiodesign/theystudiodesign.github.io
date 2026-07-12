@@ -261,6 +261,26 @@ body.dark .toast{background:#F1F1EE;color:#111110}
 .f-signature{width:46%}
 .f-signature .sig-lbl{font-size:12px;font-weight:600;margin-bottom:8px;text-align:center}
 .f-signature .sig-box{border:1.5px solid #444;height:110px}
+/* ===== GLOBAL SEARCH (Ctrl+K) ===== */
+#searchWrap{display:none;position:fixed;inset:0;z-index:400;background:rgba(17,17,16,.5);backdrop-filter:blur(2px)}
+#searchWrap.open{display:flex;align-items:flex-start;justify-content:center;padding:12vh 16px 16px}
+.search-box{width:100%;max-width:560px;background:var(--card,#fff);border:1px solid var(--line,#E8E8E5);border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.28)}
+#searchInput{width:100%;border:0;outline:none;background:transparent;color:var(--ink,#111);font-size:16px;padding:16px 18px;font-family:'Inter',sans-serif;border-bottom:1px solid var(--line,#E8E8E5)}
+#searchResults{max-height:52vh;overflow:auto;padding:6px}
+.sr-cat{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted,#9A9A96);padding:10px 12px 4px;font-weight:700}
+.sr-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer}
+.sr-item .t{font-size:13.5px;font-weight:600;color:var(--ink,#111)}
+.sr-item .s{font-size:11.5px;color:var(--muted,#9A9A96);margin-top:1px}
+.sr-item .k{font-size:10px;color:var(--muted,#9A9A96);border:1px solid var(--line,#E8E8E5);border-radius:5px;padding:2px 6px;white-space:nowrap}
+.sr-item.sel{background:var(--ink,#111)}
+.sr-item.sel .t,.sr-item.sel .s,.sr-item.sel .k{color:#F7F7F4;border-color:transparent}
+.sr-item mark{background:transparent;color:inherit;text-decoration:underline;text-underline-offset:2px;font-weight:800}
+.sr-empty{padding:26px 12px;text-align:center;color:var(--muted,#9A9A96);font-size:13px}
+.search-foot{display:flex;gap:14px;padding:9px 14px;border-top:1px solid var(--line,#E8E8E5);font-size:10.5px;color:var(--muted,#9A9A96)}
+body.dark .search-box{background:#1B1B1A}
+#searchBtn{background:transparent;border:1px solid var(--line,#E8E8E5);border-radius:8px;color:var(--muted,#9A9A96);font-size:11.5px;padding:5px 10px;cursor:pointer;font-family:'Inter',sans-serif;margin-left:auto;margin-right:12px}
+#searchBtn:hover{color:var(--ink,#111)}
+@media(max-width:600px){#searchWrap.open{padding-top:6vh}.search-foot{display:none}}
 @media print{
   body.fact-open *{visibility:hidden}
   body.fact-open #factureWrap,body.fact-open #factureWrap *{visibility:visible}
@@ -315,7 +335,7 @@ body.dark .toast{background:#F1F1EE;color:#111110}
 
   <!-- MAIN -->
   <main class="main">
-    <div class="topbar"><span><b>THE’Y STUDIO DESIGN</b> · Espace de gestion</span><span id="topDate"></span></div>
+    <div class="topbar"><span><b>THE’Y STUDIO DESIGN</b> · Espace de gestion</span><button id="searchBtn" onclick="openSearch()">🔍 Recherche &nbsp;<b>Ctrl K</b></button><span id="topDate"></span></div>
     <div id="backupBanner"><span>⚠️ <b>Backup:</b> <span id="backupBannerTxt"></span></span><button onclick="exportData()">Export daba</button><button class="bb-x" onclick="dismissBackup()">✕</button></div>
 
     <!-- ====== DASHBOARD ====== -->
@@ -570,7 +590,7 @@ function load(){
   else{seed();save()}
   if(!DB.taches)DB.taches=[];
 }
-function save(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){toast('⚠️ Stockage 3amer — dir Export o msse7 les images kbar')}}
+function save(){searchInvalidate();try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){toast('⚠️ Stockage 3amer — dir Export o msse7 les images kbar')}}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
 function money(n,d){return (n||0).toLocaleString('fr-FR')+' '+(d||'€')}
@@ -1188,10 +1208,103 @@ function dismissBackup(){
   document.getElementById('backupBanner').style.display='none';
 }
 
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeFacture();document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show'))}});
+/* ============ GLOBAL SEARCH (Ctrl+K) ============ */
+const Search={idx:null,dirty:true,sel:0,results:[],RECENT_KEY:'they_search_recent'};
+function fold(x){return (x||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+function searchInvalidate(){Search.dirty=true}
+function buildSearchIndex(){
+  const idx=[];
+  const add=(cat,page,title,sub,open,hay)=>idx.push({cat,page,title,sub,open,hay:fold(hay.filter(Boolean).join(' '))});
+  DB.clients.forEach(c=>add('Clients','clients',c.name,[c.khedma,c.phone].filter(Boolean).join(' · ')||c.statut,
+    ()=>openClientModal(c.id),[c.name,c.email,c.phone,c.ice,c.khedma,c.notes,c.statut]));
+  DB.projets.forEach(p=>add('Projets','projets',p.name,clientName(p.clientId)+' · '+p.statut,
+    ()=>openProjetModal(p.id),[p.name,p.statut,p.notes,clientName(p.clientId)]));
+  DB.taches.forEach(t=>add('Tâches','taches',t.label,clientName(t.clientId)+' · '+(t.statut||''),
+    ()=>openTacheModal(t.id),[t.label,t.statut,t.priorite,clientName(t.clientId)]));
+  DB.paiements.forEach(p=>add('Paiements','paiements',p.label,clientName(p.clientId)+' · '+money(+p.montant,payDevise(p))+' · '+p.statut,
+    ()=>openPayModal(p.id),[p.label,p.notes,p.methode,p.statut,p.factureNum,p.blNum,String(p.montant),clientName(p.clientId)]));
+  return idx;
+}
+function getRecent(){try{return JSON.parse(localStorage.getItem(Search.RECENT_KEY))||[]}catch(e){return[]}}
+function pushRecent(q){
+  if(!q)return;let r=getRecent().filter(x=>x!==q);r.unshift(q);r=r.slice(0,8);
+  try{localStorage.setItem(Search.RECENT_KEY,JSON.stringify(r))}catch(e){}
+}
+function openSearch(){
+  initSearchListeners();
+  if(Search.dirty){Search.idx=buildSearchIndex();Search.dirty=false}
+  document.getElementById('searchWrap').classList.add('open');
+  const i=document.getElementById('searchInput');i.value='';runSearch('');i.focus();
+}
+function closeSearch(){document.getElementById('searchWrap').classList.remove('open')}
+function hiTitle(title,q){
+  const t=esc(title);if(!q)return t;
+  const pos=fold(title).indexOf(fold(q));
+  if(pos<0)return t;
+  // map: fold() preserve la longueur si pas d'accents composés; fallback simple indexOf insensible à la casse
+  const raw=title.toLowerCase().indexOf(q.toLowerCase());
+  if(raw<0)return t;
+  return esc(title.slice(0,raw))+'<mark>'+esc(title.slice(raw,raw+q.length))+'</mark>'+esc(title.slice(raw+q.length));
+}
+function runSearch(q){
+  const box=document.getElementById('searchResults');
+  Search.sel=0;
+  if(!q){
+    const rec=getRecent();
+    Search.results=[];
+    box.innerHTML=rec.length
+      ?'<div class="sr-cat">Recherches récentes</div>'+rec.map(r=>`<div class="sr-item" onclick="document.getElementById('searchInput').value='${esc(r)}';runSearch('${esc(r)}')"><div><div class="t">${esc(r)}</div></div><div class="k">↩</div></div>`).join('')
+      :'<div class="sr-empty">Kteb bach t9elleb — clients, projets, tâches, paiements</div>';
+    return;
+  }
+  const f=fold(q);
+  Search.results=Search.idx.filter(x=>x.hay.includes(f)).slice(0,30);
+  if(!Search.results.length){box.innerHTML='<div class="sr-empty">Ma l9ina walou 3la «'+esc(q)+'»</div>';return}
+  let html='',lastCat='';
+  Search.results.forEach((r,i)=>{
+    if(r.cat!==lastCat){html+='<div class="sr-cat">'+r.cat+'</div>';lastCat=r.cat}
+    html+=`<div class="sr-item ${i===Search.sel?'sel':''}" data-i="${i}" onclick="pickResult(${i})"><div><div class="t">${hiTitle(r.title,q)}</div><div class="s">${esc(r.sub)}</div></div><div class="k">${r.cat}</div></div>`;
+  });
+  box.innerHTML=html;
+}
+function pickResult(i){
+  const r=Search.results[i];if(!r)return;
+  pushRecent(document.getElementById('searchInput').value.trim());
+  closeSearch();go(r.page);r.open();
+}
+function moveSel(d){
+  if(!Search.results.length)return;
+  Search.sel=(Search.sel+d+Search.results.length)%Search.results.length;
+  document.querySelectorAll('.sr-item[data-i]').forEach(el=>el.classList.toggle('sel',+el.dataset.i===Search.sel));
+  const el=document.querySelector('.sr-item.sel');if(el)el.scrollIntoView({block:'nearest'});
+}
+function initSearchListeners(){
+  if(Search.wired)return;Search.wired=true;
+  const i=document.getElementById('searchInput');
+  i.addEventListener('input',e=>runSearch(e.target.value.trim()));
+  i.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'){e.preventDefault();moveSel(1)}
+    else if(e.key==='ArrowUp'){e.preventDefault();moveSel(-1)}
+    else if(e.key==='Enter'){e.preventDefault();pickResult(Search.sel)}
+  });
+}
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openSearch()}
+});
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();closeFacture();document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show'))}});
 load();renderAll();checkBackup();
 if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
+
+<!-- ===== GLOBAL SEARCH ===== -->
+<div id="searchWrap" onclick="if(event.target===this)closeSearch()">
+  <div class="search-box">
+    <input id="searchInput" placeholder="Qelleb 3la client, projet, tâche, paiement…" autocomplete="off">
+    <div id="searchResults"></div>
+    <div class="search-foot"><span>↑↓ naviguer</span><span>Entrée fta7</span><span>Échap sedd</span></div>
+  </div>
+</div>
 
 <!-- ===== FACTURE OVERLAY ===== -->
 <div id="factureWrap">

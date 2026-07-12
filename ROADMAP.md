@@ -5,8 +5,8 @@
 |---|---------|--------|
 | 1 | Dashboard 2.0 | ✅ Livré |
 | 2 | Revenue Charts | ✅ Livré |
-| 3 | Global Search (Ctrl+K) | ⏳ En attente d'approbation |
-| 4 | Calendrier (mois/semaine, deadlines + paiements) | Planifié |
+| 3 | Global Search (Ctrl+K) | ✅ Livré |
+| 4 | Calendrier (mois/semaine, deadlines + paiements) | ⏳ Prochaine — en attente d'approbation |
 | 5 | Notifications internes + badge | Planifié |
 | 6 | CRM avancé (société, adresse, historique) | Planifié |
 | 7 | Reports (CSV + PDF) | Planifié |

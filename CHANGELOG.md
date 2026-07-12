@@ -1,5 +1,9 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (2)
+- **Global Search (Ctrl+K / Cmd+K)** : recherche instantanée sur clients, projets, tâches, paiements (y compris notes, ICE, n° facture/BL, montants). Index en mémoire invalidé via hook `save()` (zéro lecture LocalStorage supplémentaire). Navigation clavier (↑↓/Entrée/Échap), surlignage des correspondances, recherches récentes (8 max), catégories, états vide/sans-résultat, bouton 🔍 topbar (mobile), accent-folding ("cafe" trouve "café"). Zéro dépendance.
+- Fix pré-release : câblage paresseux des listeners (l'overlay est après le script dans le DOM).
+
 ## 2026-07-13
 - **Dashboard 2.0** : 4 nouveaux KPIs (Aujourd'hui, Cette année, En retard, Valeur moy./projet) + compteur projets terminés.
 - **Revenue Chart** : graphique 12 mois en SVG natif (zéro dépendance), multi-devises (2 max, légende auto), compatible dark mode, tooltips natifs.
