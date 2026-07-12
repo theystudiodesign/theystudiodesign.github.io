@@ -161,6 +161,29 @@ tr:hover td{background:#FAFAF8}
   .main{margin-left:70px;padding:18px}
   .two-col{grid-template-columns:1fr}
 }
+/* ===== TELEPHONE ===== */
+@media(max-width:640px){
+  .app{flex-direction:column}
+  .sidebar{position:static;width:100%;flex-direction:row;flex-wrap:wrap;padding:8px 10px;gap:4px;align-items:center}
+  .logo,.logo-hint,.nav-lbl{display:none}
+  .nav-btn{flex:1;flex-direction:column;gap:3px;justify-content:center;padding:7px 2px;min-width:0}
+  .nav-btn .txt{display:block;font-size:10px;font-weight:500}
+  .nav-btn .ic{font-size:15px}
+  .sidebar .foot{display:flex;width:100%;margin-top:6px;padding:8px 0 2px;gap:8px;border-top:1px solid rgba(255,255,255,.09)}
+  .sidebar .foot button{flex:1;margin-bottom:0;padding:8px 4px;font-size:11px}
+  .foot-note{display:none}
+  .main{margin-left:0;padding:14px 12px 50px;max-width:100%}
+  .page-head h1{font-size:19px}
+  .stats{grid-template-columns:1fr 1fr;gap:10px}
+  .card{padding:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .card table{min-width:560px}
+  .frm{grid-template-columns:1fr}
+  .filters{gap:6px}
+  .search{min-width:130px}
+  .topbar{flex-wrap:wrap;gap:4px}
+  .modal{padding:18px}
+  .overlay{padding:16px 10px}
+}
 .toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 12px 32px rgba(17,17,16,.35);opacity:0;transform:translateY(12px);transition:.22s;z-index:99}
 .toast.show{opacity:1;transform:translateY(0)}
 </style>
@@ -187,7 +210,7 @@ tr:hover td{background:#FAFAF8}
       <button onclick="exportData()">Export JSON</button>
       <button onclick="document.getElementById('importFile').click()">Import JSON</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-      Les données kayt-sauvegardaw automatiquement f had le navigateur (localStorage).
+      <span class="foot-note">Les données kayt-sauvegardaw automatiquement f had le navigateur (localStorage).</span>
     </div>
   </aside>
 
