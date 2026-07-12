@@ -325,6 +325,7 @@ body.dark .toast{background:#F1F1EE;color:#111110}
         <button class="btn btn-primary" onclick="openClientModal()">＋ Client jdid</button>
       </div>
       <div class="stats" id="statCards"></div>
+      <div class="card"><h3>Revenus — 12 derniers mois</h3><div id="dashChart"></div></div>
       <div class="card">
         <h3>Ach khassek tkhdem daba</h3>
         <div id="dashTaches"></div>
@@ -615,6 +616,54 @@ function sumByDevise(f,fb){
 }
 const statutBadge={'Actif':'bg-actif','En pause':'bg-pause','Prospect':'bg-prospect','Archivé':'bg-archive','Payé':'bg-paye','En attente':'bg-attente','En retard':'bg-retard','Brief reçu':'bg-brief','En cours':'bg-encours','En attente client':'bg-attclient','Livré':'bg-livre','Terminé & payé':'bg-termine','Annulé':'bg-annule','À faire':'bg-attente','Salit ✅':'bg-termine'};
 
+/* ============ DASHBOARD 2.0 — helpers ============ */
+function isOverdue(p){const t=new Date().toISOString().slice(0,10);return p.statut!=='Payé'&&p.date&&p.date<t}
+function dominantDevises(){
+  const vol={};
+  DB.paiements.forEach(p=>{if(p.statut==='Payé'){const d=payDevise(p);vol[d]=(vol[d]||0)+(+p.montant||0)}});
+  return Object.entries(vol).sort((a,b)=>b[1]-a[1]).map(([d])=>d);
+}
+function monthlyRevenue(devise,n=12){
+  const out=[];const now=new Date();
+  for(let i=n-1;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const key=d.toISOString().slice(0,7);
+    const sum=DB.paiements.filter(p=>p.statut==='Payé'&&payDevise(p)===devise&&(p.date||'').startsWith(key))
+      .reduce((a,p)=>a+(+p.montant||0),0);
+    out.push({key,label:d.toLocaleDateString('fr-FR',{month:'short'}).replace('.',''),sum});
+  }
+  return out;
+}
+function buildRevenueChart(){
+  const devs=dominantDevises().slice(0,2);
+  if(!devs.length)return '<div class="empty"><div class="big">◈</div>Ba9i ma kayn 7ta revenu — l chart ghadi iban mor awel paiement Payé</div>';
+  const series=devs.map(d=>({dev:d,data:monthlyRevenue(d)}));
+  const max=Math.max(...series.flatMap(x=>x.data.map(m=>m.sum)),1);
+  const W=720,H=190,pad=6,bw=W/12;
+  let bars='',labels='';
+  series[0].data.forEach((m,i)=>{
+    const x=i*bw;
+    // grid + month label
+    labels+=`<text x="${x+bw/2}" y="${H-4}" text-anchor="middle" font-size="10" fill="var(--muted,#9A9A96)">${m.label}</text>`;
+    // devise 1 (ink)
+    const h1=Math.round((m.sum/max)*(H-46));
+    bars+=`<rect x="${x+pad}" y="${H-26-h1}" width="${bw-2*pad-(series[1]?6:0)}" height="${Math.max(h1,m.sum>0?2:0)}" rx="2" fill="var(--ink,#111)"><title>${m.label}: ${money(m.sum,series[0].dev)}</title></rect>`;
+    // devise 2 (grey, thin, a droite)
+    if(series[1]){
+      const m2=series[1].data[i];
+      const h2=Math.round((m2.sum/max)*(H-46));
+      bars+=`<rect x="${x+bw-pad-6}" y="${H-26-h2}" width="6" rx="2" height="${Math.max(h2,m2.sum>0?2:0)}" fill="var(--muted,#9A9A96)"><title>${m2.label}: ${money(m2.sum,series[1].dev)}</title></rect>`;
+    }
+  });
+  const tot=series.map(x=>money(x.data.reduce((a,m)=>a+m.sum,0),x.dev)).join(' + ');
+  const legend=series.length>1?`<div class="t-sub" style="margin-top:6px">■ ${series[0].dev} &nbsp; <span style="color:var(--muted,#9A9A96)">▮ ${series[1].dev}</span></div>`:'';
+  return `<div class="t-sub" style="margin-bottom:10px">Total 12 mois : <b style="color:var(--ink)">${tot}</b></div>
+  <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+    <line x1="0" y1="${H-26}" x2="${W}" y2="${H-26}" stroke="var(--line,#E8E8E5)" stroke-width="1"/>
+    ${bars}${labels}
+  </svg>${legend}`;
+}
+
 /* ============ DASHBOARD ============ */
 function renderDash(){
   const actifs=DB.clients.filter(c=>c.statut==='Actif');
@@ -626,11 +675,28 @@ function renderDash(){
   const totalPayeStr=sumByDevise(p=>p.statut==='Payé',dv);
   const moisPayeStr=sumByDevise(p=>p.statut==='Payé'&&(p.date||'').startsWith(mois),dv);
   const attenteStr=sumByDevise(p=>p.statut!=='Payé',dv);
+  const jour=now.toISOString().slice(0,10), annee=now.getFullYear().toString();
+  const jourStr=sumByDevise(p=>p.statut==='Payé'&&p.date===jour,dv);
+  const anStr=sumByDevise(p=>p.statut==='Payé'&&(p.date||'').startsWith(annee),dv);
+  const retards=DB.paiements.filter(isOverdue);
+  const nbRetard=retards.length;
+  const retardStr=sumByDevise(isOverdue,dv);
+  const termines=DB.projets.filter(p=>p.statut==='Terminé & payé').length;
+  const dDom=dominantDevises()[0]||dv;
+  const projFact=[...new Set(DB.paiements.filter(p=>p.statut==='Payé'&&p.projetId&&payDevise(p)===dDom).map(p=>p.projetId))];
+  const nbProjFact=projFact.length;
+  const totDom=DB.paiements.filter(p=>p.statut==='Payé'&&p.projetId&&payDevise(p)===dDom).reduce((a,p)=>a+(+p.montant||0),0);
+  const moyStr=nbProjFact?money(Math.round(totDom/nbProjFact),dDom):money(0,dDom);
   document.getElementById('statCards').innerHTML=`
     <div class="stat c-nuit"><div class="lbl">Clients actifs</div><div class="val">${actifs.length}</div><div class="sub">${nbProjet} par projet · ${nbSalaire} salaire</div></div>
     <div class="stat c-vert"><div class="lbl">Total encaissé</div><div class="val" style="font-size:${totalPayeStr.length>14?'17px':'26px'}">${totalPayeStr}</div><div class="sub">Had chher: ${moisPayeStr}</div></div>
     <div class="stat c-orange"><div class="lbl">F l'attente</div><div class="val" style="font-size:${attenteStr.length>14?'17px':'26px'}">${attenteStr}</div><div class="sub">${DB.paiements.filter(p=>p.statut!=='Payé').length} paiement(s) ba9i ma dkhlo</div></div>
-    <div class="stat c-bleu"><div class="lbl">Projets en cours</div><div class="val">${enCours}</div><div class="sub">${DB.projets.length} projet(s) au total</div></div>`;
+    <div class="stat c-bleu"><div class="lbl">Projets en cours</div><div class="val">${enCours}</div><div class="sub">${termines} terminé(s) · ${DB.projets.length} au total</div></div>
+    <div class="stat"><div class="lbl">Aujourd'hui</div><div class="val" style="font-size:${jourStr.length>14?'17px':'26px'}">${jourStr}</div><div class="sub">encaissé had nhar</div></div>
+    <div class="stat"><div class="lbl">Cette année</div><div class="val" style="font-size:${anStr.length>14?'17px':'26px'}">${anStr}</div><div class="sub">encaissé f ${annee}</div></div>
+    <div class="stat ${nbRetard?'c-orange':''}"><div class="lbl">En retard</div><div class="val" style="font-size:${retardStr.length>14?'17px':'26px'}">${retardStr}</div><div class="sub">${nbRetard} paiement(s) fat le délai</div></div>
+    <div class="stat"><div class="lbl">Valeur moy. / projet</div><div class="val" style="font-size:${moyStr.length>14?'17px':'26px'}">${moyStr}</div><div class="sub">3la ${nbProjFact} projet(s) facturé(s)</div></div>`;
+  document.getElementById('dashChart').innerHTML=buildRevenueChart();
 
   const todo=DB.taches.filter(t=>t.statut!=='Salit ✅').sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999'));
   const today=new Date().toISOString().slice(0,10);
