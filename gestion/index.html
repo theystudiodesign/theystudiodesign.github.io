@@ -222,29 +222,45 @@ body.dark .toast{background:#F1F1EE;color:#111110}
 .fact-toolbar button{border:0;padding:9px 18px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif}
 .fact-print{background:#F7F7F4;color:#111110}
 .fact-close{background:transparent;color:#F7F7F4;border:1px solid rgba(247,247,244,.4)!important}
-.facture{max-width:794px;min-height:1000px;margin:0 auto;background:#fff;color:#111110;padding:56px 60px;display:flex;flex-direction:column;font-family:'Inter',sans-serif}
-.f-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #111110;padding-bottom:28px}
-.f-brand{font-size:22px;font-weight:800;letter-spacing:-.03em}
-.f-brand span{font-weight:300}
-.f-brand small{display:block;font-size:10px;font-weight:400;letter-spacing:.22em;color:#6F6F6C;margin-top:4px}
-.f-title{text-align:right}
-.f-title h1{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1}
-.f-title .f-num{font-size:12.5px;color:#6F6F6C;margin-top:8px}
-.f-meta{display:grid;grid-template-columns:1fr 1fr;gap:32px;padding:28px 0;border-bottom:1px solid #E8E8E5}
-.f-meta h4{font-size:10px;letter-spacing:.2em;color:#9A9A96;font-weight:700;margin-bottom:8px;text-transform:uppercase}
-.f-meta p{font-size:13px;line-height:1.65}
-.f-table{width:100%;border-collapse:collapse;margin-top:34px}
-.f-table th{text-align:left;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#9A9A96;padding:0 0 10px;border-bottom:1px solid #111110}
-.f-table th:last-child,.f-table td:last-child{text-align:right}
-.f-table td{padding:16px 0;border-bottom:1px solid #E8E8E5;font-size:13.5px;vertical-align:top}
-.f-table .f-sub{font-size:11.5px;color:#6F6F6C;margin-top:3px}
-.f-total{display:flex;justify-content:flex-end;margin-top:24px}
-.f-total .box{min-width:260px}
-.f-total .r{display:flex;justify-content:space-between;font-size:13px;padding:6px 0}
-.f-total .r.grand{border-top:2px solid #111110;margin-top:8px;padding-top:12px;font-size:17px;font-weight:800}
-.f-statut{margin-top:26px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
-.f-statut.paye{color:#111110}.f-statut.attente{color:#9A9A96}
-.f-foot{margin-top:auto;padding-top:28px;border-top:1px solid #E8E8E5;display:flex;justify-content:space-between;font-size:11px;color:#6F6F6C;letter-spacing:.02em}
+.facture{max-width:794px;min-height:1080px;margin:0 auto;background:#fff;color:#111;padding:48px 52px 40px;display:flex;flex-direction:column;font-family:'Inter',sans-serif}
+.f-logos{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:34px}
+.f-imgslot{cursor:pointer;min-width:120px;min-height:70px;display:flex;align-items:center}
+.f-imgslot img{max-height:88px;max-width:230px;object-fit:contain}
+.f-imgslot.empty{border:1.5px dashed #C9C9C5;border-radius:8px;color:#9A9A96;font-size:10.5px;padding:10px 14px;text-align:center;justify-content:center}
+.f-adresse{width:46%;margin-left:auto;text-align:left}
+.f-adresse .lbl{font-size:11px;color:#444;text-align:center;margin-bottom:4px}
+.f-adresse .box{border:1.5px solid #111;padding:14px 16px;font-weight:800;font-size:16px}
+.f-adresse .ice{font-weight:800;font-size:14px;margin-top:12px}
+.f-titlerow{display:flex;justify-content:space-between;align-items:flex-start;margin-top:-86px}
+.f-titre h1{font-size:30px;font-weight:800;letter-spacing:-.01em}
+.f-titre .f-num{font-size:15px;margin-top:2px;cursor:pointer}
+.f-titre .f-num:hover{text-decoration:underline dashed}
+.f-lieu{font-weight:800;font-size:14px;margin-top:26px}
+.f-devnote{text-align:right;font-size:11.5px;margin:26px 0 4px}
+.f-tablebox{border:1.5px solid #444}
+.f-table{width:100%;border-collapse:collapse}
+.f-table th{font-size:12px;font-weight:600;padding:8px 10px;border-bottom:1.5px solid #444;border-right:1px solid #444;text-align:left}
+.f-table th:last-child{border-right:0}
+.f-table td{font-size:13px;padding:14px 10px;vertical-align:top;border-right:1px solid #444;height:470px}
+.f-table td:last-child{border-right:0}
+.f-table .c{text-align:center}
+.f-desig b{font-size:14px}
+.f-desig .f-sub{font-size:12px;margin-top:3px;margin-left:14px}
+.f-bottom{display:flex;justify-content:space-between;align-items:flex-start;margin-top:22px}
+.f-totaux{width:46%;font-size:15px}
+.f-totaux .r{display:flex;justify-content:space-between;padding:7px 12px}
+.f-totaux .r.ttc{background:#E4E4E1;font-weight:800}
+.f-totaux .r b{font-weight:800}
+.f-lettres{margin-top:26px;font-size:13.5px}
+.f-lettres b{font-weight:800}
+.f-ae{text-align:center;margin-top:14px;font-size:13.5px}
+.f-ae b{font-weight:800}
+.f-ae .line{width:200px;border-top:1.5px solid #111;margin:6px auto 0}
+.f-footinfo{margin-top:auto;padding-top:22px;text-align:center;font-size:12px;line-height:1.8}
+.f-footinfo b{font-weight:800}
+.f-signature{width:46%}
+.f-signature .sig-lbl{font-size:12px;font-weight:600;margin-bottom:8px;text-align:center}
+.f-signature .sig-box{border:1.5px solid #444;height:110px}
 @media print{
   body *{visibility:hidden}
   #factureWrap,#factureWrap *{visibility:visible}
@@ -408,6 +424,7 @@ body.dark .toast{background:#F1F1EE;color:#111110}
       <div class="fld"><label>Devise</label><select id="c_devise"><option>€</option><option>DH</option><option>$</option></select></div>
       <div class="fld"><label>Email</label><input id="c_email" type="email" placeholder="contact@..."></div>
       <div class="fld"><label>Téléphone / WhatsApp</label><input id="c_phone" placeholder="+212 …"></div>
+      <div class="fld"><label>ICE (pour la facture)</label><input id="c_ice" placeholder="ex: 003443452000035"></div>
       <div class="fld full"><label>Ach ghadi tkhdem l had le client? (services) *</label><textarea id="c_khedma" rows="3" placeholder="ex: Gestion réseaux sociaux — 4 posts/semaine + stories&#10;ex: Logos, flyers o supports print 3la 7ssab talabat"></textarea></div>
       <div class="fld full"><label>Notes</label><textarea id="c_notes" rows="2" placeholder="ex: kayjib les projets mn France…"></textarea></div>
       <div class="hint">Client <b>par projet</b> = koula khedma b prix. Client <b>salaire</b> = flous fixes koula chher (retainer). Ktb f <b>services</b> chno mttafe9 m3ah bach dima tkoun 3aref ach khassek tkhdem lih.</div>
@@ -683,13 +700,13 @@ function openClientModal(id){
   document.getElementById('clientModalTitle').textContent=id?'Modifier le client':'＋ Client jdid';
   const c=id?clientById(id):{};
   c_name.value=c.name||'';c_type.value=c.type||'projet';c_statut.value=c.statut||'Actif';
-  c_salaire.value=c.salaire||'';c_devise.value=c.devise||'€';c_email.value=c.email||'';c_phone.value=c.phone||'';c_khedma.value=c.khedma||'';c_notes.value=c.notes||'';
+  c_salaire.value=c.salaire||'';c_devise.value=c.devise||'€';c_email.value=c.email||'';c_phone.value=c.phone||'';c_ice.value=c.ice||'';c_khedma.value=c.khedma||'';c_notes.value=c.notes||'';
   toggleSalaire();
   document.getElementById('clientModal').classList.add('show');
 }
 function saveClient(){
   if(!c_name.value.trim())return toast('Dkhel smiya dyal le client');
-  const data={name:c_name.value.trim(),type:c_type.value,statut:c_statut.value,salaire:+c_salaire.value||0,devise:c_devise.value,email:c_email.value.trim(),phone:c_phone.value.trim(),khedma:c_khedma.value.trim(),notes:c_notes.value.trim()};
+  const data={name:c_name.value.trim(),type:c_type.value,statut:c_statut.value,salaire:+c_salaire.value||0,devise:c_devise.value,email:c_email.value.trim(),phone:c_phone.value.trim(),ice:c_ice.value.trim(),khedma:c_khedma.value.trim(),notes:c_notes.value.trim()};
   if(editId){Object.assign(clientById(editId),data)}else{DB.clients.push({id:uid(),...data})}
   save();closeModal('clientModal');renderAll();toast('Client t-sauvegarda ✓');
 }
@@ -826,6 +843,7 @@ function renderPays(){
       <td><div class="row-acts">
         ${p.statut!=='Payé'?`<button class="icon-btn" title="Tkhelless" onclick="markPaid('${p.id}')">✓</button>`:''}
         <button class="icon-btn" title="Facture PDF" onclick="openFacture('${p.id}')">🧾</button>
+        <button class="icon-btn" title="Bon de livraison" onclick="openBL('${p.id}')">📦</button>
         <button class="icon-btn" onclick="openPayModal('${p.id}')">✏️</button>
         <button class="icon-btn" onclick="delPay('${p.id}')">🗑️</button>
       </div></td></tr>`).join('')}</tbody></table>`
@@ -918,47 +936,158 @@ applyTheme();
 function closeModal(id){document.getElementById(id).classList.remove('show');editId=null}
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}));
 function renderAll(){renderDash();renderClients();renderTaches();renderProjets();renderPays()}
-/* ============ FACTURE (Swiss style) ============ */
-const STUDIO={nom:"THE’Y STUDIO",sub:"DESIGN & BRAND IDENTITY",contact:"Moulay Yassine El Fassi",ville:"Aït Melloul — Agadir, Maroc",tel:"+212 604 049 004",site:"theystudiodesign.com"};
+/* ============ FACTURE (Auto-Entrepreneur officielle) ============ */
+const AE={
+  nom:"Moulay Yassine El fassi",
+  ville:"Agadir",
+  tel:"05 25 14 46 80", gsm:"06 04 04 90 04",
+  rib:"230010302543021102920059", ifisc:"39508917",
+  ice:"002406621000175", taxepro:"67501703"
+};
+function fdateFR(d){if(!d)return new Date().toLocaleDateString('fr-FR');return new Date(d+'T00:00').toLocaleDateString('fr-FR')}
+function n2(n){return (n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}).replace(/\u202f|\u00a0/g,' ')}
+function deviseNom(d){return d==='DH'?'Dirham':d==='€'?'Euro':d==='$'?'Dollar':d}
+function devisePluriel(d){return d==='DH'?'dirhams':d==='€'?'euros':d==='$'?'dollars':d}
+function nombreEnLettres(n){
+  n=Math.round(n*100)/100;
+  const ent=Math.floor(n), cts=Math.round((n-ent)*100);
+  const U=['zéro','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize'];
+  function sous100(x){
+    if(x<17)return U[x];
+    if(x<20)return 'dix-'+U[x-10];
+    if(x<70){const t=['','','vingt','trente','quarante','cinquante','soixante'][Math.floor(x/10)],r=x%10;
+      return r===0?t:r===1?t+' et un':t+'-'+U[r]}
+    if(x<80){const r=x-60;return r===11?'soixante et onze':'soixante-'+sous100(r)}
+    const r=x-80;return r===0?'quatre-vingts':'quatre-vingt-'+(r<17?U[r]:sous100(r));
+  }
+  function sous1000(x){
+    const c=Math.floor(x/100),r=x%100;
+    if(c===0)return sous100(r);
+    const cs=c===1?'cent':U[c]+' cent'+(r===0?'s':'');
+    return r===0?cs:cs+' '+sous100(r);
+  }
+  function entier(x){
+    if(x===0)return 'zéro';
+    let out='';
+    const M=Math.floor(x/1e6),m=Math.floor(x%1e6/1000),r=x%1000;
+    if(M)out+=(M===1?'un million':entier(M)+' millions')+' ';
+    if(m)out+=(m===1?'mille':sous1000(m)+' mille')+' ';
+    if(r)out+=sous1000(r);
+    return out.trim();
+  }
+  let s=entier(ent);
+  if(cts)s+=' virgule '+entier(cts);
+  return s.charAt(0).toUpperCase()+s.slice(1);
+}
 function factureNum(p){
   if(p.factureNum)return p.factureNum;
   if(!DB.factureCounter)DB.factureCounter=0;
   DB.factureCounter++;
   const y=(p.date||new Date().toISOString()).slice(0,4);
-  p.factureNum='FACT-'+y+'-'+String(DB.factureCounter).padStart(3,'0');
+  p.factureNum='AE-'+y+'-'+String(DB.factureCounter).padStart(3,'0');
   save();
   return p.factureNum;
 }
-function openFacture(id){
+function blNum(p){
+  if(p.blNum)return p.blNum;
+  if(!DB.blCounter)DB.blCounter=0;
+  DB.blCounter++;
+  const y=(p.date||new Date().toISOString()).slice(0,4);
+  p.blNum='BL-'+y+'-'+String(DB.blCounter).padStart(3,'0');
+  save();
+  return p.blNum;
+}
+function editDocNum(id,kind){
   const p=DB.paiements.find(x=>x.id===id);if(!p)return;
+  const cur=kind==='bl'?p.blNum:p.factureNum;
+  const v=prompt('Numéro du document:',cur||'');
+  if(v&&v.trim()){if(kind==='bl')p.blNum=v.trim();else p.factureNum=v.trim();save();openDoc(id,kind)}
+}
+function factImg(key,cls,hint){
+  const img=localStorage.getItem(key);
+  return img?`<div class="f-imgslot ${cls}" onclick="pickFactImg('${key}')"><img src="${img}"></div>`
+            :`<div class="f-imgslot empty ${cls}" onclick="pickFactImg('${key}')">${hint}<br>(clicki bach t7ett l'image)</div>`;
+}
+function pickFactImg(key){
+  const inp=document.getElementById('factImgFile');
+  inp.dataset.key=key;inp.click();
+}
+function setFactImg(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const key=ev.target.dataset.key;
+  const r=new FileReader();
+  r.onload=()=>{try{localStorage.setItem(key,r.result);openDoc(window.__factId,window.__factKind)}catch(e){toast('Image kbira bezzaf — sghérha chwiya')}};
+  r.readAsDataURL(f);ev.target.value='';
+}
+function openFacture(id){openDoc(id,'facture')}
+function openBL(id){openDoc(id,'bl')}
+function openDoc(id,kind){
+  const p=DB.paiements.find(x=>x.id===id);if(!p)return;
+  window.__factId=id;window.__factKind=kind;
+  const isBL=kind==='bl';
   const c=clientById(p.clientId)||{};
   const proj=p.projetId?(DB.projets.find(x=>x.id===p.projetId)||{}):null;
-  const num=factureNum(p);
+  const num=isBL?blNum(p):factureNum(p);
   const dv=payDevise(p);
-  const paye=p.statut==='Payé';
+  const ht=+p.montant||0, taxe=Math.round(ht*0.01*100)/100, ttc=ht+taxe;
+  const desig=`<td class="f-desig"><b>• ${esc(p.label)}</b>${proj?'<div class="f-sub">'+esc(proj.name)+'</div>':''}${p.notes?'<div class="f-sub">'+esc(p.notes)+'</div>':''}</td>`;
   document.getElementById('factureBody').innerHTML=`
-  <div class="f-head">
-    <div class="f-brand">THE’<b>Y</b> <span>STUDIO</span><small>${esc(STUDIO.sub)}</small></div>
-    <div class="f-title"><h1>FACTURE</h1><div class="f-num">${esc(num)} — ${fdate(p.date)}</div></div>
+  <div class="f-logos">
+    ${factImg('they_fact_ae','','Logo Auto-Entrepreneur')}
+    ${factImg('they_fact_logo','','Logo THE’Y')}
   </div>
-  <div class="f-meta">
-    <div><h4>De</h4><p><b>${esc(STUDIO.nom)}</b><br>${esc(STUDIO.contact)}<br>${esc(STUDIO.ville)}<br>${esc(STUDIO.tel)}</p></div>
-    <div><h4>Facturé à</h4><p><b>${esc(c.name||'—')}</b>${c.email?'<br>'+esc(c.email):''}${c.phone?'<br>'+esc(c.phone):''}</p></div>
+  <div class="f-adresse">
+    <div class="lbl">Adressé à:</div>
+    <div class="box">${esc(c.name||'—')}</div>
+    ${c.ice?`<div class="ice">ICE : ${esc(c.ice)}</div>`:''}
   </div>
-  <table class="f-table">
-    <thead><tr><th>Désignation</th><th>Type</th><th>Montant</th></tr></thead>
-    <tbody><tr>
-      <td><b>${esc(p.label)}</b>${proj?'<div class="f-sub">Projet : '+esc(proj.name)+'</div>':''}${p.notes?'<div class="f-sub">'+esc(p.notes)+'</div>':''}</td>
-      <td>${esc(p.type||'—')}</td>
-      <td><b>${money(+p.montant,dv)}</b></td>
+  <div class="f-titlerow">
+    <div class="f-titre">
+      <h1>${isBL?'Bon de livraison :':'Facture :'}</h1>
+      <div class="f-num" title="Clicki bach tbeddel le numéro" onclick="editDocNum('${p.id}','${kind}')">N°: ${esc(num)}</div>
+      <div class="f-lieu">${esc(AE.ville)} le ${fdateFR(p.date)}</div>
+    </div>
+  </div>
+  ${isBL?`
+  <div class="f-devnote">&nbsp;</div>
+  <div class="f-tablebox"><table class="f-table">
+    <thead><tr><th style="width:72%">Désignation</th><th class="c" style="width:12%">Qté</th><th class="c" style="width:16%">Observation</th></tr></thead>
+    <tbody><tr>${desig}<td class="c">—</td><td class="c"></td></tr></tbody>
+  </table></div>
+  <div class="f-bottom">
+    ${factImg('they_fact_stamp','','Cachet / Stamp')}
+    <div class="f-signature">
+      <div class="sig-lbl">Signature &amp; cachet du client</div>
+      <div class="sig-box"></div>
+    </div>
+  </div>
+  <div class="f-ae"><b>Auto Entrepreneur :</b> ${esc(AE.nom)}<div class="line"></div></div>`
+  :`
+  <div class="f-devnote">Montants exprimés en ${deviseNom(dv)}</div>
+  <div class="f-tablebox"><table class="f-table">
+    <thead><tr><th style="width:47%">Désignation</th><th class="c" style="width:11%">Taxe AE</th><th class="c" style="width:14%">P.U. HT</th><th class="c" style="width:10%">Qté</th><th class="c" style="width:18%">Total HT</th></tr></thead>
+    <tbody><tr>${desig}
+      <td class="c">1%</td>
+      <td class="c">${n2(ht)}</td>
+      <td class="c">—</td>
+      <td class="c">${n2(ht)}</td>
     </tr></tbody>
-  </table>
-  <div class="f-total"><div class="box">
-    <div class="r"><span>Sous-total</span><span>${money(+p.montant,dv)}</span></div>
-    <div class="r grand"><span>TOTAL</span><span>${money(+p.montant,dv)}</span></div>
-  </div></div>
-  <div class="f-statut ${paye?'paye':'attente'}">${paye?'● Payé — '+esc(p.methode||'')+' — '+fdate(p.date):'○ En attente de règlement'+(p.methode?' — '+esc(p.methode):'')}</div>
-  <div class="f-foot"><span>${esc(STUDIO.nom)} — ${esc(STUDIO.site)}</span><span>${esc(STUDIO.tel)}</span></div>`;
+  </table></div>
+  <div class="f-bottom">
+    ${factImg('they_fact_stamp','','Cachet / Stamp')}
+    <div class="f-totaux">
+      <div class="r"><b>Total HT</b><span>${n2(ht)}</span></div>
+      <div class="r"><span>Taxe AE 1%</span><span>${n2(taxe)}</span></div>
+      <div class="r ttc"><span>Total TTC</span><span>${n2(ttc)}</span></div>
+    </div>
+  </div>
+  <div class="f-lettres"><b>Arrêter la présente facture à la somme de :</b> ${nombreEnLettres(ttc)} ${devisePluriel(dv)}</div>
+  <div class="f-ae"><b>Auto Entrepreneur :</b> ${esc(AE.nom)}<div class="line"></div></div>`}
+  <div class="f-footinfo">
+    <b>Tél</b> : ${esc(AE.tel)} - <b>Gsm</b> : ${esc(AE.gsm)}<br>
+    <b>RIB :</b> ${esc(AE.rib)} – <b>IF :</b> ${esc(AE.ifisc)}<br>
+    <b>ICE :</b> ${esc(AE.ice)}- <b>TAXE PROFESSIONNELLE :</b> ${esc(AE.taxepro)}
+  </div>`;
   document.getElementById('factureWrap').classList.add('open');
   renderPays();
 }
@@ -993,6 +1122,7 @@ if('serviceWorker' in navigator && location.protocol==='https:'){navigator.servi
     <button class="fact-close" onclick="closeFacture()">Fermer</button>
   </div>
   <div class="facture" id="factureBody"></div>
+  <input type="file" id="factImgFile" accept="image/*" style="display:none" onchange="setFactImg(event)">
 </div>
 
 </body>
