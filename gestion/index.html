@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE’Y STUDIO DESIGN — Gestion</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#0F0F0E">
+<!-- iOS / Apple support -->
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="THE'Y Gestion">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#111110; --ink2:#2A2A28; --mut:#6F6F6C; --mut2:#9A9A96;
+  --line:#E8E8E5; --line2:#D9D9D5; --bg:#F7F7F4; --card:#FFFFFF;
+  --side:#0F0F0E; --radius:12px;
+  /* aliases khedamin f JS */
+  --nuit:#111110; --bleu:#111110; --cyan:#9A9A96; --orange:#111110;
+  --vert:#111110; --rouge:#111110; --jaune:#6F6F6C;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);font-size:13.5px;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Inter',sans-serif;letter-spacing:-.02em}
+
+/* ===== LAYOUT ===== */
+.app{display:flex;min-height:100vh}
+.sidebar{width:248px;background:var(--side);color:#fff;padding:20px 14px;display:flex;flex-direction:column;gap:2px;position:fixed;top:0;bottom:0;left:0;z-index:20}
+.main{flex:1;margin-left:248px;padding:26px 36px 44px;max-width:1280px}
+
+/* ===== BRAND ===== */
+.logo{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 10px 22px;border-bottom:1px solid rgba(255,255,255,.09);margin-bottom:14px;cursor:pointer;position:relative}
+.logo:hover .logo-hint{opacity:1}
+.logo-img{max-width:170px;max-height:70px;object-fit:contain;display:none}
+.logo-txt{font-weight:300;font-size:26px;letter-spacing:6px;color:#fff;line-height:1;display:flex;align-items:flex-end}
+.logo-txt b{font-weight:800;font-size:38px;letter-spacing:0;margin-left:2px;line-height:.85}
+.logo-sub{font-size:8.5px;letter-spacing:4.5px;color:var(--mut2);font-weight:500}
+.logo-hint{position:absolute;bottom:2px;font-size:9px;color:#7d7d7a;opacity:0;transition:.2s;letter-spacing:.4px}
+.funnel,.monogram{display:none}
+
+/* ===== NAV ===== */
+.nav-lbl{font-size:10px;letter-spacing:1.6px;color:#5F5F5C;text-transform:uppercase;font-weight:600;padding:10px 12px 6px}
+.nav-btn{display:flex;align-items:center;gap:10px;padding:9px 12px;border:none;background:transparent;color:#B9B9B5;font-size:13.5px;font-weight:500;border-radius:8px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;transition:.13s;width:100%}
+.nav-btn:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-btn.active{background:rgba(255,255,255,.12);color:#fff;font-weight:600}
+.nav-btn .ic{width:17px;text-align:center;opacity:.85;font-size:14px}
+.sidebar .foot{margin-top:auto;font-size:10.5px;color:#6E6E6A;padding:12px 10px 0;line-height:1.55;border-top:1px solid rgba(255,255,255,.09)}
+.sidebar .foot button{width:100%;margin-bottom:7px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.16);background:transparent;color:#C4C4C0;cursor:pointer;font-size:11.5px;font-weight:500;font-family:'Inter',sans-serif;transition:.13s}
+.sidebar .foot button:hover{background:#fff;color:var(--ink);border-color:#fff}
+
+/* ===== TOPBAR & HEADER ===== */
+.topbar{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mut);margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.topbar b{color:var(--ink);font-weight:600}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+.page-head h1{font-size:22px;font-weight:700;color:var(--ink)}
+.page-head p{color:var(--mut);font-size:13px;margin-top:4px}
+.btn{padding:9px 16px;border-radius:8px;border:none;font-weight:600;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:.13s;display:inline-flex;align-items:center;gap:7px;letter-spacing:0}
+.btn-primary{background:var(--ink);color:#fff;box-shadow:0 1px 2px rgba(17,17,16,.18)}
+.btn-primary:hover{background:var(--ink2)}
+.btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line2)}
+.btn-ghost:hover{border-color:var(--ink)}
+.btn-danger{background:#fff;color:var(--ink);border:1px solid var(--line2)}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px}
+
+/* ===== STATS ===== */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:0 1px 2px rgba(17,17,16,.04)}
+.stat::before{display:none}
+.stat .lbl{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--mut);margin-bottom:10px}
+.stat .val{font-size:26px;font-weight:700;color:var(--ink);letter-spacing:-.03em}
+.stat .sub{font-size:12px;color:var(--mut);margin-top:6px}
+
+/* ===== CARDS ===== */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;box-shadow:0 1px 2px rgba(17,17,16,.04)}
+.card h3{font-size:13.5px;color:var(--ink);margin-bottom:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card h3::after{content:'';flex:1;height:1px;background:var(--line)}
+
+/* ===== TABLE ===== */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--mut);padding:10px 12px;border-bottom:1px solid var(--line2);font-weight:600}
+td{padding:13px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFAF8}
+.t-name{font-weight:600;color:var(--ink);font-size:13.5px}
+.t-sub{font-size:12px;color:var(--mut)}
+.empty{text-align:center;padding:46px;color:var(--mut2)}
+.empty .big{font-size:32px;margin-bottom:8px;filter:grayscale(1);opacity:.7}
+.avatar{width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex-shrink:0}
+.cell-flex{display:flex;align-items:center;gap:11px}
+
+/* ===== BADGES — dot style ===== */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:500;white-space:nowrap;border:1px solid var(--line2);background:#fff;color:var(--ink2)}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--mut2)}
+.bg-projet{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bg-projet::before{background:#fff}
+.bg-salaire{background:#fff;color:var(--ink);border-color:var(--ink)}
+.bg-salaire::before{background:var(--ink)}
+.bg-actif{background:#F1F1EE;border-color:transparent;color:var(--ink)}
+.bg-actif::before{background:var(--ink)}
+.bg-pause::before{background:var(--mut2)}
+.bg-prospect{border-style:dashed}
+.bg-prospect::before{background:var(--mut2)}
+.bg-archive{color:var(--mut2)}
+.bg-archive::before{background:var(--line2)}
+.bg-paye{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bg-paye::before{background:#fff}
+.bg-attente{background:#fff;color:var(--ink)}
+.bg-attente::before{background:var(--mut2)}
+.bg-retard{background:#fff;color:var(--ink);border:1.5px solid var(--ink);font-weight:700}
+.bg-retard::before{background:var(--ink)}
+.bg-encours{background:#F1F1EE;border-color:transparent;color:var(--ink)}
+.bg-encours::before{background:var(--ink)}
+.bg-livre{background:#fff;color:var(--ink);border-color:var(--ink)}
+.bg-livre::before{background:var(--ink)}
+.bg-termine{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bg-termine::before{background:#fff}
+.bg-brief::before{background:var(--mut2)}
+.bg-annule{color:var(--mut2);text-decoration:line-through}
+.bg-annule::before{background:var(--line2)}
+.bg-attclient::before{background:var(--mut2)}
+
+/* ===== FILTERS ===== */
+.filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.chip{padding:7px 14px;border-radius:8px;border:1px solid var(--line2);background:#fff;font-size:12.5px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:.13s;color:var(--ink2)}
+.chip:hover{border-color:var(--ink)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.search{flex:1;min-width:190px;padding:7px 14px;border-radius:8px;border:1px solid var(--line2);font-size:13px;font-family:'Inter',sans-serif;outline:none;background:#fff}
+.search:focus{border-color:var(--ink)}
+
+/* ===== MODAL ===== */
+.overlay{position:fixed;inset:0;background:rgba(17,17,16,.5);backdrop-filter:blur(2px);display:none;align-items:flex-start;justify-content:center;z-index:50;padding:40px 16px;overflow-y:auto}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:540px;padding:26px;animation:pop .16s ease;box-shadow:0 20px 50px rgba(17,17,16,.25)}
+@keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal h2{font-size:16px;color:var(--ink);margin-bottom:18px;font-weight:700}
+.frm{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.frm .full{grid-column:1/-1}
+.fld label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:5px}
+.fld input,.fld select,.fld textarea{width:100%;padding:9px 12px;border:1px solid var(--line2);border-radius:8px;font-size:13.5px;font-family:'Inter',sans-serif;outline:none;background:#fff;transition:.13s}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(17,17,16,.07)}
+.modal .acts{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.hint{grid-column:1/-1;background:#F7F7F4;border:1px solid var(--line);padding:10px 13px;border-radius:8px;font-size:12px;color:var(--mut)}
+
+/* ===== MISC ===== */
+.row-acts{display:flex;gap:6px}
+.icon-btn{border:1px solid var(--line);background:#fff;border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:12.5px;transition:.13s}
+.icon-btn:hover{border-color:var(--ink)}
+.progress-wrap{background:#EDEDEA;border-radius:999px;height:6px;overflow:hidden;margin-top:8px}
+.progress{height:100%;background:var(--ink);border-radius:999px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){
+  .sidebar{width:70px;padding:14px 8px}
+  .logo-txt,.logo-sub,.logo-hint,.nav-btn .txt,.sidebar .foot,.nav-lbl{display:none}
+  .logo-img{max-width:44px;max-height:44px}
+  .nav-btn{justify-content:center}
+  .main{margin-left:70px;padding:18px}
+  .two-col{grid-template-columns:1fr}
+}
+/* ===== TELEPHONE ===== */
+@media(max-width:640px){
+  .app{flex-direction:column}
+  .sidebar{position:static;width:100%;flex-direction:row;flex-wrap:wrap;padding:8px 10px;gap:4px;align-items:center}
+  .logo,.logo-hint,.nav-lbl{display:none}
+  .nav-btn{flex:1;flex-direction:column;gap:3px;justify-content:center;padding:7px 2px;min-width:0}
+  .nav-btn .txt{display:block;font-size:10px;font-weight:500}
+  .nav-btn .ic{font-size:15px}
+  .sidebar .foot{display:flex;width:100%;margin-top:6px;padding:8px 0 2px;gap:8px;border-top:1px solid rgba(255,255,255,.09)}
+  .sidebar .foot button{flex:1;margin-bottom:0;padding:8px 4px;font-size:11px}
+  .foot-note{display:none}
+  .main{margin-left:0;padding:14px 12px 50px;max-width:100%}
+  .page-head h1{font-size:19px}
+  .stats{grid-template-columns:1fr 1fr;gap:10px}
+  .card{padding:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .card table{min-width:560px}
+  .frm{grid-template-columns:1fr}
+  .filters{gap:6px}
+  .search{min-width:130px}
+  .topbar{flex-wrap:wrap;gap:4px}
+  .modal{padding:18px}
+  .overlay{padding:16px 10px}
+}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 12px 32px rgba(17,17,16,.35);opacity:0;transform:translateY(12px);transition:.22s;z-index:99}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* ===== DARK MODE ===== */
+body.dark{
+  --ink:#F1F1EE; --ink2:#D9D9D5; --mut:#9A9A96; --mut2:#6F6F6C;
+  --line:#2A2A28; --line2:#3A3A38; --bg:#141413; --card:#1C1C1B;
+}
+body.dark .btn-primary{background:#F1F1EE;color:#111110}
+body.dark .btn-primary:hover{background:#fff}
+body.dark .btn-ghost,body.dark .btn-danger,body.dark .chip,body.dark .search,body.dark .icon-btn,body.dark .badge{background:#1C1C1B;color:var(--ink2)}
+body.dark .chip.on{background:#F1F1EE;color:#111110;border-color:#F1F1EE}
+body.dark tr:hover td{background:#222220}
+body.dark .modal{background:#1C1C1B}
+body.dark .fld input,body.dark .fld select,body.dark .fld textarea{background:#141413;color:var(--ink)}
+body.dark .search{background:#1C1C1B;color:var(--ink)}
+body.dark .hint{background:#141413}
+body.dark .progress-wrap{background:#2A2A28}
+body.dark .progress{background:#F1F1EE}
+body.dark .bg-projet,body.dark .bg-paye,body.dark .bg-termine{background:#F1F1EE;color:#111110;border-color:#F1F1EE}
+body.dark .bg-projet::before,body.dark .bg-paye::before,body.dark .bg-termine::before{background:#111110}
+body.dark .bg-actif,body.dark .bg-encours{background:#2A2A28;color:var(--ink)}
+body.dark .avatar{background:#F1F1EE;color:#111110}
+body.dark .toast{background:#F1F1EE;color:#111110}
+</style>
+</head>
+<body>
+
+<!-- ===== ÉCRAN DE VERROUILLAGE (PIN) ===== -->
+<div id="lockScreen" style="position:fixed;inset:0;background:#0F0F0E;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;font-family:'Inter',sans-serif">
+  <div style="font-weight:300;font-size:34px;letter-spacing:8px;color:#fff;display:flex;align-items:flex-end">THE’<b style="font-weight:800;font-size:48px;letter-spacing:0;margin-left:2px;line-height:.85">Y</b></div>
+  <div style="font-size:10px;letter-spacing:5px;color:#9A9A96;font-weight:500;margin-top:8px">STUDIO DESIGN</div>
+  <div id="lockTitle" style="color:#C4C4C0;font-size:13px;margin-top:34px;letter-spacing:.3px">Dkhel le code PIN</div>
+  <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" placeholder="••••" style="margin-top:14px;width:190px;padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.22);background:transparent;color:#fff;font-size:20px;text-align:center;letter-spacing:8px;outline:none;font-family:'Inter',sans-serif">
+  <button onclick="submitPin()" style="margin-top:14px;padding:11px 34px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.5px;font-family:'Inter',sans-serif;transition:.2s" onmouseover="this.style.background='#fff';this.style.color='#0F0F0E'" onmouseout="this.style.background='transparent';this.style.color='#fff'">Dkhol</button>
+  <div id="lockMsg" style="color:#E88;font-size:12px;margin-top:12px;min-height:16px"></div>
+</div>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo" onclick="document.getElementById('logoFile').click()" title="Clicki bach t7ett le logo dyalek (PNG version bida)">
+      <img class="logo-img" id="logoImg" alt="THE’Y STUDIO DESIGN">
+      <div class="logo-txt" id="logoFallback">THE’<b>Y</b></div>
+      <div class="logo-sub" id="logoSubFallback">STUDIO DESIGN</div>
+      <div class="logo-hint">clicki bach tbeddel le logo</div>
+      <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="setLogo(event)">
+    </div>
+    <div class="nav-lbl">Menu</div>
+    <button class="nav-btn active" data-tab="dash" onclick="go('dash')"><span class="ic">▦</span><span class="txt">Dashboard</span></button>
+    <button class="nav-btn" data-tab="clients" onclick="go('clients')"><span class="ic">◉</span><span class="txt">Clients</span></button>
+    <button class="nav-btn" data-tab="taches" onclick="go('taches')"><span class="ic">✓</span><span class="txt">Tâches</span></button>
+    <button class="nav-btn" data-tab="projets" onclick="go('projets')"><span class="ic">▤</span><span class="txt">Projets</span></button>
+    <button class="nav-btn" data-tab="paiements" onclick="go('paiements')"><span class="ic">◈</span><span class="txt">Paiements</span></button>
+    <div class="foot">
+      <button id="themeBtn" onclick="toggleTheme()">🌙 Mode sombre</button>
+      <button onclick="exportData()">Export JSON</button>
+      <button onclick="document.getElementById('importFile').click()">Import JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      <span class="foot-note">Les données kayt-sauvegardaw automatiquement f had le navigateur (localStorage).</span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar"><span><b>THE’Y STUDIO DESIGN</b> · Espace de gestion</span><span id="topDate"></span></div>
+
+    <!-- ====== DASHBOARD ====== -->
+    <section id="tab-dash">
+      <div class="page-head">
+        <div><h1>Dashboard</h1><p>Vue d'ensemble dyal l'activité dyalek</p></div>
+        <button class="btn btn-primary" onclick="openClientModal()">＋ Client jdid</button>
+      </div>
+      <div class="stats" id="statCards"></div>
+      <div class="card">
+        <h3>Ach khassek tkhdem daba</h3>
+        <div id="dashTaches"></div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <h3>Derniers paiements</h3>
+          <div id="dashPays"></div>
+        </div>
+        <div class="card">
+          <h3>Flous f l'attente / retard</h3>
+          <div id="dashDue"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Projets en cours</h3>
+        <div id="dashProjets"></div>
+      </div>
+    </section>
+
+    <!-- ====== CLIENTS ====== -->
+    <section id="tab-clients" style="display:none">
+      <div class="page-head">
+        <div><h1>Clients</h1><p>Ga3 les clients dyalek — par projet o b salaire</p></div>
+        <button class="btn btn-primary" onclick="openClientModal()">＋ Zid client</button>
+      </div>
+      <div class="filters">
+        <button class="chip on" data-f="all" onclick="setClientFilter('all',this)">Kolchi</button>
+        <button class="chip" data-f="projet" onclick="setClientFilter('projet',this)">Par projet</button>
+        <button class="chip" data-f="salaire" onclick="setClientFilter('salaire',this)">Salaire mensuel</button>
+        <input class="search" id="clientSearch" placeholder="9elleb 3la client…" oninput="renderClients()">
+      </div>
+      <div class="card" style="padding:0 8px"><div id="clientsTable"></div></div>
+    </section>
+
+    <!-- ====== TACHES ====== -->
+    <section id="tab-taches" style="display:none">
+      <div class="page-head">
+        <div><h1>Tâches</h1><p>Chno ghadi tkhdem exactement l koula client</p></div>
+        <button class="btn btn-primary" onclick="openTacheModal()">＋ Zid tâche</button>
+      </div>
+      <div class="filters">
+        <button class="chip on" data-f="all" onclick="setTacheFilter('all',this)">Kolchi</button>
+        <button class="chip" data-f="À faire" onclick="setTacheFilter('À faire',this)">À faire</button>
+        <button class="chip" data-f="En cours" onclick="setTacheFilter('En cours',this)">En cours</button>
+        <button class="chip" data-f="Salit ✅" onclick="setTacheFilter('Salit ✅',this)">Salit</button>
+        <select class="chip" id="tacheClientFilter" onchange="renderTaches()" style="cursor:pointer"><option value="">Ga3 les clients</option></select>
+      </div>
+      <div class="card" style="padding:0 8px"><div id="tachesTable"></div></div>
+    </section>
+
+    <!-- ====== PROJETS ====== -->
+    <section id="tab-projets" style="display:none">
+      <div class="page-head">
+        <div><h1>Projets</h1><p>Les projets dyal les clients "par projet"</p></div>
+        <button class="btn btn-primary" onclick="openProjetModal()">＋ Zid projet</button>
+      </div>
+      <div class="filters">
+        <button class="chip on" data-f="all" onclick="setProjetFilter('all',this)">Kolchi</button>
+        <button class="chip" data-f="En cours" onclick="setProjetFilter('En cours',this)">En cours</button>
+        <button class="chip" data-f="Livré" onclick="setProjetFilter('Livré',this)">Livré</button>
+        <button class="chip" data-f="Terminé & payé" onclick="setProjetFilter('Terminé & payé',this)">Terminé & payé</button>
+      </div>
+      <div class="card" style="padding:0 8px"><div id="projetsTable"></div></div>
+    </section>
+
+    <!-- ====== PAIEMENTS ====== -->
+    <section id="tab-paiements" style="display:none">
+      <div class="page-head">
+        <div><h1>Paiements</h1><p>Acomptes, soldes o salaires mensuels — b €, DH wla $</p></div>
+        <button class="btn btn-primary" onclick="openPayModal()">＋ Zid paiement</button>
+      </div>
+      <div class="filters">
+        <button class="chip on" data-f="all" onclick="setPayFilter('all',this)">Kolchi</button>
+        <button class="chip" data-f="Payé" onclick="setPayFilter('Payé',this)">Payé</button>
+        <button class="chip" data-f="En attente" onclick="setPayFilter('En attente',this)">En attente</button>
+        <button class="chip" data-f="En retard" onclick="setPayFilter('En retard',this)">En retard</button>
+      </div>
+      <div class="card" style="padding:0 8px"><div id="paysTable"></div></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== MODAL CLIENT ===== -->
+<div class="overlay" id="clientModal">
+  <div class="modal">
+    <h2 id="clientModalTitle">＋ Client jdid</h2>
+    <div class="frm">
+      <div class="fld full"><label>Smiya dyal le client *</label><input id="c_name" placeholder="ex: Mouhamed — Data Funnel Pro"></div>
+      <div class="fld"><label>Type de collaboration *</label>
+        <select id="c_type" onchange="toggleSalaire()">
+          <option value="projet">Par projet</option>
+          <option value="salaire">Salaire mensuel</option>
+        </select>
+      </div>
+      <div class="fld"><label>Statut</label>
+        <select id="c_statut"><option>Actif</option><option>En pause</option><option>Prospect</option><option>Archivé</option></select>
+      </div>
+      <div class="fld" id="salaireFld" style="display:none"><label>Salaire mensuel</label><input id="c_salaire" type="number" min="0" placeholder="ex: 800"></div>
+      <div class="fld"><label>Devise</label><select id="c_devise"><option>€</option><option>DH</option><option>$</option></select></div>
+      <div class="fld"><label>Email</label><input id="c_email" type="email" placeholder="contact@..."></div>
+      <div class="fld"><label>Téléphone / WhatsApp</label><input id="c_phone" placeholder="+212 …"></div>
+      <div class="fld full"><label>Ach ghadi tkhdem l had le client? (services) *</label><textarea id="c_khedma" rows="3" placeholder="ex: Gestion réseaux sociaux — 4 posts/semaine + stories&#10;ex: Logos, flyers o supports print 3la 7ssab talabat"></textarea></div>
+      <div class="fld full"><label>Notes</label><textarea id="c_notes" rows="2" placeholder="ex: kayjib les projets mn France…"></textarea></div>
+      <div class="hint">Client <b>par projet</b> = koula khedma b prix. Client <b>salaire</b> = flous fixes koula chher (retainer). Ktb f <b>services</b> chno mttafe9 m3ah bach dima tkoun 3aref ach khassek tkhdem lih.</div>
+    </div>
+    <div class="acts">
+      <button class="btn btn-ghost" onclick="closeModal('clientModal')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveClient()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL PROJET ===== -->
+<div class="overlay" id="projetModal">
+  <div class="modal">
+    <h2 id="projetModalTitle">＋ Projet jdid</h2>
+    <div class="frm">
+      <div class="fld full"><label>Smiya dyal le projet *</label><input id="p_name" placeholder="ex: Logo & charte graphique"></div>
+      <div class="fld full"><label>Client *</label><select id="p_client"></select></div>
+      <div class="fld"><label>Prix</label><input id="p_prix" type="number" min="0" placeholder="ex: 600"></div>
+      <div class="fld"><label>Statut</label>
+        <select id="p_statut"><option>Brief reçu</option><option>En cours</option><option>En attente client</option><option>Livré</option><option>Terminé & payé</option><option>Annulé</option></select>
+      </div>
+      <div class="fld"><label>Deadline</label><input id="p_deadline" type="date"></div>
+      <div class="fld"><label>Type</label>
+        <select id="p_type"><option>Logo & identité</option><option>Charte graphique</option><option>Site web</option><option>Réseaux sociaux</option><option>Print</option><option>Autre</option></select>
+      </div>
+      <div class="fld full"><label>Notes</label><textarea id="p_notes" rows="2"></textarea></div>
+    </div>
+    <div class="acts">
+      <button class="btn btn-ghost" onclick="closeModal('projetModal')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveProjet()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL PAIEMENT ===== -->
+<div class="overlay" id="payModal">
+  <div class="modal">
+    <h2 id="payModalTitle">＋ Paiement jdid</h2>
+    <div class="frm">
+      <div class="fld full"><label>Libellé *</label><input id="y_label" placeholder="ex: Acompte 50% — Logo / Salaire Juillet"></div>
+      <div class="fld"><label>Client *</label><select id="y_client" onchange="fillPayProjets()"></select></div>
+      <div class="fld"><label>Projet (optionnel)</label><select id="y_projet"><option value="">—</option></select></div>
+      <div class="fld"><label>Type</label>
+        <select id="y_type"><option>Acompte</option><option>Solde final</option><option>Salaire mensuel</option><option>Bonus</option></select>
+      </div>
+      <div class="fld"><label>Montant *</label><input id="y_montant" type="number" min="0" placeholder="ex: 300"></div>
+      <div class="fld"><label>Devise *</label>
+        <select id="y_devise"><option>€</option><option>DH</option><option>$</option></select>
+      </div>
+      <div class="fld"><label>Statut</label>
+        <select id="y_statut"><option>Payé</option><option>En attente</option><option>En retard</option></select>
+      </div>
+      <div class="fld"><label>Date</label><input id="y_date" type="date"></div>
+      <div class="fld"><label>Méthode</label>
+        <select id="y_methode"><option>Virement</option><option>PayPal</option><option>Wise</option><option>Cash</option><option>Autre</option></select>
+      </div>
+      <div class="fld full"><label>Notes</label><textarea id="y_notes" rows="2"></textarea></div>
+    </div>
+    <div class="acts">
+      <button class="btn btn-ghost" onclick="closeModal('payModal')">Annuler</button>
+      <button class="btn btn-primary" onclick="savePay()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL TACHE ===== -->
+<div class="overlay" id="tacheModal">
+  <div class="modal">
+    <h2 id="tacheModalTitle">＋ Tâche jdida</h2>
+    <div class="frm">
+      <div class="fld full"><label>Ach khassek tkhdem? *</label><input id="t_label" placeholder="ex: Design 4 posts Instagram / Modifier le logo…"></div>
+      <div class="fld"><label>Client *</label><select id="t_client" onchange="fillTacheProjets()"></select></div>
+      <div class="fld"><label>Projet (optionnel)</label><select id="t_projet"><option value="">—</option></select></div>
+      <div class="fld"><label>Statut</label>
+        <select id="t_statut"><option>À faire</option><option>En cours</option><option>Salit ✅</option></select>
+      </div>
+      <div class="fld"><label>Priorité</label>
+        <select id="t_priorite"><option>🔴 Urgent</option><option selected>🟡 Normal</option><option>🟢 Machi zerban</option></select>
+      </div>
+      <div class="fld"><label>Deadline</label><input id="t_deadline" type="date"></div>
+      <div class="fld"><label></label></div>
+      <div class="fld full"><label>Détails</label><textarea id="t_details" rows="2" placeholder="ex: les couleurs li bgha, les dimensions, le brief…"></textarea></div>
+    </div>
+    <div class="acts">
+      <button class="btn btn-ghost" onclick="closeModal('tacheModal')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveTache()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ VERROUILLAGE PIN ============ */
+const PIN_KEY='they_pin';
+async function hashPin(s){
+  if(crypto&&crypto.subtle){
+    const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('theY:'+s));
+    return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+  }
+  return btoa('theY:'+s);
+}
+function lockInit(){
+  if(sessionStorage.getItem('they_unlocked')==='1'){document.getElementById('lockScreen').style.display='none';return}
+  const has=localStorage.getItem(PIN_KEY);
+  document.getElementById('lockTitle').textContent=has?'Dkhel le code PIN':'Marra lewla: sawb code PIN jdid (4 chiffres wla ktar)';
+  document.getElementById('pinInput').focus();
+}
+async function submitPin(){
+  const inp=document.getElementById('pinInput');
+  const v=inp.value.trim();
+  const msg=document.getElementById('lockMsg');
+  if(v.length<4){msg.textContent='Le code khass ikoun 4 chiffres wla ktar';return}
+  const has=localStorage.getItem(PIN_KEY);
+  const h=await hashPin(v);
+  if(!has){
+    localStorage.setItem(PIN_KEY,h);
+    unlockApp();
+  }else if(h===has){
+    unlockApp();
+  }else{
+    msg.textContent='Code ghalat — 3awd jerreb';
+    inp.value='';inp.focus();
+  }
+}
+function unlockApp(){
+  sessionStorage.setItem('they_unlocked','1');
+  document.getElementById('lockScreen').style.display='none';
+}
+document.getElementById('pinInput').addEventListener('keydown',e=>{if(e.key==='Enter')submitPin()});
+lockInit();
+
+/* ============ STATE ============ */
+const KEY='crm_gestion_clients_v1';
+let DB={clients:[],projets:[],paiements:[],taches:[],devise:'€'};
+let clientFilter='all', projetFilter='all', payFilter='all', tacheFilter='all';
+let editId=null;
+
+function load(){
+  const raw=localStorage.getItem(KEY);
+  if(raw){try{DB=JSON.parse(raw)}catch(e){}}
+  else{seed();save()}
+  if(!DB.taches)DB.taches=[];
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(DB))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function money(n,d){return (n||0).toLocaleString('fr-FR')+' '+(d||'€')}
+function fdate(d){if(!d)return '—';return new Date(d+'T00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+function seed(){
+  const c1={id:uid(),name:'Mouhamed K. — DATA FUNNEL PRO',type:'projet',statut:'Actif',email:'contact@datafunnelpro.com',phone:'',devise:'€',salaire:0,khedma:'Identité visuelle complète: logo, charte graphique, favicon, badge Path — o mn ba3d les déclinaisons (bannières, signature email…)',notes:'Refonte identité AKM Online → Data Funnel Pro'};
+  const c2={id:uid(),name:'Client Exemple — Retainer',type:'salaire',statut:'Actif',email:'',phone:'',devise:'€',salaire:800,khedma:'Gestion réseaux sociaux: 4 posts/semaine + 2 stories/jour + reporting mensuel',notes:'Exemple: client b salaire fixe koula chher — bedlo b client dyalek'};
+  const p1={id:uid(),clientId:c1.id,name:'Pack Logo & Charte Graphique',type:'Logo & identité',prix:600,statut:'Livré',deadline:'2026-07-10',notes:'En attente validation client'};
+  DB.clients=[c1,c2];DB.projets=[p1];
+  DB.paiements=[
+    {id:uid(),clientId:c1.id,projetId:p1.id,label:'Acompte 50% — Pack Logo',type:'Acompte',montant:300,devise:'€',statut:'Payé',date:'2026-06-20',methode:'Virement',notes:''},
+    {id:uid(),clientId:c1.id,projetId:p1.id,label:'Solde final — Pack Logo',type:'Solde final',montant:300,devise:'€',statut:'En attente',date:'2026-07-20',methode:'Virement',notes:''},
+    {id:uid(),clientId:c2.id,projetId:'',label:'Salaire Juillet 2026',type:'Salaire mensuel',montant:800,devise:'€',statut:'Payé',date:'2026-07-01',methode:'Wise',notes:''},
+    {id:uid(),clientId:c2.id,projetId:'',label:'Exemple: Bonus b Dirham',type:'Bonus',montant:2000,devise:'DH',statut:'Payé',date:'2026-07-05',methode:'Cash',notes:'Exemple bach tchouf paiement b DH — mes7o ila bghiti'}
+  ];
+  DB.taches=[
+    {id:uid(),clientId:c1.id,projetId:p1.id,label:'Envoyer le pack logo + charte PDF l client bach ivalidé',statut:'À faire',priorite:'🔴 Urgent',deadline:'2026-07-13',details:''},
+    {id:uid(),clientId:c1.id,projetId:p1.id,label:'Préparer 2 pistes alternatives dyal le symbole (ila ma 3ejbouch)',statut:'À faire',priorite:'🟡 Normal',deadline:'2026-07-18',details:''},
+    {id:uid(),clientId:c2.id,projetId:'',label:'Design 4 posts Instagram dyal had simana',statut:'En cours',priorite:'🟡 Normal',deadline:'2026-07-15',details:'Thème: promotion été'}
+  ];
+}
+
+/* ============ NAV ============ */
+function go(tab){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['dash','clients','taches','projets','paiements'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'':'none');
+  renderAll();
+}
+
+/* ============ HELPERS ============ */
+const clientById=id=>DB.clients.find(c=>c.id===id);
+const clientName=id=>{const c=clientById(id);return c?c.name:'—'};
+const clientDevise=id=>{const c=clientById(id);return c?c.devise||'€':'€'};
+const payeSum=f=>DB.paiements.filter(f).reduce((s,p)=>s+(+p.montant||0),0);
+const payDevise=p=>p.devise||clientDevise(p.clientId);
+function sumByDevise(f,fb){
+  const m={};
+  DB.paiements.filter(f).forEach(p=>{const d=payDevise(p);m[d]=(m[d]||0)+(+p.montant||0)});
+  const parts=Object.entries(m).filter(([,v])=>v>0).map(([d,v])=>money(v,d));
+  return parts.length?parts.join(' + '):money(0,fb||'€');
+}
+const statutBadge={'Actif':'bg-actif','En pause':'bg-pause','Prospect':'bg-prospect','Archivé':'bg-archive','Payé':'bg-paye','En attente':'bg-attente','En retard':'bg-retard','Brief reçu':'bg-brief','En cours':'bg-encours','En attente client':'bg-attclient','Livré':'bg-livre','Terminé & payé':'bg-termine','Annulé':'bg-annule','À faire':'bg-attente','Salit ✅':'bg-termine'};
+
+/* ============ DASHBOARD ============ */
+function renderDash(){
+  const actifs=DB.clients.filter(c=>c.statut==='Actif');
+  const nbProjet=actifs.filter(c=>c.type==='projet').length;
+  const nbSalaire=actifs.filter(c=>c.type==='salaire').length;
+  const now=new Date();const mois=now.toISOString().slice(0,7);
+  const enCours=DB.projets.filter(p=>['Brief reçu','En cours','En attente client','Livré'].includes(p.statut)).length;
+  const dv=DB.clients[0]?DB.clients[0].devise||'€':'€';
+  const totalPayeStr=sumByDevise(p=>p.statut==='Payé',dv);
+  const moisPayeStr=sumByDevise(p=>p.statut==='Payé'&&(p.date||'').startsWith(mois),dv);
+  const attenteStr=sumByDevise(p=>p.statut!=='Payé',dv);
+  document.getElementById('statCards').innerHTML=`
+    <div class="stat c-nuit"><div class="lbl">Clients actifs</div><div class="val">${actifs.length}</div><div class="sub">${nbProjet} par projet · ${nbSalaire} salaire</div></div>
+    <div class="stat c-vert"><div class="lbl">Total encaissé</div><div class="val" style="font-size:${totalPayeStr.length>14?'17px':'26px'}">${totalPayeStr}</div><div class="sub">Had chher: ${moisPayeStr}</div></div>
+    <div class="stat c-orange"><div class="lbl">F l'attente</div><div class="val" style="font-size:${attenteStr.length>14?'17px':'26px'}">${attenteStr}</div><div class="sub">${DB.paiements.filter(p=>p.statut!=='Payé').length} paiement(s) ba9i ma dkhlo</div></div>
+    <div class="stat c-bleu"><div class="lbl">Projets en cours</div><div class="val">${enCours}</div><div class="sub">${DB.projets.length} projet(s) au total</div></div>`;
+
+  const todo=DB.taches.filter(t=>t.statut!=='Salit ✅').sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999'));
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('dashTaches').innerHTML=todo.length?todo.map(t=>{
+    const late=t.deadline&&t.deadline<today;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)">
+      <div><div class="t-name" style="font-size:13px">${t.priorite?t.priorite.split(' ')[0]+' ':''}${esc(t.label)}</div>
+      <div class="t-sub">${esc(clientName(t.clientId))} · ${fdate(t.deadline)}${late?' <b style=\"color:var(--rouge)\">— fat le délai!</b>':''} · <span class="badge ${statutBadge[t.statut]||''}">${t.statut}</span></div></div>
+      <button class="btn btn-sm btn-primary" onclick="markTacheDone('${t.id}')">Salit ✓</button>
+    </div>`}).join(''):'<div class="empty"><div class="big">✓</div>Ma 3andek 7ta tâche — kolchi salat!</div>';
+
+  const recent=[...DB.paiements].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
+  document.getElementById('dashPays').innerHTML=recent.length?recent.map(p=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">
+      <div><div class="t-name" style="font-size:13px">${esc(p.label)}</div><div class="t-sub">${esc(clientName(p.clientId))} · ${fdate(p.date)}</div></div>
+      <div style="text-align:right"><div class="t-name">${money(+p.montant,payDevise(p))}</div><span class="badge ${statutBadge[p.statut]||''}">${p.statut}</span></div>
+    </div>`).join(''):'<div class="empty"><div class="big">◈</div>Ma kayn 7ta paiement</div>';
+
+  const due=DB.paiements.filter(p=>p.statut!=='Payé');
+  document.getElementById('dashDue').innerHTML=due.length?due.map(p=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">
+      <div><div class="t-name" style="font-size:13px">${esc(p.label)}</div><div class="t-sub">${esc(clientName(p.clientId))} · ${fdate(p.date)}</div></div>
+      <div style="text-align:right"><div class="t-name">${money(+p.montant,payDevise(p))}</div>
+      <button class="btn btn-sm btn-primary" onclick="markPaid('${p.id}')">Tkhelless ✓</button></div>
+    </div>`).join(''):'<div class="empty"><div class="big">✓</div>Kolchi mkhelless!</div>';
+
+  const projs=DB.projets.filter(p=>!['Terminé & payé','Annulé'].includes(p.statut));
+  document.getElementById('dashProjets').innerHTML=projs.length?projs.map(p=>{
+    const paye=payeSum(x=>x.projetId===p.id&&x.statut==='Payé');
+    const payeStr=sumByDevise(x=>x.projetId===p.id&&x.statut==='Payé',clientDevise(p.clientId));
+    const pct=p.prix?Math.min(100,Math.round(paye/p.prix*100)):0;
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--line)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><span class="t-name">${esc(p.name)}</span> <span class="t-sub">— ${esc(clientName(p.clientId))}</span></div>
+        <span class="badge ${statutBadge[p.statut]||''}">${p.statut}</span>
+      </div>
+      <div class="t-sub" style="margin-top:4px">${payeStr} / ${money(+p.prix,clientDevise(p.clientId))} mkhelless (${pct}%) · Deadline: ${fdate(p.deadline)}</div>
+      <div class="progress-wrap"><div class="progress" style="width:${pct}%"></div></div>
+    </div>`}).join(''):'<div class="empty"><div class="big">▤</div>Ma kayn 7ta projet en cours</div>';
+}
+function markPaid(id){const p=DB.paiements.find(x=>x.id===id);if(p){p.statut='Payé';save();renderAll();toast('Paiement mkhelless ✓')}}
+
+/* ============ CLIENTS ============ */
+function setClientFilter(f,btn){clientFilter=f;btn.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));btn.classList.add('on');renderClients()}
+function renderClients(){
+  const q=(document.getElementById('clientSearch').value||'').toLowerCase();
+  let list=DB.clients.filter(c=>clientFilter==='all'||c.type===clientFilter);
+  if(q)list=list.filter(c=>c.name.toLowerCase().includes(q));
+  document.getElementById('clientsTable').innerHTML=list.length?`<table><thead><tr>
+    <th>Client</th><th>Ach katkhdem lih</th><th>Type</th><th>Statut</th><th>Salaire / mois</th><th>Total encaissé</th><th>Tâches</th><th></th></tr></thead><tbody>${
+    list.map(c=>{
+      const totStr=sumByDevise(p=>p.clientId===c.id&&p.statut==='Payé',c.devise);
+      const nbT=DB.taches.filter(t=>t.clientId===c.id&&t.statut!=='Salit ✅').length;
+      return `<tr>
+        <td><div class="cell-flex"><span class="avatar">${esc((c.name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase())}</span><div><div class="t-name">${esc(c.name)}</div><div class="t-sub">${esc(c.email||'')}${c.phone?' · '+esc(c.phone):''}</div></div></div></td>
+        <td style="max-width:230px"><div class="t-sub" style="color:var(--ink2)">${c.khedma?esc(c.khedma):'<i style=\"color:#999\">— ma mktoubch (modifiéh ✏️)</i>'}</div></td>
+        <td><span class="badge ${c.type==='projet'?'bg-projet':'bg-salaire'}">${c.type==='projet'?'Par projet':'Salaire'}</span></td>
+        <td><span class="badge ${statutBadge[c.statut]||''}">${c.statut}</span></td>
+        <td>${c.type==='salaire'?'<b>'+money(+c.salaire,c.devise)+'</b>':'<span class="t-sub">—</span>'}</td>
+        <td><b>${totStr}</b></td>
+        <td>${nbT?'<span class="badge bg-attente">'+nbT+' à faire</span>':'<span class="badge bg-termine">✓ 0</span>'}</td>
+        <td><div class="row-acts">
+          <button class="icon-btn" title="Modifier" onclick="openClientModal('${c.id}')">✏️</button>
+          <button class="icon-btn" title="Supprimer" onclick="delClient('${c.id}')">🗑️</button>
+        </div></td></tr>`}).join('')}</tbody></table>`
+  :'<div class="empty"><div class="big">◉</div>Ma l9ina 7ta client — zid wa7d b "＋ Zid client"</div>';
+}
+function toggleSalaire(){document.getElementById('salaireFld').style.display=document.getElementById('c_type').value==='salaire'?'':'none'}
+function openClientModal(id){
+  editId=id||null;
+  document.getElementById('clientModalTitle').textContent=id?'Modifier le client':'＋ Client jdid';
+  const c=id?clientById(id):{};
+  c_name.value=c.name||'';c_type.value=c.type||'projet';c_statut.value=c.statut||'Actif';
+  c_salaire.value=c.salaire||'';c_devise.value=c.devise||'€';c_email.value=c.email||'';c_phone.value=c.phone||'';c_khedma.value=c.khedma||'';c_notes.value=c.notes||'';
+  toggleSalaire();
+  document.getElementById('clientModal').classList.add('show');
+}
+function saveClient(){
+  if(!c_name.value.trim())return toast('Dkhel smiya dyal le client');
+  const data={name:c_name.value.trim(),type:c_type.value,statut:c_statut.value,salaire:+c_salaire.value||0,devise:c_devise.value,email:c_email.value.trim(),phone:c_phone.value.trim(),khedma:c_khedma.value.trim(),notes:c_notes.value.trim()};
+  if(editId){Object.assign(clientById(editId),data)}else{DB.clients.push({id:uid(),...data})}
+  save();closeModal('clientModal');renderAll();toast('Client t-sauvegarda ✓');
+}
+function delClient(id){
+  if(!confirm('Bghiti tmes7 had le client m3a les projets o les paiements dyalo?'))return;
+  DB.clients=DB.clients.filter(c=>c.id!==id);
+  DB.projets=DB.projets.filter(p=>p.clientId!==id);
+  DB.paiements=DB.paiements.filter(p=>p.clientId!==id);
+  DB.taches=DB.taches.filter(t=>t.clientId!==id);
+  save();renderAll();toast('Client tmess7');
+}
+
+/* ============ TACHES ============ */
+function setTacheFilter(f,btn){tacheFilter=f;btn.parentElement.querySelectorAll('.chip').forEach(c=>{if(c.tagName==='BUTTON')c.classList.remove('on')});btn.classList.add('on');renderTaches()}
+function markTacheDone(id){const t=DB.taches.find(x=>x.id===id);if(t){t.statut='Salit ✅';save();renderAll();toast('Tâche salat ✓')}}
+function renderTaches(){
+  const sel=document.getElementById('tacheClientFilter');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Ga3 les clients</option>'+DB.clients.map(c=>`<option value="${c.id}" ${c.id===cur?'selected':''}>${esc(c.name)}</option>`).join('');
+  const today=new Date().toISOString().slice(0,10);
+  let list=[...DB.taches].sort((a,b)=>(a.statut==='Salit ✅')-(b.statut==='Salit ✅')||(a.deadline||'9999').localeCompare(b.deadline||'9999'));
+  if(tacheFilter!=='all')list=list.filter(t=>t.statut===tacheFilter);
+  if(sel.value)list=list.filter(t=>t.clientId===sel.value);
+  document.getElementById('tachesTable').innerHTML=list.length?`<table><thead><tr>
+    <th></th><th>Tâche</th><th>Client</th><th>Priorité</th><th>Deadline</th><th>Statut</th><th></th></tr></thead><tbody>${
+    list.map(t=>{
+      const done=t.statut==='Salit ✅';
+      const late=!done&&t.deadline&&t.deadline<today;
+      const proj=t.projetId?(DB.projets.find(x=>x.id===t.projetId)||{}).name:'';
+      return `<tr style="${done?'opacity:.5':''}">
+        <td><button class="icon-btn" title="${done?'Rejje3ha à faire':'3lem salat'}" onclick="toggleTache('${t.id}')">${done?'↩':'☐'}</button></td>
+        <td><div class="t-name" style="${done?'text-decoration:line-through':''}">${esc(t.label)}</div><div class="t-sub">${proj?esc(proj):''}${t.details?(proj?' · ':'')+esc(t.details):''}</div></td>
+        <td>${esc(clientName(t.clientId))}</td>
+        <td>${t.priorite||'🟡 Normal'}</td>
+        <td>${fdate(t.deadline)}${late?' <b>⚠</b>':''}</td>
+        <td><span class="badge ${statutBadge[t.statut]||''}">${t.statut}</span></td>
+        <td><div class="row-acts">
+          <button class="icon-btn" onclick="openTacheModal('${t.id}')">✏️</button>
+          <button class="icon-btn" onclick="delTache('${t.id}')">🗑️</button>
+        </div></td></tr>`}).join('')}</tbody></table>`
+  :'<div class="empty"><div class="big">✓</div>Ma kayn 7ta tâche hna — zid wa7da b "＋ Zid tâche"</div>';
+}
+function toggleTache(id){const t=DB.taches.find(x=>x.id===id);if(t){t.statut=t.statut==='Salit ✅'?'À faire':'Salit ✅';save();renderAll()}}
+function fillTacheProjets(){
+  const cid=document.getElementById('t_client').value;
+  const s=document.getElementById('t_projet');
+  s.innerHTML='<option value="">—</option>'+DB.projets.filter(p=>p.clientId===cid).map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+}
+function openTacheModal(id){
+  if(!DB.clients.length)return toast('Zid client 9bel ma tzid tâche');
+  editId=id||null;
+  document.getElementById('tacheModalTitle').textContent=id?'Modifier la tâche':'＋ Tâche jdida';
+  fillClientSelect('t_client');
+  const t=id?DB.taches.find(x=>x.id===id):{};
+  t_label.value=t.label||'';t_client.value=t.clientId||DB.clients[0].id;
+  fillTacheProjets();
+  t_projet.value=t.projetId||'';t_statut.value=t.statut||'À faire';t_priorite.value=t.priorite||'🟡 Normal';
+  t_deadline.value=t.deadline||'';t_details.value=t.details||'';
+  document.getElementById('tacheModal').classList.add('show');
+}
+function saveTache(){
+  if(!t_label.value.trim())return toast('Ktb ach khassek tkhdem');
+  const data={label:t_label.value.trim(),clientId:t_client.value,projetId:t_projet.value,statut:t_statut.value,priorite:t_priorite.value,deadline:t_deadline.value,details:t_details.value.trim()};
+  if(editId){Object.assign(DB.taches.find(x=>x.id===editId),data)}else{DB.taches.push({id:uid(),...data})}
+  save();closeModal('tacheModal');renderAll();toast('Tâche t-sauvegardat ✓');
+}
+function delTache(id){
+  if(!confirm('Tmes7 had la tâche?'))return;
+  DB.taches=DB.taches.filter(t=>t.id!==id);save();renderAll();toast('Tâche tmess7at');
+}
+
+/* ============ PROJETS ============ */
+function setProjetFilter(f,btn){projetFilter=f;btn.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));btn.classList.add('on');renderProjets()}
+function renderProjets(){
+  let list=DB.projets.filter(p=>projetFilter==='all'||p.statut===projetFilter);
+  document.getElementById('projetsTable').innerHTML=list.length?`<table><thead><tr>
+    <th>Projet</th><th>Client</th><th>Prix</th><th>Payé</th><th>Statut</th><th>Deadline</th><th></th></tr></thead><tbody>${
+    list.map(p=>{
+      const payeStr=sumByDevise(x=>x.projetId===p.id&&x.statut==='Payé',clientDevise(p.clientId));
+      return `<tr>
+        <td><div class="t-name">${esc(p.name)}</div><div class="t-sub">${esc(p.type||'')}</div></td>
+        <td>${esc(clientName(p.clientId))}</td>
+        <td><b>${money(+p.prix,clientDevise(p.clientId))}</b></td>
+        <td>${payeStr}</td>
+        <td><span class="badge ${statutBadge[p.statut]||''}">${p.statut}</span></td>
+        <td>${fdate(p.deadline)}</td>
+        <td><div class="row-acts">
+          <button class="icon-btn" onclick="openProjetModal('${p.id}')">✏️</button>
+          <button class="icon-btn" onclick="delProjet('${p.id}')">🗑️</button>
+        </div></td></tr>`}).join('')}</tbody></table>`
+  :'<div class="empty"><div class="big">▤</div>Ma kayn 7ta projet hna</div>';
+}
+function fillClientSelect(sel,type){
+  const s=document.getElementById(sel);
+  s.innerHTML=DB.clients.filter(c=>!type||c.type===type).map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+}
+function openProjetModal(id){
+  if(!DB.clients.length)return toast('Zid client 9bel ma tzid projet');
+  editId=id||null;
+  document.getElementById('projetModalTitle').textContent=id?'Modifier le projet':'＋ Projet jdid';
+  fillClientSelect('p_client');
+  const p=id?DB.projets.find(x=>x.id===id):{};
+  p_name.value=p.name||'';p_client.value=p.clientId||DB.clients[0].id;p_prix.value=p.prix||'';
+  p_statut.value=p.statut||'En cours';p_deadline.value=p.deadline||'';p_type.value=p.type||'Logo & identité';p_notes.value=p.notes||'';
+  document.getElementById('projetModal').classList.add('show');
+}
+function saveProjet(){
+  if(!p_name.value.trim())return toast('Dkhel smiya dyal le projet');
+  const data={name:p_name.value.trim(),clientId:p_client.value,prix:+p_prix.value||0,statut:p_statut.value,deadline:p_deadline.value,type:p_type.value,notes:p_notes.value.trim()};
+  if(editId){Object.assign(DB.projets.find(x=>x.id===editId),data)}else{DB.projets.push({id:uid(),...data})}
+  save();closeModal('projetModal');renderAll();toast('Projet t-sauvegarda ✓');
+}
+function delProjet(id){
+  if(!confirm('Tmes7 had le projet?'))return;
+  DB.projets=DB.projets.filter(p=>p.id!==id);
+  DB.paiements.forEach(p=>{if(p.projetId===id)p.projetId=''});
+  save();renderAll();toast('Projet tmess7');
+}
+
+/* ============ PAIEMENTS ============ */
+function setPayFilter(f,btn){payFilter=f;btn.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));btn.classList.add('on');renderPays()}
+function renderPays(){
+  let list=[...DB.paiements].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(payFilter!=='all')list=list.filter(p=>p.statut===payFilter);
+  document.getElementById('paysTable').innerHTML=list.length?`<table><thead><tr>
+    <th>Paiement</th><th>Client</th><th>Type</th><th>Montant</th><th>Statut</th><th>Date</th><th></th></tr></thead><tbody>${
+    list.map(p=>`<tr>
+      <td><div class="t-name">${esc(p.label)}</div><div class="t-sub">${esc(p.methode||'')}${p.projetId?' · '+esc((DB.projets.find(x=>x.id===p.projetId)||{}).name||''):''}</div></td>
+      <td>${esc(clientName(p.clientId))}</td>
+      <td><span class="badge ${p.type==='Salaire mensuel'?'bg-salaire':'bg-projet'}">${p.type}</span></td>
+      <td><b>${money(+p.montant,payDevise(p))}</b></td>
+      <td><span class="badge ${statutBadge[p.statut]||''}">${p.statut}</span></td>
+      <td>${fdate(p.date)}</td>
+      <td><div class="row-acts">
+        ${p.statut!=='Payé'?`<button class="icon-btn" title="Tkhelless" onclick="markPaid('${p.id}')">✓</button>`:''}
+        <button class="icon-btn" onclick="openPayModal('${p.id}')">✏️</button>
+        <button class="icon-btn" onclick="delPay('${p.id}')">🗑️</button>
+      </div></td></tr>`).join('')}</tbody></table>`
+  :'<div class="empty"><div class="big">◈</div>Ma kayn 7ta paiement hna</div>';
+}
+function fillPayProjets(){
+  const cid=document.getElementById('y_client').value;
+  const s=document.getElementById('y_projet');
+  s.innerHTML='<option value="">—</option>'+DB.projets.filter(p=>p.clientId===cid).map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  if(!editId)document.getElementById('y_devise').value=clientDevise(cid);
+}
+function openPayModal(id){
+  if(!DB.clients.length)return toast('Zid client 9bel ma tzid paiement');
+  editId=id||null;
+  document.getElementById('payModalTitle').textContent=id?'Modifier le paiement':'＋ Paiement jdid';
+  fillClientSelect('y_client');
+  const p=id?DB.paiements.find(x=>x.id===id):{};
+  y_label.value=p.label||'';y_client.value=p.clientId||DB.clients[0].id;
+  fillPayProjets();
+  y_projet.value=p.projetId||'';y_type.value=p.type||'Acompte';y_montant.value=p.montant||'';
+  y_devise.value=p.devise||clientDevise(y_client.value);
+  y_statut.value=p.statut||'Payé';y_date.value=p.date||new Date().toISOString().slice(0,10);y_methode.value=p.methode||'Virement';y_notes.value=p.notes||'';
+  document.getElementById('payModal').classList.add('show');
+}
+function savePay(){
+  if(!y_label.value.trim())return toast('Dkhel libellé');
+  if(!+y_montant.value)return toast('Dkhel le montant');
+  const data={label:y_label.value.trim(),clientId:y_client.value,projetId:y_projet.value,type:y_type.value,montant:+y_montant.value,devise:y_devise.value,statut:y_statut.value,date:y_date.value,methode:y_methode.value,notes:y_notes.value.trim()};
+  if(editId){Object.assign(DB.paiements.find(x=>x.id===editId),data)}else{DB.paiements.push({id:uid(),...data})}
+  save();closeModal('payModal');renderAll();toast('Paiement t-sauvegarda ✓');
+}
+function delPay(id){
+  if(!confirm('Tmes7 had le paiement?'))return;
+  DB.paiements=DB.paiements.filter(p=>p.id!==id);save();renderAll();toast('Paiement tmess7');
+}
+
+/* ============ EXPORT / IMPORT ============ */
+function exportData(){
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='they-studio-crm-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  toast('Backup téléchargé ✓');
+}
+function importData(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.clients&&d.paiements){DB=d;if(!DB.taches)DB.taches=[];save();renderAll();toast('Données t-importaw ✓')}else toast('Fichier machi valide')}catch(e){toast('Fichier machi valide')}};
+  r.readAsText(f);ev.target.value='';
+}
+
+/* ============ LOGO & TOPBAR ============ */
+function setLogo(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{localStorage.setItem('they_logo',r.result);applyLogo();toast('Logo tbeddel!')}catch(e){toast('Le fichier kbir bzaf — sghhro chwiya')}};
+  r.readAsDataURL(f);ev.target.value='';
+}
+function applyLogo(){
+  const src=localStorage.getItem('they_logo');
+  const img=document.getElementById('logoImg');
+  const fb=document.getElementById('logoFallback');
+  const fs=document.getElementById('logoSubFallback');
+  if(src){img.src=src;img.style.display='block';fb.style.display='none';fs.style.display='none'}
+  else{img.style.display='none';fb.style.display='flex';fs.style.display='block'}
+}
+/* ============ THEME ============ */
+function toggleTheme(){
+  const dark=document.body.classList.toggle('dark');
+  localStorage.setItem('they_theme',dark?'dark':'light');
+  applyThemeUI(dark);
+  toast(dark?'Mode sombre activé 🌙':'Mode clair activé ☀️');
+}
+function applyThemeUI(dark){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content',dark?'#141413':'#0F0F0E');
+  const b=document.getElementById('themeBtn');if(b)b.textContent=dark?'☀️ Mode clair':'🌙 Mode sombre';
+}
+function applyTheme(){
+  const dark=localStorage.getItem('they_theme')==='dark';
+  document.body.classList.toggle('dark',dark);
+  applyThemeUI(dark);
+}
+
+document.getElementById('topDate').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+applyLogo();
+applyTheme();
+
+/* ============ INIT ============ */
+function closeModal(id){document.getElementById(id).classList.remove('show');editId=null}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}));
+function renderAll(){renderDash();renderClients();renderTaches();renderProjets();renderPays()}
+load();renderAll();
+if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+</html>
