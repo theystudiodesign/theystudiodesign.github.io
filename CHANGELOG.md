@@ -1,5 +1,8 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (14) — Fix critique seed
+- **Anti-réinjection des données de démonstration** : marqueur persistant `they_seeded_v1` — le seed ("Mouhamed K.", "Client Exemple") ne s'exécute qu'une seule fois par navigateur. Après un reset volontaire (suppression de toutes les données), l'app repart VIDE, la démo n'est jamais recréée. Bonus: des données corrompues ne sont plus écrasées par la démo. 6 tests d'intégration ajoutés (55 au total). SW v23.
+
 ## 2026-07-13 (13) — Sprint 12
 - **Cloud Sync v2 (Supabase)** : moteur de synchronisation complet, testé de bout en bout.
   - **Conflits (LWW par ligne)** : chaque ligne est horodatée (updatedAt) à la modification; au pull, fusion ligne par ligne — la version la plus récente gagne, sur tous les appareils. Trigger SQL adapté pour respecter l'horodatage client. Limite documentée: suppression locale > édition distante.

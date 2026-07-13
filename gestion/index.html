@@ -989,10 +989,18 @@ const DataLayer={
     return db;
   }
 };
+/* Marqueur persistant anti-réinjection du seed (fix bug critique):
+   les données de démonstration ne sont créées qu'UNE SEULE FOIS par navigateur.
+   Si l'utilisateur supprime volontairement toutes ses données (reset),
+   le marqueur survit → l'app repart VIDE, jamais re-seedée. */
+const SEED_KEY='they_seeded_v1';
+const seedDone=()=>{try{return localStorage.getItem(SEED_KEY)==='1'}catch(e){return true}};
+const markSeeded=()=>{try{localStorage.setItem(SEED_KEY,'1')}catch(e){}};
 function load(){
   const d=DataLayer.read();
-  if(d){DB=d}
-  else{seed();save()}
+  if(d){DB=d;markSeeded()}            // base existante = démo plus jamais réinjectée
+  else if(!seedDone()){seed();save()} // premier lancement uniquement
+  // else: reset volontaire → on repart sur une base vide, sans démo
   DataLayer.normalize(DB);
 }
 function save(){
@@ -1012,6 +1020,7 @@ function fdate(d){if(!d)return '—';const x=new Date(d+'T00:00');return isNaN(x
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
 function seed(){
+  markSeeded(); // défense en profondeur: le marqueur est posé dès l'exécution
   const c1={id:uid(),name:'Mouhamed K. — DATA FUNNEL PRO',type:'projet',statut:'Actif',email:'contact@datafunnelpro.com',phone:'',devise:'DH',salaire:0,khedma:'Identité visuelle complète: logo, charte graphique, favicon, badge Path — o mn ba3d les déclinaisons (bannières, signature email…)',notes:'Refonte identité AKM Online → Data Funnel Pro'};
   const c2={id:uid(),name:'Client Exemple — Retainer',type:'salaire',statut:'Actif',email:'',phone:'',devise:'DH',salaire:800,khedma:'Gestion réseaux sociaux: 4 posts/semaine + 2 stories/jour + reporting mensuel',notes:'Exemple: client b salaire fixe koula chher — bedlo b client dyalek'};
   const p1={id:uid(),clientId:c1.id,name:'Pack Logo & Charte Graphique',type:'Logo & identité',prix:600,statut:'Livré',deadline:'2026-07-10',notes:'En attente validation client'};

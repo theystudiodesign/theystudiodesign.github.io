@@ -339,6 +339,34 @@ const cloudRowsFor = (d, email, table) => {
   }
 
   /* ================================================================ */
+  console.log('\n[16] Seed anti-réinjection — la démo ne revient JAMAIS après un reset');
+  {
+    const { ctx, page } = await newDevice(browser, { cloud: false });
+    await page.goto(APP, { waitUntil: 'networkidle' });
+    await sleep(400);
+    ok((await db(page)).clients.some(c => c.name.includes('Client Exemple')), 'premier lancement: seed créé une fois');
+    ok(await page.evaluate(() => localStorage.getItem('they_seeded_v1')) === '1', 'marqueur persistant posé');
+    // reset volontaire: l'utilisateur supprime toutes ses données (la clé DB disparaît)
+    await page.evaluate(() => localStorage.removeItem('crm_gestion_clients_v1'));
+    await page.reload({ waitUntil: 'networkidle' });
+    await sleep(400);
+    const d1 = await db(page);
+    ok(d1.clients.length === 0, 'après reset: base VIDE — seed non réinjecté');
+    ok(!(await lsdb(page)) || (await lsdb(page)).clients.every(c => !c.name.includes('Client Exemple')), 'aucune démo recréée en storage');
+    // suppression manuelle de tous les clients (DB existe mais vide) + reload
+    await page.evaluate(() => { DB.clients = []; DB.projets = []; DB.taches = []; DB.paiements = []; save(); });
+    await page.reload({ waitUntil: 'networkidle' });
+    await sleep(400);
+    ok((await db(page)).clients.length === 0, 'tout supprimé manuellement + reload: toujours vide');
+    // corruption du JSON: ne doit PAS écraser par la démo
+    await page.evaluate(() => localStorage.setItem('crm_gestion_clients_v1', '{corrompu'));
+    await page.reload({ waitUntil: 'networkidle' });
+    await sleep(400);
+    ok(!(await db(page)).clients.some(c => c.name.includes('Client Exemple')), 'données corrompues: pas de réinjection de démo');
+    await ctx.close();
+  }
+
+  /* ================================================================ */
   await deviceA.ctx.close(); await deviceB.ctx.close();
   await browser.close(); app.close(); mock.close();
   console.log(`\n========== RÉSULTAT: ${passed} ✓ / ${failed} ✗ ==========`);
