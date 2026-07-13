@@ -15,7 +15,7 @@ npm test
 
 Si Chromium Playwright n'est pas au chemin par défaut : `CHROME_PATH=/chemin/vers/chrome npm test`.
 
-## Scénarios couverts (85 assertions)
+## Scénarios couverts (98 assertions)
 
 1. Régression — config vide = 100 % local, indicateur ☁ caché, seed intact
 2. Inscription + premier push local → cloud (user_id/RLS posé)
@@ -38,3 +38,6 @@ Si Chromium Playwright n'est pas au chemin par défaut : `CHROME_PATH=/chemin/ve
 19. Timezone (Sprint 17) — dates locales via `isoLocal()` : grille mois/semaine, pastille today,
     événements sur la bonne case, chart revenus, isOverdue, KPI "Aujourd'hui" — testés avec
     `timezoneId` Africa/Casablanca (UTC+1, midi + 00h30 locale) et garde de régression UTC
+20. Intégrité référentielle (fix critique) — cascade delete complète (events inclus), events
+    personnels préservés, orphelins hérités purgés au boot (+ filet they_rescue_orphans),
+    import/restore assainis, propagation cloud de la cascade, non-adoption des orphelins du cloud

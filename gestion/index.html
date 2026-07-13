@@ -856,6 +856,7 @@ async function cloudPull(){
     DB.blCounter=Math.max(+DB.blCounter||0,+meta.bl_counter||0);
   }
   DataLayer.normalize(DB);
+  if(sweepOrphans(DB).total)pending=true; // jamais adopter un orphelin du cloud; le push suivant purge le cloud (baseIds − local)
   /* [TRACE-PULL] résultat du merge + raison ligne par ligne */
   try{
     const remIds=new Set(remote.clients.map(r=>r.id)),baseC=new Set(st.baseIds.clients||[]);
@@ -1055,6 +1056,28 @@ const markSeeded=()=>{try{localStorage.setItem(SEED_KEY,'1')}catch(e){}};
 const DEMO_KEY='they_demo_v1';
 const demoPristine=()=>{try{return localStorage.getItem(DEMO_KEY)==='1'}catch(e){return false}};
 const clearDemoFlag=()=>{try{localStorage.removeItem(DEMO_KEY)}catch(e){}};
+/* ============ INTÉGRITÉ RÉFÉRENTIELLE (fix critique — orphelins) ============
+   Un orphelin = ligne dont le clientId ne correspond plus à aucun client
+   (héritage des fusions v21/v22, imports, snapshots). Invisible par entité
+   mais compté dans les KPIs, et refusé par les FK Supabase au push.
+   sweepOrphans: retire les orphelins (clientId non vide ET inconnu — les
+   lignes SANS client, ex. events personnels, restent valides) et nettoie
+   les projetId pendants. Appelé par save() (aucun orphelin ne peut être
+   persisté/poussé), load() (migration boot + filet they_rescue_orphans)
+   et cloudPull() (jamais adopter un orphelin du cloud). */
+function sweepOrphans(db){
+  const cids=new Set((db.clients||[]).map(c=>c.id));
+  const removed={projets:[],taches:[],paiements:[],events:[],total:0};
+  ['projets','taches','paiements','events'].forEach(k=>{
+    const keep=[];
+    (db[k]||[]).forEach(r=>{(!r.clientId||cids.has(r.clientId))?keep.push(r):removed[k].push(r)});
+    db[k]=keep;
+  });
+  const pids=new Set((db.projets||[]).map(p=>p.id));
+  ['taches','paiements'].forEach(k=>(db[k]||[]).forEach(r=>{if(r.projetId&&!pids.has(r.projetId))r.projetId=''}));
+  removed.total=removed.projets.length+removed.taches.length+removed.paiements.length+removed.events.length;
+  return removed;
+}
 function load(){
   const d=DataLayer.read();
   if(d){DB=d;markSeeded()}            // base existante = démo plus jamais réinjectée
@@ -1064,8 +1087,14 @@ function load(){
   }
   // else: reset volontaire → on repart sur une base vide, sans démo
   DataLayer.normalize(DB);
+  const orphans=sweepOrphans(DB); // migration: purge des orphelins hérités
+  if(orphans.total){
+    try{localStorage.setItem('they_rescue_orphans',JSON.stringify({date:new Date().toISOString(),rows:orphans}))}catch(e){}
+    DataLayer.write(DB);
+  }
 }
 function save(){
+  sweepOrphans(DB); // garantie: aucun orphelin ne peut être persisté ni poussé
   invalidateCaches();
   cloudStamp(); // horodate les lignes modifiées (LWW) — actif même en mode local
   if(!DataLayer.write(DB))toast('⚠️ Stockage 3amer — dir Export o msse7 les images kbar');
@@ -1292,11 +1321,12 @@ function saveClient(){
   save();closeModal('clientModal');renderAll();toast('Client t-sauvegarda ✓');
 }
 function delClient(id){
-  if(!confirm('Bghiti tmes7 had le client m3a les projets o les paiements dyalo?'))return;
+  if(!confirm('Bghiti tmes7 had le client m3a les projets, les paiements, les tâches o les événements dyalo?'))return;
   DB.clients=DB.clients.filter(c=>c.id!==id);
   DB.projets=DB.projets.filter(p=>p.clientId!==id);
   DB.paiements=DB.paiements.filter(p=>p.clientId!==id);
   DB.taches=DB.taches.filter(t=>t.clientId!==id);
+  DB.events=(DB.events||[]).filter(e=>e.clientId!==id); // cascade complète (events manquaient)
   save();renderAll();toast('Client tmess7');
 }
 
@@ -1404,6 +1434,7 @@ function delProjet(id){
   if(!confirm('Tmes7 had le projet?'))return;
   DB.projets=DB.projets.filter(p=>p.id!==id);
   DB.paiements.forEach(p=>{if(p.projetId===id)p.projetId=''});
+  DB.taches.forEach(t=>{if(t.projetId===id)t.projetId=''}); // référence pendante (manquait)
   save();renderAll();toast('Projet tmess7');
 }
 
@@ -2140,7 +2171,7 @@ load();cloudBoot();renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();
 /* [TRACE-AUDIT] instrumentation temporaire — diagnostic "clients qui reviennent" */
 try{
   window.__TAB_ID=Math.random().toString(36).slice(2,7);
-  window.__BUILD='v30'; // = version du SW (they-gestion-vXX) — tenir synchronisé à chaque release
+  window.__BUILD='v31'; // = version du SW (they-gestion-vXX) — tenir synchronisé à chaque release
   console.log('%c[TRACE-BOOT] build='+window.__BUILD+' · onglet='+window.__TAB_ID+' · clients au boot: '+JSON.stringify((DB.clients||[]).map(c=>c.name)),'color:#3E7C4F;font-weight:bold',
     {seeded:localStorage.getItem('they_seeded_v1'),demo:localStorage.getItem('they_demo_v1'),
      sync:JSON.parse(localStorage.getItem('they_sync_v1')||'null'),
