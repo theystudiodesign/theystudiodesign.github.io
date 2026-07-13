@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE'Y DESIGN SYSTEM — Catalogue de composants</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   THE'Y DESIGN SYSTEM v1 — catalogue vivant (Sprint 18)
+   Snapshot fidèle du CSS de gestion/index.html @ SW v31.
+   Source de vérité des règles: docs/DESIGN_SYSTEM.md
+   ============================================================ */
+:root{
+  --ink:#111110; --ink2:#2A2A28; --mut:#6F6F6C; --mut2:#9A9A96;
+  --line:#E8E8E5; --line2:#D9D9D5; --bg:#F7F7F4; --card:#FFFFFF;
+  --side:#0F0F0E;
+  --font:'Inter',sans-serif;
+  --fs-2xs:10px; --fs-xs:11px; --fs-sm:12px; --fs-base:13.5px;
+  --fs-md:15px; --fs-lg:16px; --fs-xl:22px; --fs-2xl:26px; --fs-3xl:30px;
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px;
+  --radius:12px; --r-sm:8px; --r-md:10px; --r-lg:12px; --r-xl:14px; --r-full:999px;
+  --sh-1:0 1px 2px rgba(17,17,16,.04);
+  --sh-2:0 1px 2px rgba(17,17,16,.18);
+  --sh-3:0 12px 32px rgba(17,17,16,.35);
+  --sh-4:0 20px 50px rgba(17,17,16,.25);
+  --sh-5:0 24px 64px rgba(0,0,0,.28);
+  --t-fast:.13s; --t-base:.16s; --t-med:.22s;
+}
+body.dark{
+  --ink:#F1F1EE; --ink2:#D9D9D5; --mut:#9A9A96; --mut2:#6F6F6C;
+  --line:#2A2A28; --line2:#3A3A38; --bg:#141413; --card:#1C1C1B;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:var(--fs-base);-webkit-font-smoothing:antialiased;padding:40px 24px 80px}
+.ds-wrap{max-width:1080px;margin:0 auto}
+.ds-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:34px}
+.ds-logo{font-weight:300;font-size:30px;letter-spacing:7px;display:flex;align-items:flex-end}
+.ds-logo b{font-weight:800;font-size:42px;letter-spacing:0;margin-left:2px;line-height:.85}
+.ds-sub{font-size:var(--fs-2xs);letter-spacing:4px;color:var(--mut2);font-weight:500;margin-top:6px}
+.ds-section{margin-bottom:46px}
+.ds-section>h2{font-size:var(--fs-lg);font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+.ds-section>p{color:var(--mut);font-size:var(--fs-sm);margin-bottom:16px}
+.ds-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.ds-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.ds-spec{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px}
+.ds-spec .sw{height:52px;border-radius:var(--r-sm);border:1px solid var(--line);margin-bottom:10px}
+.ds-spec .nm{font-weight:700;font-size:var(--fs-sm)}
+.ds-spec .vl{font-size:var(--fs-xs);color:var(--mut);font-family:ui-monospace,monospace;margin-top:2px}
+.ds-note{background:var(--card);border:1px dashed var(--line2);border-radius:var(--r-sm);padding:10px 13px;font-size:var(--fs-sm);color:var(--mut);margin-top:12px}
+code{font-family:ui-monospace,monospace;font-size:.92em;background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+
+/* ===== COMPOSANTS (snapshot de l'app) ===== */
+.btn{padding:9px 16px;border-radius:8px;border:none;font-weight:600;font-size:13px;cursor:pointer;font-family:var(--font);transition:var(--t-fast);display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:var(--ink);color:var(--bg);box-shadow:var(--sh-2)}
+.btn-primary:hover{background:var(--ink2)}
+.btn-ghost{background:var(--card);color:var(--ink);border:1px solid var(--line2)}
+.btn-ghost:hover{border-color:var(--ink)}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px}
+.icon-btn{border:1px solid var(--line);background:var(--card);border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:12.5px;transition:var(--t-fast)}
+.icon-btn:hover{border-color:var(--ink)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:var(--r-full);font-size:11.5px;font-weight:500;white-space:nowrap;border:1px solid var(--line2);background:var(--card);color:var(--ink2)}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--mut2)}
+.bg-projet{background:var(--ink);color:var(--bg);border-color:var(--ink)}.bg-projet::before{background:var(--bg)}
+.bg-salaire{background:var(--card);color:var(--ink);border-color:var(--ink)}.bg-salaire::before{background:var(--ink)}
+.bg-actif{background:#F1F1EE;border-color:transparent;color:#111110}.bg-actif::before{background:#111110}
+body.dark .bg-actif{background:#2A2A28;color:var(--ink)}body.dark .bg-actif::before{background:var(--ink)}
+.bg-pause::before{background:var(--mut2)}
+.bg-prospect{border-style:dashed}.bg-prospect::before{background:var(--mut2)}
+.bg-archive{color:var(--mut2)}.bg-archive::before{background:var(--line2)}
+.bg-retard{background:var(--card);color:var(--ink);border:1.5px solid var(--ink);font-weight:700}.bg-retard::before{background:var(--ink)}
+.bg-annule{color:var(--mut2);text-decoration:line-through}.bg-annule::before{background:var(--line2)}
+.chip{padding:7px 14px;border-radius:8px;border:1px solid var(--line2);background:var(--card);font-size:12.5px;font-weight:500;cursor:pointer;font-family:var(--font);transition:var(--t-fast);color:var(--ink2)}
+.chip:hover{border-color:var(--ink)}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.search{min-width:190px;padding:7px 14px;border-radius:8px;border:1px solid var(--line2);font-size:13px;font-family:var(--font);outline:none;background:var(--card);color:var(--ink)}
+.search:focus{border-color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--sh-1)}
+.card h3{font-size:13.5px;margin-bottom:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card h3::after{content:'';flex:1;height:1px;background:var(--line)}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--sh-1);min-width:200px}
+.stat .lbl{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--mut);margin-bottom:10px}
+.stat .val{font-size:26px;font-weight:700;letter-spacing:-.03em}
+.stat .sub{font-size:12px;color:var(--mut);margin-top:6px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--mut);padding:10px 12px;border-bottom:1px solid var(--line2);font-weight:600}
+td{padding:13px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(0,0,0,.02)}
+body.dark tr:hover td{background:#222220}
+.t-name{font-weight:600;font-size:13.5px}.t-sub{font-size:12px;color:var(--mut)}
+.avatar{width:30px;height:30px;border-radius:8px;background:var(--ink);color:var(--bg);display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700}
+.cell-flex{display:flex;align-items:center;gap:11px}
+.row-acts{display:flex;gap:6px}
+.progress-wrap{background:#EDEDEA;border-radius:var(--r-full);height:6px;overflow:hidden;max-width:280px}
+body.dark .progress-wrap{background:#2A2A28}
+.progress{height:100%;background:var(--ink);border-radius:var(--r-full)}
+.fld{max-width:280px}
+.fld label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:5px}
+.fld input,.fld select,.fld textarea{width:100%;padding:9px 12px;border:1px solid var(--line2);border-radius:8px;font-size:13.5px;font-family:var(--font);outline:none;background:var(--card);color:var(--ink);transition:var(--t-fast)}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(17,17,16,.07)}
+.hint{background:var(--bg);border:1px solid var(--line);padding:10px 13px;border-radius:8px;font-size:12px;color:var(--mut)}
+.toast-demo{display:inline-block;background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:var(--r-md);font-size:13px;font-weight:500;box-shadow:var(--sh-3)}
+.empty{text-align:center;padding:34px;color:var(--mut2)}
+.empty .big{font-size:32px;margin-bottom:8px;filter:grayscale(1);opacity:.7}
+.cal-cell{width:120px;min-height:88px;border:1px solid var(--line);padding:5px 6px;position:relative;background:var(--card);border-radius:6px}
+.cal-cell .dnum{font-size:11.5px;font-weight:600}
+.cal-cell.today .dnum{background:var(--ink);color:var(--bg);border-radius:6px;padding:1px 6px;display:inline-block}
+.cal-ev{font-size:10.5px;padding:2px 5px;border-radius:5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(0,0,0,.06);color:var(--ink)}
+body.dark .cal-ev{background:rgba(255,255,255,.1)}
+.cal-ev.late{background:#111110;color:#fff}
+.nf-item{padding:10px 14px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);max-width:340px}
+.nf-item .t{font-size:13px;font-weight:600}.nf-item .s{font-size:11.5px;color:var(--mut);margin-top:2px}
+.nf-item.late .t::before{content:'● ';color:#111110}
+body.dark .nf-item.late .t::before{color:#F1F1EE}
+.nf-item.soon .t::before{content:'○ ';color:var(--mut)}
+.sr-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;background:var(--card);border:1px solid var(--line);max-width:420px}
+.sr-item .t{font-size:13.5px;font-weight:600}.sr-item .s{font-size:11.5px;color:var(--mut2);margin-top:1px}
+.sr-item .k{font-size:10px;color:var(--mut2);border:1px solid var(--line);border-radius:5px;padding:2px 6px}
+.sr-item.sel{background:var(--ink);border-color:var(--ink)}
+.sr-item.sel .t,.sr-item.sel .s,.sr-item.sel .k{color:var(--bg);border-color:transparent}
+.sr-item mark{background:transparent;color:inherit;text-decoration:underline;text-underline-offset:2px;font-weight:800}
+.type-demo{border-bottom:1px solid var(--line);padding:8px 0;display:flex;align-items:baseline;gap:18px}
+.type-demo .lab{width:190px;flex-shrink:0;font-size:var(--fs-xs);color:var(--mut);font-family:ui-monospace,monospace}
+.sp-bar{background:var(--ink);height:14px;border-radius:3px}
+.r-demo{width:74px;height:54px;background:var(--card);border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:var(--fs-2xs);color:var(--mut)}
+.sh-demo{width:150px;height:70px;background:var(--card);border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;font-size:var(--fs-xs);color:var(--mut)}
+.ico{display:inline-flex;flex-direction:column;align-items:center;gap:6px;padding:10px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);min-width:82px}
+.ico span:first-child{font-size:17px}
+.ico span:last-child{font-size:var(--fs-2xs);color:var(--mut)}
+.theme-btn{position:fixed;top:18px;right:18px;z-index:10}
+</style>
+</head>
+<body>
+<button class="btn btn-ghost theme-btn" onclick="document.body.classList.toggle('dark');localStorage.setItem('ds_dark',document.body.classList.contains('dark')?'1':'0')">◐ Light / Dark</button>
+<div class="ds-wrap">
+
+<div class="ds-head">
+  <div>
+    <div class="ds-logo">THE’<b>Y</b></div>
+    <div class="ds-sub">DESIGN SYSTEM · V1 · SPRINT 18</div>
+  </div>
+  <div class="t-sub">Catalogue vivant — snapshot app v31 · règles: <code>docs/DESIGN_SYSTEM.md</code></div>
+</div>
+
+<!-- ===================== COULEURS ===================== -->
+<div class="ds-section">
+  <h2>01 · Couleurs</h2>
+  <p>Palette monochrome « Swiss ». 9 tokens sémantiques, redéfinis par <code>body.dark</code>. Les aliases hérités (<code>--nuit --bleu --rouge…</code>) sont dépréciés.</p>
+  <div class="ds-grid" id="colors"></div>
+  <div class="ds-note">⚠ Dette documentée : <code>--rouge</code> vaut <code>#111110</code> (noir) — les états « retard » n'ont pas de vraie couleur d'alerte, et deviennent quasi invisibles en dark mode. Décision à prendre en phase redesign : introduire <code>--danger</code>.</div>
+</div>
+
+<!-- ===================== TYPO ===================== -->
+<div class="ds-section">
+  <h2>02 · Typographie</h2>
+  <p>Inter (400 / 500 / 600 / 700 / 800). Échelle officielle — letterspacing négatif sur les titres (−.02em / −.03em), positif sur les labels uppercase (+.6px).</p>
+  <div class="card">
+    <div class="type-demo"><span class="lab">--fs-3xl · 30px · 800</span><span style="font-size:var(--fs-3xl);font-weight:800;letter-spacing:-.02em">Facture N° AE-2026-001</span></div>
+    <div class="type-demo"><span class="lab">--fs-2xl · 26px · 700</span><span style="font-size:var(--fs-2xl);font-weight:700;letter-spacing:-.03em">12 500 DH</span></div>
+    <div class="type-demo"><span class="lab">--fs-xl · 22px · 700</span><span style="font-size:var(--fs-xl);font-weight:700;letter-spacing:-.02em">Dashboard</span></div>
+    <div class="type-demo"><span class="lab">--fs-lg · 16px · 700</span><span style="font-size:var(--fs-lg);font-weight:700">Titre de modal</span></div>
+    <div class="type-demo"><span class="lab">--fs-md · 15px · 600</span><span style="font-size:var(--fs-md);font-weight:600">Sous-titre de section</span></div>
+    <div class="type-demo"><span class="lab">--fs-base · 13.5px · 400</span><span>Texte courant de l'application — lisible et dense.</span></div>
+    <div class="type-demo"><span class="lab">--fs-sm · 12px · 400</span><span style="font-size:var(--fs-sm);color:var(--mut)">Texte secondaire (.t-sub)</span></div>
+    <div class="type-demo"><span class="lab">--fs-xs · 11px · 600 · caps</span><span style="font-size:var(--fs-xs);font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--mut)">Label de carte KPI</span></div>
+    <div class="type-demo" style="border-bottom:none"><span class="lab">--fs-2xs · 10px · 600 · caps</span><span style="font-size:var(--fs-2xs);font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:var(--mut2)">Label de navigation</span></div>
+  </div>
+</div>
+
+<!-- ===================== ESPACEMENT ===================== -->
+<div class="ds-section">
+  <h2>03 · Espacement</h2>
+  <p>Échelle base 4px. Usages canoniques : gap cards 14–16px · padding cards 18–22px · padding page 26–36px.</p>
+  <div class="card" id="spacing"></div>
+</div>
+
+<!-- ===================== RAYONS & OMBRES ===================== -->
+<div class="ds-section">
+  <h2>04 · Rayons & Ombres</h2>
+  <p>Rayons : sm 8 (contrôles) · md 10 (toast) · lg 12 (cards, défaut) · xl 14 (modals) · full 999 (badges, progress).</p>
+  <div class="ds-row" style="margin-bottom:22px">
+    <div class="r-demo" style="border-radius:var(--r-sm)">8</div>
+    <div class="r-demo" style="border-radius:var(--r-md)">10</div>
+    <div class="r-demo" style="border-radius:var(--r-lg)">12</div>
+    <div class="r-demo" style="border-radius:var(--r-xl)">14</div>
+    <div class="r-demo" style="border-radius:var(--r-full);width:110px">999</div>
+  </div>
+  <div class="ds-row">
+    <div class="sh-demo" style="box-shadow:var(--sh-1)">--sh-1 · cards</div>
+    <div class="sh-demo" style="box-shadow:var(--sh-2)">--sh-2 · btn primary</div>
+    <div class="sh-demo" style="box-shadow:var(--sh-3)">--sh-3 · toast</div>
+    <div class="sh-demo" style="box-shadow:var(--sh-4)">--sh-4 · modal</div>
+    <div class="sh-demo" style="box-shadow:var(--sh-5)">--sh-5 · palette Ctrl+K</div>
+  </div>
+</div>
+
+<!-- ===================== MOTION ===================== -->
+<div class="ds-section">
+  <h2>05 · Motion</h2>
+  <p><code>--t-fast .13s</code> hover des contrôles · <code>--t-base .16s</code> apparition des modals (pop: translateY 8px + fade) · <code>--t-med .22s</code> toast & transitions larges. Jamais d'animation &gt; 300ms.</p>
+</div>
+
+<!-- ===================== BOUTONS ===================== -->
+<div class="ds-section">
+  <h2>06 · Boutons</h2>
+  <p>3 variantes × 2 tailles + bouton icône. États : repos / hover (survoler) / focus clavier.</p>
+  <div class="ds-row">
+    <button class="btn btn-primary">＋ Client jdid</button>
+    <button class="btn btn-ghost">Annuler</button>
+    <button class="btn btn-primary btn-sm">Salit ✓</button>
+    <button class="btn btn-ghost btn-sm">Aujourd'hui</button>
+    <button class="icon-btn" title="Modifier">✏️</button>
+    <button class="icon-btn" title="Supprimer">🗑️</button>
+    <button class="icon-btn" title="Fiche">👁</button>
+  </div>
+  <div class="ds-note">Dette : pas d'état <code>disabled</code> défini · <code>.btn-danger</code> est visuellement identique à <code>.btn-ghost</code> (pas de sémantique destructive).</div>
+</div>
+
+<!-- ===================== BADGES ===================== -->
+<div class="ds-section">
+  <h2>07 · Badges de statut</h2>
+  <p>Style « dot » : pastille 6px + libellé. Encodage par contraste (plein = accompli, contour fort = alerte, dashed = prospect).</p>
+  <div class="ds-row">
+    <span class="badge bg-actif">Actif</span>
+    <span class="badge bg-pause">En pause</span>
+    <span class="badge bg-prospect">Prospect</span>
+    <span class="badge bg-archive">Archivé</span>
+    <span class="badge bg-projet">Par projet</span>
+    <span class="badge bg-salaire">Salaire</span>
+    <span class="badge bg-projet">Payé</span>
+    <span class="badge">En attente</span>
+    <span class="badge bg-retard">En retard</span>
+    <span class="badge bg-actif">En cours</span>
+    <span class="badge bg-salaire">Livré</span>
+    <span class="badge bg-projet">Terminé & payé</span>
+    <span class="badge bg-annule">Annulé</span>
+  </div>
+</div>
+
+<!-- ===================== CHIPS & RECHERCHE ===================== -->
+<div class="ds-section">
+  <h2>08 · Filtres (chips) & champ de recherche</h2>
+  <div class="ds-row">
+    <button class="chip on">Kolchi</button>
+    <button class="chip">Par projet</button>
+    <button class="chip">Salaire mensuel</button>
+    <input class="search" placeholder="9elleb 3la client…">
+  </div>
+</div>
+
+<!-- ===================== FORMULAIRES ===================== -->
+<div class="ds-section">
+  <h2>09 · Formulaires</h2>
+  <p>Label 12px/600 + champ 13.5px. Focus : bordure ink + halo 3px 7%.</p>
+  <div class="ds-row" style="align-items:flex-start">
+    <div class="fld"><label>Smiya dyal le client *</label><input placeholder="ex: Mouhamed — Data Funnel Pro"></div>
+    <div class="fld"><label>Statut</label><select><option>Actif</option><option>En pause</option></select></div>
+    <div class="fld"><label>Notes</label><textarea rows="2" placeholder="ex: kayjib les projets mn France…"></textarea></div>
+  </div>
+  <div class="hint" style="max-width:560px;margin-top:14px">Client <b>par projet</b> = koula khedma b prix. Client <b>salaire</b> = flous fixes koula chher.</div>
+</div>
+
+<!-- ===================== CARDS & KPI ===================== -->
+<div class="ds-section">
+  <h2>10 · Cards & KPI</h2>
+  <div class="ds-row" style="align-items:stretch">
+    <div class="stat"><div class="lbl">Total encaissé</div><div class="val">14 300 DH</div><div class="sub">Had chher: 3 100 DH</div></div>
+    <div class="stat"><div class="lbl">Clients actifs</div><div class="val">2</div><div class="sub">1 par projet · 1 salaire</div></div>
+    <div class="card" style="flex:1;min-width:280px"><h3>Projets en cours</h3>
+      <div class="t-name">Pack Logo & Charte <span class="t-sub">— Mouhamed K.</span></div>
+      <div class="t-sub" style="margin:6px 0 8px">300 DH / 600 DH mkhelless (50%) · Deadline: 10 juil. 2026</div>
+      <div class="progress-wrap"><div class="progress" style="width:50%"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TABLE ===================== -->
+<div class="ds-section">
+  <h2>11 · Table</h2>
+  <div class="card" style="padding:0 8px">
+    <table>
+      <thead><tr><th>Client</th><th>Type</th><th>Statut</th><th>Total encaissé</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td><div class="cell-flex"><span class="avatar">MK</span><div><div class="t-name">Mouhamed K. — DATA FUNNEL PRO</div><div class="t-sub">contact@datafunnelpro.com</div></div></div></td>
+          <td><span class="badge bg-projet">Par projet</span></td>
+          <td><span class="badge bg-actif">Actif</span></td>
+          <td><b>12 300 DH</b></td>
+          <td><div class="row-acts"><button class="icon-btn">👁</button><button class="icon-btn">✏️</button><button class="icon-btn">🗑️</button></div></td>
+        </tr>
+        <tr>
+          <td><div class="cell-flex"><span class="avatar">CE</span><div><div class="t-name">Client Exemple — Retainer</div><div class="t-sub">retainer mensuel</div></div></div></td>
+          <td><span class="badge bg-salaire">Salaire</span></td>
+          <td><span class="badge bg-retard">En retard</span></td>
+          <td><b>2 000 DH</b></td>
+          <td><div class="row-acts"><button class="icon-btn">👁</button><button class="icon-btn">✏️</button><button class="icon-btn">🗑️</button></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===================== FEEDBACK ===================== -->
+<div class="ds-section">
+  <h2>12 · Feedback — toast & état vide</h2>
+  <div class="ds-row" style="align-items:flex-start">
+    <span class="toast-demo">Client t-sauvegarda ✓</span>
+    <div class="card" style="flex:1;min-width:260px;padding:0"><div class="empty"><div class="big">◈</div>Ma kayn 7ta paiement hna</div></div>
+  </div>
+</div>
+
+<!-- ===================== CALENDRIER / NOTIFS / SEARCH ===================== -->
+<div class="ds-section">
+  <h2>13 · Calendrier · Notifications · Recherche</h2>
+  <div class="ds-row" style="align-items:flex-start">
+    <div class="cal-cell today"><span class="dnum">13</span>
+      <div class="cal-ev">Réunion brief — Atlas</div>
+      <div class="cal-ev late">Solde site vitrine</div>
+    </div>
+    <div>
+      <div class="nf-item late" style="margin-bottom:8px"><div class="t">Solde site vitrine — 1 500 DH</div><div class="s">Paiements · fat le délai (08 juil. 2026)</div></div>
+      <div class="nf-item soon"><div class="t">Design 4 posts Instagram</div><div class="s">Tâches · aujourd'hui</div></div>
+    </div>
+    <div>
+      <div class="sr-item sel" style="margin-bottom:8px"><div><div class="t"><mark>Mou</mark>hamed K. — DATA FUNNEL PRO</div><div class="s">Identité visuelle complète</div></div><div class="k">Clients</div></div>
+      <div class="sr-item"><div><div class="t">Pack Logo & Charte</div><div class="s">Mouhamed K. · Livré</div></div><div class="k">Projets</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ICONOGRAPHIE ===================== -->
+<div class="ds-section">
+  <h2>14 · Iconographie (état actuel)</h2>
+  <p>Mélange de glyphes géométriques (nav) et d'emojis (actions) — unification prévue en phase redesign (pistes: set géométrique custom SVG, monochrome, 1.5px stroke).</p>
+  <div class="ds-row">
+    <span class="ico"><span>▦</span><span>dashboard / cal.</span></span>
+    <span class="ico"><span>◉</span><span>clients</span></span>
+    <span class="ico"><span>✓</span><span>tâches</span></span>
+    <span class="ico"><span>▤</span><span>projets</span></span>
+    <span class="ico"><span>◈</span><span>paiements</span></span>
+    <span class="ico"><span>✏️</span><span>modifier</span></span>
+    <span class="ico"><span>🗑️</span><span>supprimer</span></span>
+    <span class="ico"><span>👁</span><span>fiche</span></span>
+    <span class="ico"><span>🧾</span><span>facture</span></span>
+    <span class="ico"><span>📦</span><span>BL</span></span>
+    <span class="ico"><span>🔔</span><span>notifications</span></span>
+    <span class="ico"><span>🔍</span><span>recherche</span></span>
+    <span class="ico"><span>☁</span><span>sync cloud</span></span>
+    <span class="ico"><span>🌙</span><span>thème</span></span>
+  </div>
+</div>
+
+</div>
+<script>
+/* swatches couleurs */
+const COLORS=[
+ ['--ink','Texte principal / accent'],['--ink2','Texte secondaire fort'],
+ ['--mut','Texte atténué'],['--mut2','Texte très atténué'],
+ ['--line','Bordures'],['--line2','Bordures contrôles'],
+ ['--bg','Fond de page'],['--card','Surfaces'],['--side','Sidebar (fixe)']
+];
+function renderColors(){
+ const cs=getComputedStyle(document.body);
+ document.getElementById('colors').innerHTML=COLORS.map(([v,d])=>
+  `<div class="ds-spec"><div class="sw" style="background:var(${v})"></div><div class="nm">${v}</div><div class="vl">${cs.getPropertyValue(v).trim()}</div><div class="vl" style="font-family:var(--font)">${d}</div></div>`).join('');
+}
+const SPACES=[['--sp-1',4],['--sp-2',8],['--sp-3',12],['--sp-4',16],['--sp-5',20],['--sp-6',24],['--sp-8',32],['--sp-10',40]];
+document.getElementById('spacing').innerHTML=SPACES.map(([v,px])=>
+ `<div style="display:flex;align-items:center;gap:14px;padding:5px 0"><span style="width:90px;font-size:var(--fs-xs);color:var(--mut);font-family:ui-monospace,monospace">${v}</span><div class="sp-bar" style="width:${px*4}px"></div><span style="font-size:var(--fs-xs);color:var(--mut2)">${px}px</span></div>`).join('');
+if(localStorage.getItem('ds_dark')==='1')document.body.classList.add('dark');
+renderColors();
+new MutationObserver(renderColors).observe(document.body,{attributes:true,attributeFilter:['class']});
+</script>
+</body>
+</html>

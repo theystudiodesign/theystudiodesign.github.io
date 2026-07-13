@@ -17,10 +17,38 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
+  /* ============================================================
+     THE'Y DESIGN TOKENS v1 (Sprint 18) — source de vérité: docs/DESIGN_SYSTEM.md
+     Catalogue vivant: docs/design-system.html
+     Règle: tout NOUVEAU style doit consommer ces tokens.
+     Les styles existants migreront écran par écran en phase redesign.
+     ============================================================ */
+  /* -- Couleurs sémantiques (thème clair; body.dark les redéfinit) -- */
   --ink:#111110; --ink2:#2A2A28; --mut:#6F6F6C; --mut2:#9A9A96;
   --line:#E8E8E5; --line2:#D9D9D5; --bg:#F7F7F4; --card:#FFFFFF;
-  --side:#0F0F0E; --radius:12px;
-  /* aliases khedamin f JS */
+  --side:#0F0F0E;
+  /* -- Typographie -- */
+  --font:'Inter',sans-serif;
+  --fs-2xs:10px; --fs-xs:11px; --fs-sm:12px; --fs-base:13.5px;
+  --fs-md:15px; --fs-lg:16px; --fs-xl:22px; --fs-2xl:26px; --fs-3xl:30px;
+  /* -- Espacement (échelle 4px) -- */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px;
+  /* -- Rayons -- */
+  --radius:12px; --r-sm:8px; --r-md:10px; --r-lg:12px; --r-xl:14px; --r-full:999px;
+  /* -- Ombres (élévation 1→5) -- */
+  --sh-1:0 1px 2px rgba(17,17,16,.04);
+  --sh-2:0 1px 2px rgba(17,17,16,.18);
+  --sh-3:0 12px 32px rgba(17,17,16,.35);
+  --sh-4:0 20px 50px rgba(17,17,16,.25);
+  --sh-5:0 24px 64px rgba(0,0,0,.28);
+  /* -- Motion -- */
+  --t-fast:.13s; --t-base:.16s; --t-med:.22s;
+  /* -- Z-index (échelle documentée: sidebar 20 · overlay 50 · toast 99 ·
+        facture 300 · day-panel 350 · notif 360 · search 400 · auth 500 · diag 600 · lock 9999) -- */
+  --z-side:20; --z-overlay:50; --z-toast:99; --z-doc:300; --z-panel:350;
+  --z-notif:360; --z-search:400; --z-auth:500; --z-diag:600; --z-lock:9999;
+  /* -- DÉPRÉCIÉ (aliases hérités, valeurs figées — NE PAS utiliser dans du nouveau code;
+        remplacement par tokens sémantiques prévu en phase redesign) -- */
   --nuit:#111110; --bleu:#111110; --cyan:#9A9A96; --orange:#111110;
   --vert:#111110; --rouge:#111110; --jaune:#6F6F6C;
 }
