@@ -27,6 +27,8 @@
   --ink:#111110; --ink2:#2A2A28; --mut:#6F6F6C; --mut2:#9A9A96;
   --line:#E8E8E5; --line2:#D9D9D5; --bg:#F7F7F4; --card:#FFFFFF;
   --side:#0F0F0E;
+  /* -- Accents sémantiques (Sprint 19 — décision: base monochrome + 4 accents d'état) -- */
+  --danger:#B04A3E; --success:#3E7C4F; --warning:#B08834; --info:#3E6B8F;
   /* -- Typographie -- */
   --font:'Inter',sans-serif;
   --fs-2xs:10px; --fs-xs:11px; --fs-sm:12px; --fs-base:13.5px;
@@ -47,10 +49,10 @@
         facture 300 · day-panel 350 · notif 360 · search 400 · auth 500 · diag 600 · lock 9999) -- */
   --z-side:20; --z-overlay:50; --z-toast:99; --z-doc:300; --z-panel:350;
   --z-notif:360; --z-search:400; --z-auth:500; --z-diag:600; --z-lock:9999;
-  /* -- DÉPRÉCIÉ (aliases hérités, valeurs figées — NE PAS utiliser dans du nouveau code;
-        remplacement par tokens sémantiques prévu en phase redesign) -- */
-  --nuit:#111110; --bleu:#111110; --cyan:#9A9A96; --orange:#111110;
-  --vert:#111110; --rouge:#111110; --jaune:#6F6F6C;
+  /* -- Aliases hérités → re-pointés vers les accents sémantiques (Sprint 19).
+        NE PAS utiliser dans du nouveau code (préférer --danger/--success/--warning/--info). -- */
+  --nuit:var(--ink); --bleu:var(--info); --cyan:var(--mut2); --orange:var(--warning);
+  --vert:var(--success); --rouge:var(--danger); --jaune:var(--warning);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);font-size:13.5px;-webkit-font-smoothing:antialiased}
@@ -138,13 +140,13 @@ tr:hover td{background:#FAFAF8}
 .bg-paye{background:var(--ink);color:#fff;border-color:var(--ink)}
 .bg-paye::before{background:#fff}
 .bg-attente{background:#fff;color:var(--ink)}
-.bg-attente::before{background:var(--mut2)}
-.bg-retard{background:#fff;color:var(--ink);border:1.5px solid var(--ink);font-weight:700}
-.bg-retard::before{background:var(--ink)}
+.bg-attente::before{background:var(--warning)}
+.bg-retard{background:#fff;color:var(--danger);border:1.5px solid var(--danger);font-weight:700}
+.bg-retard::before{background:var(--danger)}
 .bg-encours{background:#F1F1EE;border-color:transparent;color:var(--ink)}
 .bg-encours::before{background:var(--ink)}
 .bg-livre{background:#fff;color:var(--ink);border-color:var(--ink)}
-.bg-livre::before{background:var(--ink)}
+.bg-livre::before{background:var(--success)}
 .bg-termine{background:var(--ink);color:#fff;border-color:var(--ink)}
 .bg-termine::before{background:#fff}
 .bg-brief::before{background:var(--mut2)}
@@ -172,7 +174,7 @@ tr:hover td{background:#FAFAF8}
 .fld input,.fld select,.fld textarea{width:100%;padding:9px 12px;border:1px solid var(--line2);border-radius:8px;font-size:13.5px;font-family:'Inter',sans-serif;outline:none;background:#fff;transition:.13s}
 .fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(17,17,16,.07)}
 .modal .acts{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
-.hint{grid-column:1/-1;background:#F7F7F4;border:1px solid var(--line);padding:10px 13px;border-radius:8px;font-size:12px;color:var(--mut)}
+.hint{grid-column:1/-1;background:#F7F7F4;border:1px solid var(--line);border-left:3px solid var(--info);padding:10px 13px;border-radius:8px;font-size:12px;color:var(--mut)}
 
 /* ===== MISC ===== */
 .row-acts{display:flex;gap:6px}
@@ -215,10 +217,20 @@ tr:hover td{background:#FAFAF8}
 .toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 12px 32px rgba(17,17,16,.35);opacity:0;transform:translateY(12px);transition:.22s;z-index:99}
 .toast.show{opacity:1;transform:translateY(0)}
 
+/* ===== ICONS (Sprint 19 — famille SVG unique) ===== */
+.i{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;vertical-align:-2.5px}
+.nav-btn .ic .i{width:16px;height:16px}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center}
+.icon-btn .i{width:14px;height:14px}
+.empty .i{width:30px;height:30px;stroke-width:1.4;opacity:.55}
+.btn .i{margin-left:-2px}
+.prio-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;flex-shrink:0}
+
 /* ===== DARK MODE ===== */
 body.dark{
   --ink:#F1F1EE; --ink2:#D9D9D5; --mut:#9A9A96; --mut2:#6F6F6C;
   --line:#2A2A28; --line2:#3A3A38; --bg:#141413; --card:#1C1C1B;
+  --danger:#D98A7E; --success:#7FB08D; --warning:#D4B36A; --info:#8FB3D4;
 }
 body.dark .btn-primary{background:#F1F1EE;color:#111110}
 body.dark .btn-primary:hover{background:#fff}
@@ -293,30 +305,32 @@ body.dark .toast{background:#F1F1EE;color:#111110}
 .cal-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .cal-nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .cal-nav select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card,#fff);color:var(--ink);font-family:'Inter',sans-serif;font-size:12.5px}
-.cal-vbtn{border:1px solid var(--line)!important;background:transparent;color:var(--muted)}
+.cal-vbtn{border:1px solid var(--line)!important;background:transparent;color:var(--mut)}
 .cal-vbtn.active{background:var(--ink);color:var(--bg,#F7F7F4);border-color:var(--ink)!important}
 .cal-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
-.cal-chip{border:1px solid var(--line);border-radius:20px;padding:4px 12px;font-size:11.5px;cursor:pointer;color:var(--muted);background:transparent;font-family:'Inter',sans-serif}
+.cal-chip{border:1px solid var(--line);border-radius:20px;padding:4px 12px;font-size:11.5px;cursor:pointer;color:var(--mut);background:transparent;font-family:'Inter',sans-serif}
 .cal-chip.on{background:var(--ink);color:var(--bg,#F7F7F4);border-color:var(--ink)}
 .cal-filters select{padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--ink);font-size:11.5px;font-family:'Inter',sans-serif}
-.cal-head7{display:grid;grid-template-columns:repeat(7,1fr);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:center;padding-bottom:6px}
+.cal-head7{display:grid;grid-template-columns:repeat(7,1fr);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);text-align:center;padding-bottom:6px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
 .cal-cell{min-height:88px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 6px;cursor:pointer;position:relative}
 .cal-cell:hover{background:rgba(0,0,0,.03)}
 body.dark .cal-cell:hover{background:rgba(255,255,255,.05)}
 .cal-cell .dnum{font-size:11.5px;font-weight:600;color:var(--ink)}
-.cal-cell.out .dnum{color:var(--muted);opacity:.45}
+.cal-cell.out .dnum{color:var(--mut);opacity:.45}
 .cal-cell.today .dnum{background:var(--ink);color:var(--bg,#F7F7F4);border-radius:6px;padding:1px 6px;display:inline-block}
 .cal-ev{font-size:10.5px;padding:2px 5px;border-radius:5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(0,0,0,.06);color:var(--ink)}
 body.dark .cal-ev{background:rgba(255,255,255,.1)}
-.cal-ev.late{background:var(--rouge,#C0392B);color:#fff}
-.cal-more{font-size:10px;color:var(--muted);margin-top:2px}
+body.dark .cal-ev.late{color:#141413}
+body.dark #notifBadge{color:#141413}
+.cal-ev.late{background:var(--danger);color:#fff}
+.cal-more{font-size:10px;color:var(--mut);margin-top:2px}
 .cal-dots{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap}
 .cal-dot{width:6px;height:6px;border-radius:50%;background:var(--ink)}
-.cal-dot.late{background:var(--rouge,#C0392B)}
+.cal-dot.late{background:var(--danger)}
 .cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
 .cal-wday{border:1px solid var(--line);border-radius:10px;padding:8px;min-height:140px}
-.cal-wday h5{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.cal-wday h5{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:6px}
 .cal-wday.today{border-color:var(--ink)}
 #dayPanel{display:none;position:fixed;inset:0;z-index:350;background:rgba(17,17,16,.45)}
 #dayPanel.open{display:block}
@@ -326,7 +340,7 @@ body.dark .dp-inner{background:#1B1B1A}
 .dp-ev{padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .dp-ev:hover .t{text-decoration:underline}
 .dp-ev .t{font-size:13.5px;font-weight:600;color:var(--ink)}
-.dp-ev .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.dp-ev .s{font-size:11.5px;color:var(--mut);margin-top:2px}
 @media(max-width:700px){
   .cal-cell{min-height:56px;padding:4px}
   .cal-ev,.cal-more{display:none}
@@ -335,9 +349,9 @@ body.dark .dp-inner{background:#1B1B1A}
 @media(min-width:701px){.cal-dots{display:none}}
 
 /* ===== NOTIFICATIONS ===== */
-#notifBtn{position:relative;background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:13px;padding:5px 10px;cursor:pointer;margin-right:8px}
+#notifBtn{position:relative;background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--mut);font-size:13px;padding:5px 10px;cursor:pointer;margin-right:8px}
 #notifBtn:hover{color:var(--ink)}
-#notifBadge{position:absolute;top:-6px;right:-6px;background:var(--rouge,#C0392B);color:#fff;font-size:9.5px;font-weight:800;border-radius:9px;padding:1px 5px;display:none}
+#notifBadge{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;font-size:9.5px;font-weight:800;border-radius:9px;padding:1px 5px;display:none}
 #notifPanel{display:none;position:fixed;z-index:360;top:54px;right:16px;width:min(360px,92vw);background:var(--card,#fff);border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 48px rgba(0,0,0,.22);overflow:hidden}
 body.dark #notifPanel{background:#1B1B1A}
 #notifPanel.open{display:block}
@@ -347,9 +361,10 @@ body.dark #notifPanel{background:#1B1B1A}
 .nf-item:hover{background:rgba(0,0,0,.03)}
 body.dark .nf-item:hover{background:rgba(255,255,255,.05)}
 .nf-item .t{font-size:13px;font-weight:600;color:var(--ink)}
-.nf-item .s{font-size:11.5px;color:var(--muted);margin-top:2px}
-.nf-item.late .t::before{content:'● ';color:var(--rouge,#C0392B)}
-.nf-item.soon .t::before{content:'○ ';color:var(--muted)}
+.nf-item .s{font-size:11.5px;color:var(--mut);margin-top:2px}
+.nf-item .t::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px}
+.nf-item.late .t::before{background:var(--danger)}
+.nf-item.soon .t::before{background:transparent;box-shadow:inset 0 0 0 1.5px var(--mut)}
 
 /* ===== GLOBAL SEARCH (Ctrl+K) ===== */
 #searchWrap{display:none;position:fixed;inset:0;z-index:400;background:rgba(17,17,16,.5);backdrop-filter:blur(2px)}
@@ -357,18 +372,18 @@ body.dark .nf-item:hover{background:rgba(255,255,255,.05)}
 .search-box{width:100%;max-width:560px;background:var(--card,#fff);border:1px solid var(--line,#E8E8E5);border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.28)}
 #searchInput{width:100%;border:0;outline:none;background:transparent;color:var(--ink,#111);font-size:16px;padding:16px 18px;font-family:'Inter',sans-serif;border-bottom:1px solid var(--line,#E8E8E5)}
 #searchResults{max-height:52vh;overflow:auto;padding:6px}
-.sr-cat{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted,#9A9A96);padding:10px 12px 4px;font-weight:700}
+.sr-cat{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);padding:10px 12px 4px;font-weight:700}
 .sr-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer}
 .sr-item .t{font-size:13.5px;font-weight:600;color:var(--ink,#111)}
-.sr-item .s{font-size:11.5px;color:var(--muted,#9A9A96);margin-top:1px}
-.sr-item .k{font-size:10px;color:var(--muted,#9A9A96);border:1px solid var(--line,#E8E8E5);border-radius:5px;padding:2px 6px;white-space:nowrap}
+.sr-item .s{font-size:11.5px;color:var(--mut);margin-top:1px}
+.sr-item .k{font-size:10px;color:var(--mut);border:1px solid var(--line,#E8E8E5);border-radius:5px;padding:2px 6px;white-space:nowrap}
 .sr-item.sel{background:var(--ink,#111)}
 .sr-item.sel .t,.sr-item.sel .s,.sr-item.sel .k{color:#F7F7F4;border-color:transparent}
 .sr-item mark{background:transparent;color:inherit;text-decoration:underline;text-underline-offset:2px;font-weight:800}
-.sr-empty{padding:26px 12px;text-align:center;color:var(--muted,#9A9A96);font-size:13px}
-.search-foot{display:flex;gap:14px;padding:9px 14px;border-top:1px solid var(--line,#E8E8E5);font-size:10.5px;color:var(--muted,#9A9A96)}
+.sr-empty{padding:26px 12px;text-align:center;color:var(--mut);font-size:13px}
+.search-foot{display:flex;gap:14px;padding:9px 14px;border-top:1px solid var(--line,#E8E8E5);font-size:10.5px;color:var(--mut)}
 body.dark .search-box{background:#1B1B1A}
-#searchBtn{background:transparent;border:1px solid var(--line,#E8E8E5);border-radius:8px;color:var(--muted,#9A9A96);font-size:11.5px;padding:5px 10px;cursor:pointer;font-family:'Inter',sans-serif;margin-left:auto;margin-right:12px}
+#searchBtn{background:transparent;border:1px solid var(--line,#E8E8E5);border-radius:8px;color:var(--mut);font-size:11.5px;padding:5px 10px;cursor:pointer;font-family:'Inter',sans-serif;margin-left:auto;margin-right:12px}
 #searchBtn:hover{color:var(--ink,#111)}
 @media(max-width:600px){#searchWrap.open{padding-top:6vh}.search-foot{display:none}}
 @media print{
@@ -387,6 +402,36 @@ body.dark .search-box{background:#1B1B1A}
 <script src="supabase-config.js?v=22"></script>
 </head>
 <body>
+
+<!-- ===== THE'Y ICONS — famille SVG unique (Sprint 19). stroke 1.7, currentColor, 24×24.
+     Usage: <svg class="i"><use href="#i-nom"/></svg> ou icon('nom') en JS. Zéro emoji/unicode. -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6.6" height="6.6" rx="1.2"/><rect x="13.4" y="4" width="6.6" height="6.6" rx="1.2"/><rect x="4" y="13.4" width="6.6" height="6.6" rx="1.2"/><rect x="13.4" y="13.4" width="6.6" height="6.6" rx="1.2"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.6"/><path d="M4.8 19.5c0-3.6 3.2-5.6 7.2-5.6s7.2 2 7.2 5.6"/></symbol>
+  <symbol id="i-tasks" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2.4"/><path d="M8.3 12.3l2.6 2.7 5-5.6"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M4 7.2A1.7 1.7 0 0 1 5.7 5.5h4.1l2 2.4h6.5A1.7 1.7 0 0 1 20 9.6v7.2a1.7 1.7 0 0 1-1.7 1.7H5.7A1.7 1.7 0 0 1 4 16.8z"/></symbol>
+  <symbol id="i-diamond" viewBox="0 0 24 24"><path d="M12 3.4L20.6 12 12 20.6 3.4 12z"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5.4" width="16" height="14.6" rx="2"/><path d="M4 10.2h16M8.6 3.2v4.2M15.4 3.2v4.2"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6.2 15.5v-4.7a5.8 5.8 0 0 1 11.6 0v4.7l1.6 2.7H4.6zM9.9 20.7a2.4 2.4 0 0 0 4.2 0"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.4"/><path d="M15.8 15.8l4.6 4.6"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7.2 18.3a4.4 4.4 0 0 1-.5-8.8 6 6 0 0 1 11.6 1.4 3.7 3.7 0 0 1-.9 7.4z"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4 8.2 8.2 0 1 0 20 14.2z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.8"/><path d="M12 3.2v2.2M12 18.6v2.2M3.2 12h2.2M18.6 12h2.2M5.8 5.8l1.6 1.6M16.6 16.6l1.6 1.6M18.2 5.8l-1.6 1.6M7.4 16.6l-1.6 1.6"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.8 12S6.4 5.8 12 5.8 21.2 12 21.2 12 17.6 18.2 12 18.2 2.8 12 2.8 12z"/><circle cx="12" cy="12" r="2.9"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4.5 19.5l.9-3.8L16.6 4.5a2 2 0 0 1 2.9 2.9L8.3 18.6zM14.7 6.4l2.9 2.9"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.8 6.8h14.4M9.6 6.8V4.4h4.8v2.4M6.4 6.8l.9 12.8h9.4l.9-12.8M10 10.5v5.6M14 10.5v5.6"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6.2 3.6h7.6l4 4v12.8H6.2z M13.8 3.6V7.6h4M9.2 12.6h5.6M9.2 16h5.6"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M3.8 7.8L12 3.4l8.2 4.4v8.4L12 20.6l-8.2-4.4zM3.8 7.8L12 12.2l8.2-4.4M12 12.2v8.4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.8 12.8l4.8 4.8 9.6-11.2"/></symbol>
+  <symbol id="i-square" viewBox="0 0 24 24"><rect x="4.5" y="4.5" width="15" height="15" rx="2.4"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M7.8 4.6L3.6 8.8l4.2 4.2M3.6 8.8h10.6a5.6 5.6 0 0 1 0 11.2H8.8"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M14.4 5.6L8 12l6.4 6.4"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9.6 5.6L16 12l-6.4 6.4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4.8v14.4M4.8 12h14.4"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4.2L21.4 20H2.6zM12 10v4.6M12 17.4v.2"/></symbol>
+  <symbol id="i-printer" viewBox="0 0 24 24"><path d="M7 8V3.8h10V8M7 17H4.2V10a2 2 0 0 1 2-2h11.6a2 2 0 0 1 2 2v7H17M7 14.6h10v5.6H7z"/></symbol>
+</svg>
 
 <!-- ===== ÉCRAN DE VERROUILLAGE (PIN) ===== -->
 <div id="lockScreen" style="position:fixed;inset:0;background:#0F0F0E;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;font-family:'Inter',sans-serif">
@@ -410,14 +455,14 @@ body.dark .search-box{background:#1B1B1A}
       <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="setLogo(event)">
     </div>
     <div class="nav-lbl">Menu</div>
-    <button class="nav-btn active" data-tab="dash" onclick="go('dash')"><span class="ic">▦</span><span class="txt">Dashboard</span></button>
-    <button class="nav-btn" data-tab="clients" onclick="go('clients')"><span class="ic">◉</span><span class="txt">Clients</span></button>
-    <button class="nav-btn" data-tab="taches" onclick="go('taches')"><span class="ic">✓</span><span class="txt">Tâches</span></button>
-    <button class="nav-btn" data-tab="projets" onclick="go('projets')"><span class="ic">▤</span><span class="txt">Projets</span></button>
-    <button class="nav-btn" data-tab="paiements" onclick="go('paiements')"><span class="ic">◈</span><span class="txt">Paiements</span></button>
-    <button class="nav-btn" data-tab="calendrier" onclick="go('calendrier')"><span class="ic">▦</span><span class="txt">Calendrier</span></button>
+    <button class="nav-btn active" data-tab="dash" onclick="go('dash')"><span class="ic"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg></span><span class="txt">Dashboard</span></button>
+    <button class="nav-btn" data-tab="clients" onclick="go('clients')"><span class="ic"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg></span><span class="txt">Clients</span></button>
+    <button class="nav-btn" data-tab="taches" onclick="go('taches')"><span class="ic"><svg class="i" aria-hidden="true"><use href="#i-tasks"/></svg></span><span class="txt">Tâches</span></button>
+    <button class="nav-btn" data-tab="projets" onclick="go('projets')"><span class="ic"><svg class="i" aria-hidden="true"><use href="#i-folder"/></svg></span><span class="txt">Projets</span></button>
+    <button class="nav-btn" data-tab="paiements" onclick="go('paiements')"><span class="ic"><svg class="i" aria-hidden="true"><use href="#i-diamond"/></svg></span><span class="txt">Paiements</span></button>
+    <button class="nav-btn" data-tab="calendrier" onclick="go('calendrier')"><span class="ic"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg></span><span class="txt">Calendrier</span></button>
     <div class="foot">
-      <button id="themeBtn" onclick="toggleTheme()">🌙 Mode sombre</button>
+      <button id="themeBtn" onclick="toggleTheme()"><svg class="i" aria-hidden="true"><use href="#i-moon"/></svg> Mode sombre</button>
       <button onclick="openReports()">Rapports</button>
       <button onclick="openRestore()">Restore</button>
       <button onclick="exportData()">Export JSON</button>
@@ -429,14 +474,14 @@ body.dark .search-box{background:#1B1B1A}
 
   <!-- MAIN -->
   <main class="main">
-    <div class="topbar"><span><b>THE’Y STUDIO DESIGN</b> · Espace de gestion</span><button id="cloudStatus" onclick="openCloudDiag()" title="État de la synchronisation cloud — clic = diagnostic" style="display:none;background:none;border:none;cursor:pointer;font:inherit;font-size:12px;font-weight:600"></button><button id="notifBtn" onclick="toggleNotifs()" title="Notifications">🔔<span id="notifBadge"></span></button><button id="searchBtn" onclick="openSearch()">🔍 Recherche &nbsp;<b>Ctrl K</b></button><span id="topDate"></span></div>
-    <div id="backupBanner"><span>⚠️ <b>Backup:</b> <span id="backupBannerTxt"></span></span><button onclick="exportData()">Export daba</button><button class="bb-x" onclick="dismissBackup()">✕</button></div>
+    <div class="topbar"><span><b>THE’Y STUDIO DESIGN</b> · Espace de gestion</span><button id="cloudStatus" onclick="openCloudDiag()" title="État de la synchronisation cloud — clic = diagnostic" style="display:none;background:none;border:none;cursor:pointer;font:inherit;font-size:12px;font-weight:600"></button><button id="notifBtn" onclick="toggleNotifs()" title="Notifications"><svg class="i" aria-hidden="true"><use href="#i-bell"/></svg><span id="notifBadge"></span></button><button id="searchBtn" onclick="openSearch()"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg> Recherche &nbsp;<b>Ctrl K</b></button><span id="topDate"></span></div>
+    <div id="backupBanner"><span><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg> <b>Backup:</b> <span id="backupBannerTxt"></span></span><button onclick="exportData()">Export daba</button><button class="bb-x" onclick="dismissBackup()"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></div>
 
     <!-- ====== DASHBOARD ====== -->
     <section id="tab-dash">
       <div class="page-head">
         <div><h1>Dashboard</h1><p>Vue d'ensemble dyal l'activité dyalek</p></div>
-        <button class="btn btn-primary" onclick="openClientModal()">＋ Client jdid</button>
+        <button class="btn btn-primary" onclick="openClientModal()"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg> Client jdid</button>
       </div>
       <div class="stats" id="statCards"></div>
       <div class="card"><h3>Revenus — 12 derniers mois</h3><div id="dashChart"></div></div>
@@ -464,7 +509,7 @@ body.dark .search-box{background:#1B1B1A}
     <section id="tab-clients" style="display:none">
       <div class="page-head">
         <div><h1>Clients</h1><p>Ga3 les clients dyalek — par projet o b salaire</p></div>
-        <button class="btn btn-primary" onclick="openClientModal()">＋ Zid client</button>
+        <button class="btn btn-primary" onclick="openClientModal()"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg> Zid client</button>
       </div>
       <div class="filters">
         <button class="chip on" data-f="all" onclick="setClientFilter('all',this)">Kolchi</button>
@@ -479,7 +524,7 @@ body.dark .search-box{background:#1B1B1A}
     <section id="tab-taches" style="display:none">
       <div class="page-head">
         <div><h1>Tâches</h1><p>Chno ghadi tkhdem exactement l koula client</p></div>
-        <button class="btn btn-primary" onclick="openTacheModal()">＋ Zid tâche</button>
+        <button class="btn btn-primary" onclick="openTacheModal()"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg> Zid tâche</button>
       </div>
       <div class="filters">
         <button class="chip on" data-f="all" onclick="setTacheFilter('all',this)">Kolchi</button>
@@ -495,7 +540,7 @@ body.dark .search-box{background:#1B1B1A}
     <section id="tab-projets" style="display:none">
       <div class="page-head">
         <div><h1>Projets</h1><p>Les projets dyal les clients "par projet"</p></div>
-        <button class="btn btn-primary" onclick="openProjetModal()">＋ Zid projet</button>
+        <button class="btn btn-primary" onclick="openProjetModal()"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg> Zid projet</button>
       </div>
       <div class="filters">
         <button class="chip on" data-f="all" onclick="setProjetFilter('all',this)">Kolchi</button>
@@ -510,7 +555,7 @@ body.dark .search-box{background:#1B1B1A}
     <section id="tab-paiements" style="display:none">
       <div class="page-head">
         <div><h1>Paiements</h1><p>Acomptes, soldes o salaires mensuels — b €, DH wla $</p></div>
-        <button class="btn btn-primary" onclick="openPayModal()">＋ Zid paiement</button>
+        <button class="btn btn-primary" onclick="openPayModal()"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg> Zid paiement</button>
       </div>
       <div class="filters">
         <button class="chip on" data-f="all" onclick="setPayFilter('all',this)">Kolchi</button>
@@ -524,14 +569,14 @@ body.dark .search-box{background:#1B1B1A}
     <section id="tab-calendrier" style="display:none">
       <div class="page-head">
         <div><h1>Calendrier</h1><p>Deadlines, échéances, réunions o livraisons — kolchi f blassa we7da</p></div>
-        <button class="btn btn-primary" onclick="openEventModal()">＋ Zid événement</button>
+        <button class="btn btn-primary" onclick="openEventModal()"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg> Zid événement</button>
       </div>
       <div class="card">
         <div class="cal-toolbar">
           <div class="cal-nav">
-            <button class="btn btn-ghost btn-sm" onclick="calMove(-1)">‹</button>
+            <button class="btn btn-ghost btn-sm" onclick="calMove(-1)"><svg class="i" aria-hidden="true"><use href="#i-chevron-left"/></svg></button>
             <button class="btn btn-ghost btn-sm" onclick="calToday()">Aujourd'hui</button>
-            <button class="btn btn-ghost btn-sm" onclick="calMove(1)">›</button>
+            <button class="btn btn-ghost btn-sm" onclick="calMove(1)"><svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
             <select id="calMonth" onchange="calJump()"></select>
             <select id="calYear" onchange="calJump()"></select>
           </div>
@@ -546,7 +591,7 @@ body.dark .search-box{background:#1B1B1A}
     </section>
 
     <!-- Day panel / bottom sheet -->
-    <div id="dayPanel"><div class="dp-inner"><div class="dp-head"><h3 id="dpTitle"></h3><button class="icon-btn" onclick="closeDayPanel()">✕</button></div><div id="dpBody"></div></div></div>
+    <div id="dayPanel"><div class="dp-inner"><div class="dp-head"><h3 id="dpTitle"></h3><button class="icon-btn" onclick="closeDayPanel()"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></div><div id="dpBody"></div></div></div>
 
   </main>
 </div>
@@ -554,7 +599,7 @@ body.dark .search-box{background:#1B1B1A}
 <!-- ===== MODAL CLIENT ===== -->
 <div class="overlay" id="clientModal">
   <div class="modal">
-    <h2 id="clientModalTitle">＋ Client jdid</h2>
+    <h2 id="clientModalTitle">Client jdid</h2>
     <div class="frm">
       <div class="fld full"><label>Smiya dyal le client *</label><input id="c_name" placeholder="ex: Mouhamed — Data Funnel Pro"></div>
       <div class="fld"><label>Type de collaboration *</label>
@@ -590,7 +635,7 @@ body.dark .search-box{background:#1B1B1A}
 <!-- ===== MODAL PROJET ===== -->
 <div class="overlay" id="projetModal">
   <div class="modal">
-    <h2 id="projetModalTitle">＋ Projet jdid</h2>
+    <h2 id="projetModalTitle">Projet jdid</h2>
     <div class="frm">
       <div class="fld full"><label>Smiya dyal le projet *</label><input id="p_name" placeholder="ex: Logo & charte graphique"></div>
       <div class="fld full"><label>Client *</label><select id="p_client"></select></div>
@@ -614,7 +659,7 @@ body.dark .search-box{background:#1B1B1A}
 <!-- ===== MODAL PAIEMENT ===== -->
 <div class="overlay" id="payModal">
   <div class="modal">
-    <h2 id="payModalTitle">＋ Paiement jdid</h2>
+    <h2 id="payModalTitle">Paiement jdid</h2>
     <div class="frm">
       <div class="fld full"><label>Libellé *</label><input id="y_label" placeholder="ex: Acompte 50% — Logo / Salaire Juillet"></div>
       <div class="fld"><label>Client *</label><select id="y_client" onchange="fillPayProjets()"></select></div>
@@ -645,16 +690,16 @@ body.dark .search-box{background:#1B1B1A}
 <!-- ===== MODAL TACHE ===== -->
 <div class="overlay" id="tacheModal">
   <div class="modal">
-    <h2 id="tacheModalTitle">＋ Tâche jdida</h2>
+    <h2 id="tacheModalTitle">Tâche jdida</h2>
     <div class="frm">
       <div class="fld full"><label>Ach khassek tkhdem? *</label><input id="t_label" placeholder="ex: Design 4 posts Instagram / Modifier le logo…"></div>
       <div class="fld"><label>Client *</label><select id="t_client" onchange="fillTacheProjets()"></select></div>
       <div class="fld"><label>Projet (optionnel)</label><select id="t_projet"><option value="">—</option></select></div>
       <div class="fld"><label>Statut</label>
-        <select id="t_statut"><option>À faire</option><option>En cours</option><option>Salit ✅</option></select>
+        <select id="t_statut"><option>À faire</option><option>En cours</option><option value="Salit ✅">Salit</option></select>
       </div>
       <div class="fld"><label>Priorité</label>
-        <select id="t_priorite"><option>🔴 Urgent</option><option selected>🟡 Normal</option><option>🟢 Machi zerban</option></select>
+        <select id="t_priorite"><option value="🔴 Urgent">Urgent</option><option value="🟡 Normal" selected>Normal</option><option value="🟢 Machi zerban">Machi zerban</option></select>
       </div>
       <div class="fld"><label>Deadline</label><input id="t_deadline" type="date"></div>
       <div class="fld"><label></label></div>
@@ -787,10 +832,10 @@ function cloudOnSave(){ // hook save(): marque dirty + push debounce si connect�
 function cloudStatus(s){
   Cloud.status=s;
   const el=document.getElementById('cloudStatus');if(!el)return;
-  const M={local:['',''],off:['☁ déconnecté','#9A9A96'],ok:['☁ sync ✓','#3E7C4F'],
-           pending:['☁ en attente…','#B08834'],err:['☁ erreur — diagnostic','#B04A3E']};
+  const M={local:['',''],off:['déconnecté','var(--mut2)'],ok:['sync OK','var(--success)'],
+           pending:['en attente…','var(--warning)'],err:['erreur — diagnostic','var(--danger)']};
   const v=M[s]||['',''];
-  el.textContent=v[0];el.style.color=v[1];el.style.display=v[0]?'':'none';
+  el.innerHTML=v[0]?icon('cloud')+' '+v[0]:'';el.style.color=v[1];el.style.display=v[0]?'':'none';
 }
 /* ----- init ----- */
 async function cloudInit(){
@@ -803,11 +848,11 @@ async function cloudInit(){
     if(!session){cloudStatus('off');showAuthGate();return}
     Cloud.user=session.user;
     await cloudPull();
-    toast('☁️ Sync cloud activée');
+    toast('Sync cloud activée');
   }catch(e){
     console.warn('Cloud off:',e);cloudStatus('err');
     cloudDiagChecks().then(r=>console.table(r)).catch(()=>{});
-    toast('☁️ Cloud non joignable — mode local (clic sur ☁ pour le diagnostic)');
+    toast('Cloud non joignable — mode local (clic sur l’indicateur cloud pour le diagnostic)');
   }
 }
 /* ----- resync automatique ----- */
@@ -955,7 +1000,7 @@ function showAuthGate(){
 }
 function skipCloud(){
   const g=document.getElementById('authGate');if(g)g.remove();
-  cloudStatus('off');toast('Mode local — clic sur ☁ pour reconnecter');
+  cloudStatus('off');toast('Mode local — clic sur l’indicateur cloud pour reconnecter');
 }
 const AUTH_ERR_MAP=[
   [/invalid login credentials/i,'Email wla mot de passe ghalat'],
@@ -977,7 +1022,7 @@ async function authGo(signup){
     if(signup&&!data.session){msg.textContent='Compte créé — confirme l’email puis reconnecte-toi';return}
     Cloud.user=data.session.user;
     document.getElementById('authGate').remove();
-    await cloudPull();toast('☁️ Connecté');
+    await cloudPull();toast('Cloud connecté');
   }catch(e){msg.textContent=authErrMsg(String(e&&e.message||e))}
 }
 /* ----- diagnostic automatique ----- */
@@ -1025,13 +1070,13 @@ async function openCloudDiag(){
   let d=document.getElementById('cloudDiag');if(d)d.remove();
   d=document.createElement('div');d.id='cloudDiag';
   d.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center';
-  d.innerHTML='<div style="width:min(460px,92vw);max-height:80vh;overflow:auto;background:var(--card,#fff);color:var(--ink,#111);border-radius:14px;padding:20px;font-family:\'Inter\',sans-serif"><b>☁ Diagnostic cloud</b><div id="cd_body" style="margin-top:10px;font-size:13px">Vérification…</div><div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">'+(Cloud.user?'<button class="btn btn-ghost" onclick="cloudLogout()">Se déconnecter</button>':(Cloud.enabled()?'<button class="btn btn-ghost" onclick="document.getElementById(&quot;cloudDiag&quot;).remove();showAuthGate()">Se connecter</button>':''))+'<button class="btn btn-primary" onclick="document.getElementById(\'cloudDiag\').remove()">Fermer</button></div></div>';
+  d.innerHTML='<div style="width:min(460px,92vw);max-height:80vh;overflow:auto;background:var(--card,#fff);color:var(--ink,#111);border-radius:14px;padding:20px;font-family:\'Inter\',sans-serif"><b>Diagnostic cloud</b><div id="cd_body" style="margin-top:10px;font-size:13px">Vérification…</div><div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">'+(Cloud.user?'<button class="btn btn-ghost" onclick="cloudLogout()">Se déconnecter</button>':(Cloud.enabled()?'<button class="btn btn-ghost" onclick="document.getElementById(&quot;cloudDiag&quot;).remove();showAuthGate()">Se connecter</button>':''))+'<button class="btn btn-primary" onclick="document.getElementById(\'cloudDiag\').remove()">Fermer</button></div></div>';
   d.addEventListener('click',e=>{if(e.target===d)d.remove()});
   document.body.appendChild(d);
   const checks=await cloudDiagChecks();
   document.getElementById('cd_body').innerHTML=checks.map(c=>
-    '<div style="padding:8px 0;border-bottom:1px solid var(--line,#eee)"><span style="color:'+(c.ok?'#3E7C4F':'#B04A3E')+'">'+(c.ok?'✓':'✗')+'</span> '+esc(c.label)+
-    (c.fix?'<div style="margin-top:4px;color:#B04A3E">→ '+esc(c.fix)+'</div>':'')+'</div>').join('')||'RAS';
+    '<div style="padding:8px 0;border-bottom:1px solid var(--line,#eee)"><span style="color:'+(c.ok?'var(--success)':'var(--danger)')+'">'+icon(c.ok?'check':'x')+'</span> '+esc(c.label)+
+    (c.fix?'<div style="margin-top:4px;color:var(--danger)">→ '+esc(c.fix)+'</div>':'')+'</div>').join('')||'RAS';
 }
 async function cloudLogout(){
   try{if(Cloud.client)await Cloud.client.auth.signOut()}catch(e){}
@@ -1125,7 +1170,7 @@ function save(){
   sweepOrphans(DB); // garantie: aucun orphelin ne peut être persisté ni poussé
   invalidateCaches();
   cloudStamp(); // horodate les lignes modifiées (LWW) — actif même en mode local
-  if(!DataLayer.write(DB))toast('⚠️ Stockage 3amer — dir Export o msse7 les images kbar');
+  if(!DataLayer.write(DB))toast('Stockage 3amer — dir Export o msse7 les images kbar');
   clearDemoFlag(); // toute sauvegarde utilisateur = la base n'est plus la démo intacte
   cloudOnSave(); // dirty + push debounce si connecté
 }
@@ -1143,6 +1188,15 @@ function fdate(d){if(!d)return '—';const x=new Date(d+'T00:00');return isNaN(x
    toISOString() reste correct — et requis — pour les timestamps updatedAt du sync (LWW). */
 function isoLocal(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+/* ===== ICONS & LABELS (Sprint 19) ===== */
+const icon=(n,cls)=>'<svg class="i'+(cls?' '+cls:'')+'" aria-hidden="true"><use href="#i-'+n+'"/></svg>';
+/* Priorités: valeurs STOCKÉES inchangées (rétro-compat + sync) — seul l'AFFICHAGE est mappé */
+const PRIO={'🔴 Urgent':['var(--danger)','Urgent'],'🟡 Normal':['var(--warning)','Normal'],'🟢 Machi zerban':['var(--success)','Machi zerban']};
+const prioMeta=p=>PRIO[p]||PRIO['🟡 Normal'];
+const prioDot=p=>'<span class="prio-dot" style="background:'+prioMeta(p)[0]+'"></span>';
+const prioHTML=p=>prioDot(p)+prioMeta(p)[1];
+const prioLabel=p=>PRIO[p]?prioMeta(p)[1]:(p||'');
+const statutLabel=s=>(s||'').replace(' ✅','');
 
 function seed(){
   markSeeded(); // défense en profondeur: le marqueur est posé dès l'exécution
@@ -1204,7 +1258,7 @@ function monthlyRevenue(devise,n=12){
 }
 function buildRevenueChart(){
   const devs=dominantDevises().slice(0,2);
-  if(!devs.length)return '<div class="empty"><div class="big">◈</div>Ba9i ma kayn 7ta revenu — l chart ghadi iban mor awel paiement Payé</div>';
+  if(!devs.length)return '<div class="empty"><div class="big">'+icon('diamond')+'</div>Ba9i ma kayn 7ta revenu — l chart ghadi iban mor awel paiement Payé</div>';
   const series=devs.map(d=>({dev:d,data:monthlyRevenue(d)}));
   const max=Math.max(...series.flatMap(x=>x.data.map(m=>m.sum)),1);
   const W=720,H=190,pad=6,bw=W/12;
@@ -1212,7 +1266,7 @@ function buildRevenueChart(){
   series[0].data.forEach((m,i)=>{
     const x=i*bw;
     // grid + month label
-    labels+=`<text x="${x+bw/2}" y="${H-4}" text-anchor="middle" font-size="10" fill="var(--muted,#9A9A96)">${m.label}</text>`;
+    labels+=`<text x="${x+bw/2}" y="${H-4}" text-anchor="middle" font-size="10" fill="var(--mut)">${m.label}</text>`;
     // devise 1 (ink)
     const h1=Math.round((m.sum/max)*(H-46));
     bars+=`<rect x="${x+pad}" y="${H-26-h1}" width="${bw-2*pad-(series[1]?6:0)}" height="${Math.max(h1,m.sum>0?2:0)}" rx="2" fill="var(--ink,#111)"><title>${m.label}: ${money(m.sum,series[0].dev)}</title></rect>`;
@@ -1220,11 +1274,11 @@ function buildRevenueChart(){
     if(series[1]){
       const m2=series[1].data[i];
       const h2=Math.round((m2.sum/max)*(H-46));
-      bars+=`<rect x="${x+bw-pad-6}" y="${H-26-h2}" width="6" rx="2" height="${Math.max(h2,m2.sum>0?2:0)}" fill="var(--muted,#9A9A96)"><title>${m2.label}: ${money(m2.sum,series[1].dev)}</title></rect>`;
+      bars+=`<rect x="${x+bw-pad-6}" y="${H-26-h2}" width="6" rx="2" height="${Math.max(h2,m2.sum>0?2:0)}" fill="var(--mut)"><title>${m2.label}: ${money(m2.sum,series[1].dev)}</title></rect>`;
     }
   });
   const tot=series.map(x=>money(x.data.reduce((a,m)=>a+m.sum,0),x.dev)).join(' + ');
-  const legend=series.length>1?`<div class="t-sub" style="margin-top:6px">■ ${series[0].dev} &nbsp; <span style="color:var(--muted,#9A9A96)">▮ ${series[1].dev}</span></div>`:'';
+  const legend=series.length>1?`<div class="t-sub" style="margin-top:6px">■ ${series[0].dev} &nbsp; <span style="color:var(--mut)">▮ ${series[1].dev}</span></div>`:'';
   return `<div class="t-sub" style="margin-bottom:10px">Total 12 mois : <b style="color:var(--ink)">${tot}</b></div>
   <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
     <line x1="0" y1="${H-26}" x2="${W}" y2="${H-26}" stroke="var(--line,#E8E8E5)" stroke-width="1"/>
@@ -1271,25 +1325,25 @@ function renderDash(){
   document.getElementById('dashTaches').innerHTML=todo.length?todo.map(t=>{
     const late=t.deadline&&t.deadline<today;
     return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)">
-      <div><div class="t-name" style="font-size:13px">${t.priorite?t.priorite.split(' ')[0]+' ':''}${esc(t.label)}</div>
-      <div class="t-sub">${esc(clientName(t.clientId))} · ${fdate(t.deadline)}${late?' <b style=\"color:var(--rouge)\">— fat le délai!</b>':''} · <span class="badge ${statutBadge[t.statut]||''}">${t.statut}</span></div></div>
-      <button class="btn btn-sm btn-primary" onclick="markTacheDone('${t.id}')">Salit ✓</button>
-    </div>`}).join(''):'<div class="empty"><div class="big">✓</div>Ma 3andek 7ta tâche — kolchi salat!</div>';
+      <div><div class="t-name" style="font-size:13px">${t.priorite?prioDot(t.priorite):''}${esc(t.label)}</div>
+      <div class="t-sub">${esc(clientName(t.clientId))} · ${fdate(t.deadline)}${late?' <b style=\"color:var(--danger)\">— fat le délai!</b>':''} · <span class="badge ${statutBadge[t.statut]||''}">${statutLabel(t.statut)}</span></div></div>
+      <button class="btn btn-sm btn-primary" onclick="markTacheDone('${t.id}')">${icon('check')} Salit</button>
+    </div>`}).join(''):'<div class="empty"><div class="big">'+icon('check')+'</div>Ma 3andek 7ta tâche — kolchi salat!</div>';
 
   const recent=[...DB.paiements].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
   document.getElementById('dashPays').innerHTML=recent.length?recent.map(p=>`
     <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">
       <div><div class="t-name" style="font-size:13px">${esc(p.label)}</div><div class="t-sub">${esc(clientName(p.clientId))} · ${fdate(p.date)}</div></div>
       <div style="text-align:right"><div class="t-name">${money(+p.montant,payDevise(p))}</div><span class="badge ${statutBadge[p.statut]||''}">${p.statut}</span></div>
-    </div>`).join(''):'<div class="empty"><div class="big">◈</div>Ma kayn 7ta paiement</div>';
+    </div>`).join(''):'<div class="empty"><div class="big">'+icon('diamond')+'</div>Ma kayn 7ta paiement</div>';
 
   const due=DB.paiements.filter(p=>p.statut!=='Payé');
   document.getElementById('dashDue').innerHTML=due.length?due.map(p=>`
     <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">
       <div><div class="t-name" style="font-size:13px">${esc(p.label)}</div><div class="t-sub">${esc(clientName(p.clientId))} · ${fdate(p.date)}</div></div>
       <div style="text-align:right"><div class="t-name">${money(+p.montant,payDevise(p))}</div>
-      <button class="btn btn-sm btn-primary" onclick="markPaid('${p.id}')">Tkhelless ✓</button></div>
-    </div>`).join(''):'<div class="empty"><div class="big">✓</div>Kolchi mkhelless!</div>';
+      <button class="btn btn-sm btn-primary" onclick="markPaid('${p.id}')">${icon('check')} Tkhelless</button></div>
+    </div>`).join(''):'<div class="empty"><div class="big">'+icon('check')+'</div>Kolchi mkhelless!</div>';
 
   const projs=DB.projets.filter(p=>!['Terminé & payé','Annulé'].includes(p.statut));
   document.getElementById('dashProjets').innerHTML=projs.length?projs.map(p=>{
@@ -1303,9 +1357,9 @@ function renderDash(){
       </div>
       <div class="t-sub" style="margin-top:4px">${payeStr} / ${money(+p.prix,clientDevise(p.clientId))} mkhelless (${pct}%) · Deadline: ${fdate(p.deadline)}</div>
       <div class="progress-wrap"><div class="progress" style="width:${pct}%"></div></div>
-    </div>`}).join(''):'<div class="empty"><div class="big">▤</div>Ma kayn 7ta projet en cours</div>';
+    </div>`}).join(''):'<div class="empty"><div class="big">'+icon('folder')+'</div>Ma kayn 7ta projet en cours</div>';
 }
-function markPaid(id){const p=DB.paiements.find(x=>x.id===id);if(p){p.statut='Payé';save();renderAll();toast('Paiement mkhelless ✓')}}
+function markPaid(id){const p=DB.paiements.find(x=>x.id===id);if(p){p.statut='Payé';save();renderAll();toast('Paiement mkhelless')}}
 
 /* ============ CLIENTS ============ */
 function setClientFilter(f,btn){clientFilter=f;btn.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));btn.classList.add('on');renderClients()}
@@ -1320,22 +1374,22 @@ function renderClients(){
       const nbT=DB.taches.filter(t=>t.clientId===c.id&&t.statut!=='Salit ✅').length;
       return `<tr>
         <td><div class="cell-flex"><span class="avatar">${esc((c.name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase())}</span><div><div class="t-name">${esc(c.name)}</div><div class="t-sub">${esc(c.email||'')}${c.phone?' · '+esc(c.phone):''}</div></div></div></td>
-        <td style="max-width:230px"><div class="t-sub" style="color:var(--ink2)">${c.khedma?esc(c.khedma):'<i style=\"color:#999\">— ma mktoubch (modifiéh ✏️)</i>'}</div></td>
+        <td style="max-width:230px"><div class="t-sub" style="color:var(--ink2)">${c.khedma?esc(c.khedma):'<i style=\"color:#999\">— ma mktoubch (clicki 3la Modifier)</i>'}</div></td>
         <td><span class="badge ${c.type==='projet'?'bg-projet':'bg-salaire'}">${c.type==='projet'?'Par projet':'Salaire'}</span></td>
         <td><span class="badge ${statutBadge[c.statut]||''}">${c.statut}</span></td>
         <td>${c.type==='salaire'?'<b>'+money(+c.salaire,c.devise)+'</b>':'<span class="t-sub">—</span>'}</td>
         <td><b>${totStr}</b></td>
         <td>${nbT?'<span class="badge bg-attente">'+nbT+' à faire</span>':'<span class="badge bg-termine">✓ 0</span>'}</td>
         <td><div class="row-acts">
-          <button class="icon-btn" title="Fiche client" onclick="openClientFiche('${c.id}')">👁</button><button class="icon-btn" title="Modifier" onclick="openClientModal('${c.id}')">✏️</button>
-          <button class="icon-btn" title="Supprimer" onclick="delClient('${c.id}')">🗑️</button>
+          <button class="icon-btn" title="Fiche client" onclick="openClientFiche('${c.id}')">${icon('eye')}</button><button class="icon-btn" title="Modifier" onclick="openClientModal('${c.id}')">${icon('pencil')}</button>
+          <button class="icon-btn" title="Supprimer" onclick="delClient('${c.id}')">${icon('trash')}</button>
         </div></td></tr>`}).join('')}</tbody></table>`
-  :'<div class="empty"><div class="big">◉</div>Ma l9ina 7ta client — zid wa7d b "＋ Zid client"</div>';
+  :'<div class="empty"><div class="big">'+icon('users')+'</div>Ma l9ina 7ta client — zid wa7d b "+ Zid client"</div>';
 }
 function toggleSalaire(){document.getElementById('salaireFld').style.display=document.getElementById('c_type').value==='salaire'?'':'none'}
 function openClientModal(id){
   editId=id||null;
-  document.getElementById('clientModalTitle').textContent=id?'Modifier le client':'＋ Client jdid';
+  document.getElementById('clientModalTitle').textContent=id?'Modifier le client':'Client jdid';
   const c=id?clientById(id):{};
   c_name.value=c.name||'';c_type.value=c.type||'projet';c_statut.value=c.statut||'Actif';
   c_salaire.value=c.salaire||'';c_devise.value=c.devise||CURRENCY.symbol;c_email.value=c.email||'';c_phone.value=c.phone||'';c_ice.value=c.ice||'';c_societe.value=c.societe||'';c_website.value=c.website||'';c_adresse.value=c.adresse||'';c_khedma.value=c.khedma||'';c_notes.value=c.notes||'';
@@ -1346,7 +1400,7 @@ function saveClient(){
   if(!c_name.value.trim())return toast('Dkhel smiya dyal le client');
   const data={name:c_name.value.trim(),type:c_type.value,statut:c_statut.value,salaire:+c_salaire.value||0,devise:c_devise.value,email:c_email.value.trim(),phone:c_phone.value.trim(),ice:c_ice.value.trim(),societe:c_societe.value.trim(),website:c_website.value.trim(),adresse:c_adresse.value.trim(),khedma:c_khedma.value.trim(),notes:c_notes.value.trim()};
   if(editId){Object.assign(clientById(editId),data)}else{DB.clients.push({id:uid(),...data})}
-  save();closeModal('clientModal');renderAll();toast('Client t-sauvegarda ✓');
+  save();closeModal('clientModal');renderAll();toast('Client t-sauvegarda');
 }
 function delClient(id){
   if(!confirm('Bghiti tmes7 had le client m3a les projets, les paiements, les tâches o les événements dyalo?'))return;
@@ -1360,7 +1414,7 @@ function delClient(id){
 
 /* ============ TACHES ============ */
 function setTacheFilter(f,btn){tacheFilter=f;btn.parentElement.querySelectorAll('.chip').forEach(c=>{if(c.tagName==='BUTTON')c.classList.remove('on')});btn.classList.add('on');renderTaches()}
-function markTacheDone(id){const t=DB.taches.find(x=>x.id===id);if(t){t.statut='Salit ✅';save();renderAll();toast('Tâche salat ✓')}}
+function markTacheDone(id){const t=DB.taches.find(x=>x.id===id);if(t){t.statut='Salit ✅';save();renderAll();toast('Tâche salat')}}
 function renderTaches(){
   const sel=document.getElementById('tacheClientFilter');
   const cur=sel.value;
@@ -1376,17 +1430,17 @@ function renderTaches(){
       const late=!done&&t.deadline&&t.deadline<today;
       const proj=t.projetId?(DB.projets.find(x=>x.id===t.projetId)||{}).name:'';
       return `<tr style="${done?'opacity:.5':''}">
-        <td><button class="icon-btn" title="${done?'Rejje3ha à faire':'3lem salat'}" onclick="toggleTache('${t.id}')">${done?'↩':'☐'}</button></td>
+        <td><button class="icon-btn" title="${done?'Rejje3ha à faire':'3lem salat'}" onclick="toggleTache('${t.id}')">${done?icon('undo'):icon('square')}</button></td>
         <td><div class="t-name" style="${done?'text-decoration:line-through':''}">${esc(t.label)}</div><div class="t-sub">${proj?esc(proj):''}${t.details?(proj?' · ':'')+esc(t.details):''}</div></td>
         <td>${esc(clientName(t.clientId))}</td>
-        <td>${t.priorite||'🟡 Normal'}</td>
-        <td>${fdate(t.deadline)}${late?' <b>⚠</b>':''}</td>
-        <td><span class="badge ${statutBadge[t.statut]||''}">${t.statut}</span></td>
+        <td>${prioHTML(t.priorite)}</td>
+        <td>${fdate(t.deadline)}${late?' <span style="color:var(--danger)">'+icon('alert')+'</span>':''}</td>
+        <td><span class="badge ${statutBadge[t.statut]||''}">${statutLabel(t.statut)}</span></td>
         <td><div class="row-acts">
-          <button class="icon-btn" onclick="openTacheModal('${t.id}')">✏️</button>
-          <button class="icon-btn" onclick="delTache('${t.id}')">🗑️</button>
+          <button class="icon-btn" onclick="openTacheModal('${t.id}')">${icon('pencil')}</button>
+          <button class="icon-btn" onclick="delTache('${t.id}')">${icon('trash')}</button>
         </div></td></tr>`}).join('')}</tbody></table>`
-  :'<div class="empty"><div class="big">✓</div>Ma kayn 7ta tâche hna — zid wa7da b "＋ Zid tâche"</div>';
+  :'<div class="empty"><div class="big">'+icon('tasks')+'</div>Ma kayn 7ta tâche hna — zid wa7da b "+ Zid tâche"</div>';
 }
 function toggleTache(id){const t=DB.taches.find(x=>x.id===id);if(t){t.statut=t.statut==='Salit ✅'?'À faire':'Salit ✅';save();renderAll()}}
 function fillTacheProjets(){
@@ -1397,7 +1451,7 @@ function fillTacheProjets(){
 function openTacheModal(id){
   if(!DB.clients.length)return toast('Zid client 9bel ma tzid tâche');
   editId=id||null;
-  document.getElementById('tacheModalTitle').textContent=id?'Modifier la tâche':'＋ Tâche jdida';
+  document.getElementById('tacheModalTitle').textContent=id?'Modifier la tâche':'Tâche jdida';
   fillClientSelect('t_client');
   const t=id?DB.taches.find(x=>x.id===id):{};
   t_label.value=t.label||'';t_client.value=t.clientId||DB.clients[0].id;
@@ -1410,7 +1464,7 @@ function saveTache(){
   if(!t_label.value.trim())return toast('Ktb ach khassek tkhdem');
   const data={label:t_label.value.trim(),clientId:t_client.value,projetId:t_projet.value,statut:t_statut.value,priorite:t_priorite.value,deadline:t_deadline.value,details:t_details.value.trim()};
   if(editId){Object.assign(DB.taches.find(x=>x.id===editId),data)}else{DB.taches.push({id:uid(),...data})}
-  save();closeModal('tacheModal');renderAll();toast('Tâche t-sauvegardat ✓');
+  save();closeModal('tacheModal');renderAll();toast('Tâche t-sauvegardat');
 }
 function delTache(id){
   if(!confirm('Tmes7 had la tâche?'))return;
@@ -1433,10 +1487,10 @@ function renderProjets(){
         <td><span class="badge ${statutBadge[p.statut]||''}">${p.statut}</span></td>
         <td>${fdate(p.deadline)}</td>
         <td><div class="row-acts">
-          <button class="icon-btn" onclick="openProjetModal('${p.id}')">✏️</button>
-          <button class="icon-btn" onclick="delProjet('${p.id}')">🗑️</button>
+          <button class="icon-btn" onclick="openProjetModal('${p.id}')">${icon('pencil')}</button>
+          <button class="icon-btn" onclick="delProjet('${p.id}')">${icon('trash')}</button>
         </div></td></tr>`}).join('')}</tbody></table>`
-  :'<div class="empty"><div class="big">▤</div>Ma kayn 7ta projet hna</div>';
+  :'<div class="empty"><div class="big">'+icon('folder')+'</div>Ma kayn 7ta projet hna</div>';
 }
 function fillClientSelect(sel,type){
   const s=document.getElementById(sel);
@@ -1445,7 +1499,7 @@ function fillClientSelect(sel,type){
 function openProjetModal(id){
   if(!DB.clients.length)return toast('Zid client 9bel ma tzid projet');
   editId=id||null;
-  document.getElementById('projetModalTitle').textContent=id?'Modifier le projet':'＋ Projet jdid';
+  document.getElementById('projetModalTitle').textContent=id?'Modifier le projet':'Projet jdid';
   fillClientSelect('p_client');
   const p=id?DB.projets.find(x=>x.id===id):{};
   p_name.value=p.name||'';p_client.value=p.clientId||DB.clients[0].id;p_prix.value=p.prix||'';
@@ -1456,7 +1510,7 @@ function saveProjet(){
   if(!p_name.value.trim())return toast('Dkhel smiya dyal le projet');
   const data={name:p_name.value.trim(),clientId:p_client.value,prix:+p_prix.value||0,statut:p_statut.value,deadline:p_deadline.value,type:p_type.value,notes:p_notes.value.trim()};
   if(editId){Object.assign(DB.projets.find(x=>x.id===editId),data)}else{DB.projets.push({id:uid(),...data})}
-  save();closeModal('projetModal');renderAll();toast('Projet t-sauvegarda ✓');
+  save();closeModal('projetModal');renderAll();toast('Projet t-sauvegarda');
 }
 function delProjet(id){
   if(!confirm('Tmes7 had le projet?'))return;
@@ -1481,13 +1535,13 @@ function renderPays(){
       <td><span class="badge ${statutBadge[p.statut]||''}">${p.statut}</span></td>
       <td>${fdate(p.date)}</td>
       <td><div class="row-acts">
-        ${p.statut!=='Payé'?`<button class="icon-btn" title="Tkhelless" onclick="markPaid('${p.id}')">✓</button>`:''}
-        <button class="icon-btn" title="Facture PDF" onclick="openFacture('${p.id}')">🧾</button>
-        <button class="icon-btn" title="Bon de livraison" onclick="openBL('${p.id}')">📦</button>
-        <button class="icon-btn" onclick="openPayModal('${p.id}')">✏️</button>
-        <button class="icon-btn" onclick="delPay('${p.id}')">🗑️</button>
+        ${p.statut!=='Payé'?`<button class="icon-btn" title="Tkhelless" onclick="markPaid('${p.id}')">${icon('check')}</button>`:''}
+        <button class="icon-btn" title="Facture PDF" onclick="openFacture('${p.id}')">${icon('file')}</button>
+        <button class="icon-btn" title="Bon de livraison" onclick="openBL('${p.id}')">${icon('box')}</button>
+        <button class="icon-btn" onclick="openPayModal('${p.id}')">${icon('pencil')}</button>
+        <button class="icon-btn" onclick="delPay('${p.id}')">${icon('trash')}</button>
       </div></td></tr>`).join('')}</tbody></table>`
-  :'<div class="empty"><div class="big">◈</div>Ma kayn 7ta paiement hna</div>';
+  :'<div class="empty"><div class="big">'+icon('diamond')+'</div>Ma kayn 7ta paiement hna</div>';
 }
 function fillPayProjets(){
   const cid=document.getElementById('y_client').value;
@@ -1498,7 +1552,7 @@ function fillPayProjets(){
 function openPayModal(id){
   if(!DB.clients.length)return toast('Zid client 9bel ma tzid paiement');
   editId=id||null;
-  document.getElementById('payModalTitle').textContent=id?'Modifier le paiement':'＋ Paiement jdid';
+  document.getElementById('payModalTitle').textContent=id?'Modifier le paiement':'Paiement jdid';
   fillClientSelect('y_client');
   const p=id?DB.paiements.find(x=>x.id===id):{};
   y_label.value=p.label||'';y_client.value=p.clientId||DB.clients[0].id;
@@ -1513,7 +1567,7 @@ function savePay(){
   if(!+y_montant.value)return toast('Dkhel le montant');
   const data={label:y_label.value.trim(),clientId:y_client.value,projetId:y_projet.value,type:y_type.value,montant:+y_montant.value,devise:y_devise.value,statut:y_statut.value,date:y_date.value,methode:y_methode.value,notes:y_notes.value.trim()};
   if(editId){Object.assign(DB.paiements.find(x=>x.id===editId),data)}else{DB.paiements.push({id:uid(),...data})}
-  save();closeModal('payModal');renderAll();toast('Paiement t-sauvegarda ✓');
+  save();closeModal('payModal');renderAll();toast('Paiement t-sauvegarda');
 }
 function delPay(id){
   if(!confirm('Tmes7 had le paiement?'))return;
@@ -1527,12 +1581,12 @@ function exportData(){
   a.download='they-studio-crm-backup-'+isoLocal()+'.json';a.click();
   localStorage.setItem('they_last_backup',Date.now());
   const bb=document.getElementById('backupBanner');if(bb)bb.style.display='none';
-  toast('Backup téléchargé ✓');
+  toast('Backup téléchargé');
 }
 function importData(ev){
   const f=ev.target.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.clients&&d.paiements){DB=d;if(!DB.taches)DB.taches=[];if(!DB.projets)DB.projets=[];if(!DB.events)DB.events=[];save();renderAll();toast('Données t-importaw ✓')}else toast('Fichier machi valide')}catch(e){toast('Fichier machi valide')}};
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.clients&&d.paiements){DB=d;if(!DB.taches)DB.taches=[];if(!DB.projets)DB.projets=[];if(!DB.events)DB.events=[];save();renderAll();toast('Données t-importaw')}else toast('Fichier machi valide')}catch(e){toast('Fichier machi valide')}};
   r.readAsText(f);ev.target.value='';
 }
 
@@ -1556,11 +1610,11 @@ function toggleTheme(){
   const dark=document.body.classList.toggle('dark');
   localStorage.setItem('they_theme',dark?'dark':'light');
   applyThemeUI(dark);
-  toast(dark?'Mode sombre activé 🌙':'Mode clair activé ☀️');
+  toast(dark?'Mode sombre activé':'Mode clair activé');
 }
 function applyThemeUI(dark){
   document.querySelector('meta[name="theme-color"]').setAttribute('content',dark?'#141413':'#0F0F0E');
-  const b=document.getElementById('themeBtn');if(b)b.textContent=dark?'☀️ Mode clair':'🌙 Mode sombre';
+  const b=document.getElementById('themeBtn');if(b)b.innerHTML=dark?icon('sun')+' Mode clair':icon('moon')+' Mode sombre';
 }
 function applyTheme(){
   const dark=localStorage.getItem('they_theme')==='dark';
@@ -1850,7 +1904,7 @@ function renderCalendar(){
       const d=new Date(iso+'T00:00');
       return `<div class="cal-wday ${iso===today?'today':''}"><h5>${d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'})}</h5>
         ${list.map(e=>`<div class="cal-ev ${isLateEv(e)?'late':''}" style="cursor:pointer;white-space:normal" data-open>${esc(e.title)}<div class="t-sub">${esc(e.client)}</div></div>`).join('')||'<div class="t-sub">—</div>'}
-        <div class="cal-more" style="cursor:pointer;margin-top:6px" onclick="openDayPanel('${iso}')">＋ détails</div></div>`;
+        <div class="cal-more" style="cursor:pointer;margin-top:6px" onclick="openDayPanel('${iso}')">+ détails</div></div>`;
     }).join('')+'</div>';
     // attach open handlers proprement (pas de closures dans innerHTML)
     const flat=days.flatMap(iso=>evs.filter(e=>e.date===iso));
@@ -1871,9 +1925,9 @@ function openDayPanel(iso){
   const evs=calFiltered(iso,iso);
   document.getElementById('dpTitle').textContent=new Date(iso+'T00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('dpBody').innerHTML=evs.length?evs.map((e,i)=>
-    `<div class="dp-ev" data-dp="${i}"><div class="t">${esc(e.title)} ${isLateEv(e)?'<b style="color:var(--rouge)">— retard</b>':''}</div>
-     <div class="s">${esc(e.cat)}${e.client?' · '+esc(e.client):''}${e.statut?' · '+esc(e.statut):''}${e.priorite?' · '+esc(e.priorite):''}</div></div>`).join('')
-    :'<div class="empty" style="padding:20px 0"><div class="big">▦</div>Walou f had nhar</div>';
+    `<div class="dp-ev" data-dp="${i}"><div class="t">${esc(e.title)} ${isLateEv(e)?'<b style="color:var(--danger)">— retard</b>':''}</div>
+     <div class="s">${esc(e.cat)}${e.client?' · '+esc(e.client):''}${e.statut?' · '+esc(statutLabel(e.statut)):''}${e.priorite?' · '+esc(prioLabel(e.priorite)):''}</div></div>`).join('')
+    :'<div class="empty" style="padding:20px 0"><div class="big">'+icon('calendar')+'</div>Walou f had nhar</div>';
   document.querySelectorAll('#dpBody [data-dp]').forEach(el=>el.onclick=()=>{closeDayPanel();evs[+el.dataset.dp].open()});
   document.getElementById('dayPanel').classList.add('open');
 }
@@ -1884,7 +1938,7 @@ function openEventModal(id){
   sel.innerHTML='<option value="">—</option>'+DB.clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
   const e=id?DB.events.find(x=>x.id===id):null;
   window.__eventEdit=id||null;
-  document.getElementById('eventModalTitle').textContent=e?'✏️ Événement':'＋ Événement jdid';
+  document.getElementById('eventModalTitle').textContent=e?'Modifier l’événement':'Événement jdid';
   document.getElementById('e_del').style.display=e?'':'none';
   e_title.value=e?e.title:'';e_client.value=e?e.clientId||'':'';
   e_date.value=e?e.date:CAL_TODAY();e_type.value=e?e.type:'Réunion';e_notes.value=e?e.notes||'':'';
@@ -1896,7 +1950,7 @@ function saveEvent(){
   const data={title:t,clientId:e_client.value,date:e_date.value,type:e_type.value,notes:e_notes.value.trim()};
   if(window.__eventEdit){Object.assign(DB.events.find(x=>x.id===window.__eventEdit),data)}
   else DB.events.push({id:uid(),...data});
-  save();closeModal('eventModal');renderCalendar();toast('Événement t-sauvegarda ✓');
+  save();closeModal('eventModal');renderCalendar();toast('Événement t-sauvegarda');
 }
 function delEvent(){
   DB.events=DB.events.filter(x=>x.id!==window.__eventEdit);
@@ -1935,7 +1989,7 @@ function takeSnapshot(){ // quotidien, silencieux, protege par quota
 function autoBackup(){ // fichier hebdo automatique (remplace la banniere passive)
   const last=+localStorage.getItem('they_last_backup')||0;
   if(!last||Date.now()-last>7*864e5){
-    try{exportData();toast('💾 Backup automatique téléchargé')}catch(e){}
+    try{exportData();toast('Backup automatique téléchargé')}catch(e){}
   }
 }
 function openRestore(){
@@ -1950,7 +2004,7 @@ function openRestore(){
   document.getElementById('restoreModal').classList.add('show');
 }
 function restoreSnapshot(i){
-  if(!confirm('⚠️ Had l opération ghadi t3awed les données l snapshot dyal '+ (i===0?'lyoum/lbare7':'9bel') +'. Les données dyal daba ghadi itbeddlo. Nkemlo?'))return;
+  if(!confirm('Had l opération ghadi t3awed les données l snapshot dyal '+ (i===0?'lyoum/lbare7':'9bel') +'. Les données dyal daba ghadi itbeddlo. Nkemlo?'))return;
   try{
     const sn=JSON.parse(localStorage.getItem(SNAP_KEYS[i]));
     if(!sn||!sn.db||!Array.isArray(sn.db.clients)){toast('Snapshot machi valide');return}
@@ -1958,7 +2012,7 @@ function restoreSnapshot(i){
       localStorage.removeItem(SNAP_KEYS[i]);toast('Snapshot dyal la démo tmess7 — machi données réelles');openRestore();return;
     }
     DB=sn.db;if(!DB.taches)DB.taches=[];if(!DB.projets)DB.projets=[];if(!DB.events)DB.events=[];
-    save();closeModal('restoreModal');renderAll();toast('Données restaurées ✓');
+    save();closeModal('restoreModal');renderAll();toast('Données restaurées');
   }catch(e){toast('Erreur f la restauration')}
 }
 
@@ -1981,7 +2035,7 @@ function openClientFiche(id){
   window.__ficheItems=[];
   const section=(titre,items)=>{
     if(!items.length)return '';
-    return `<div style="padding:12px 0;border-bottom:1px solid var(--line)"><h5 style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">${titre} (${items.length})</h5>`+
+    return `<div style="padding:12px 0;border-bottom:1px solid var(--line)"><h5 style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin-bottom:6px">${titre} (${items.length})</h5>`+
       items.map(it=>{const i=window.__ficheItems.push(it.open)-1;
         return `<div class="dp-ev" data-fi="${i}"><div class="t">${esc(it.t)}</div><div class="s">${esc(it.s)}</div></div>`}).join('')+'</div>';
   };
@@ -2001,7 +2055,7 @@ function openClientFiche(id){
     ${section('Paiements',h.paiements.slice(0,8).map(x=>({t:x.label+' — '+money(+x.montant,payDevise(x)),s:(x.statut||'')+(x.date?' · '+fdate(x.date):''),open:()=>{closeDayPanel();go('paiements');openPayModal(x.id)}})))}
     ${section('Tâches',h.taches.filter(t=>t.statut!=='Salit ✅').map(x=>({t:x.label,s:(x.statut||'')+(x.deadline?' · '+fdate(x.deadline):''),open:()=>{closeDayPanel();go('taches');openTacheModal(x.id)}})))}
     ${section('Événements',h.events.map(x=>({t:x.title,s:(x.type||'')+' · '+fdate(x.date),open:()=>{closeDayPanel();openEventModal(x.id)}})))}
-    <div style="padding-top:14px"><button class="btn btn-primary btn-sm" onclick="closeDayPanel();openClientModal('${c.id}')">✏️ Modifier la fiche</button></div>`;
+    <div style="padding-top:14px"><button class="btn btn-primary btn-sm" onclick="closeDayPanel();openClientModal('${c.id}')">${icon('pencil')} Modifier la fiche</button></div>`;
   document.querySelectorAll('#dpBody [data-fi]').forEach(el=>el.onclick=()=>window.__ficheItems[+el.dataset.fi]());
   document.getElementById('dayPanel').classList.add('open');
 }
@@ -2103,7 +2157,7 @@ function toggleNotifs(){
 function notifToastOnLoad(){
   const n=getNotifications().length;
   const seen=+localStorage.getItem(NOTIF_SEEN)||0;
-  if(n>seen)toast('🔔 '+n+' notification(s) — chouf la cloche');
+  if(n>seen)toast(n+' notification(s) — chouf la cloche');
   renderNotifBadge();
 }
 
@@ -2119,7 +2173,7 @@ function buildSearchIndex(){
     ()=>openClientModal(c.id),[c.name,c.email,c.phone,c.ice,c.societe,c.adresse,c.website,c.khedma,c.notes,c.statut]));
   DB.projets.forEach(p=>add('Projets','projets',p.name,clientName(p.clientId)+' · '+p.statut,
     ()=>openProjetModal(p.id),[p.name,p.statut,p.notes,clientName(p.clientId)]));
-  DB.taches.forEach(t=>add('Tâches','taches',t.label,clientName(t.clientId)+' · '+(t.statut||''),
+  DB.taches.forEach(t=>add('Tâches','taches',t.label,clientName(t.clientId)+' · '+statutLabel(t.statut),
     ()=>openTacheModal(t.id),[t.label,t.statut,t.priorite,clientName(t.clientId)]));
   DB.paiements.forEach(p=>add('Paiements','paiements',p.label,clientName(p.clientId)+' · '+money(+p.montant,payDevise(p))+' · '+p.statut,
     ()=>openPayModal(p.id),[p.label,p.notes,p.methode,p.statut,p.factureNum,p.blNum,String(p.montant),clientName(p.clientId)]));
@@ -2155,7 +2209,7 @@ function runSearch(q){
     const rec=getRecent();
     Search.results=[];
     box.innerHTML=rec.length
-      ?'<div class="sr-cat">Recherches récentes</div>'+rec.map(r=>`<div class="sr-item" onclick="document.getElementById('searchInput').value='${esc(r)}';runSearch('${esc(r)}')"><div><div class="t">${esc(r)}</div></div><div class="k">↩</div></div>`).join('')
+      ?'<div class="sr-cat">Recherches récentes</div>'+rec.map(r=>`<div class="sr-item" onclick="document.getElementById('searchInput').value='${esc(r)}';runSearch('${esc(r)}')"><div><div class="t">${esc(r)}</div></div><div class="k"><svg class="i" aria-hidden="true"><use href="#i-undo"/></svg></div></div>`).join('')
       :'<div class="sr-empty">Kteb bach t9elleb — clients, projets, tâches, paiements</div>';
     return;
   }
@@ -2199,7 +2253,7 @@ load();cloudBoot();renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();
 /* [TRACE-AUDIT] instrumentation temporaire — diagnostic "clients qui reviennent" */
 try{
   window.__TAB_ID=Math.random().toString(36).slice(2,7);
-  window.__BUILD='v32'; // = version du SW (they-gestion-vXX) — tenir synchronisé à chaque release
+  window.__BUILD='v33'; // = version du SW (they-gestion-vXX) — tenir synchronisé à chaque release
   console.log('%c[TRACE-BOOT] build='+window.__BUILD+' · onglet='+window.__TAB_ID+' · clients au boot: '+JSON.stringify((DB.clients||[]).map(c=>c.name)),'color:#3E7C4F;font-weight:bold',
     {seeded:localStorage.getItem('they_seeded_v1'),demo:localStorage.getItem('they_demo_v1'),
      sync:JSON.parse(localStorage.getItem('they_sync_v1')||'null'),
@@ -2246,12 +2300,12 @@ if('serviceWorker' in navigator && location.protocol==='https:'){navigator.servi
 </div>
 
 <!-- ===== NOTIFICATIONS ===== -->
-<div id="notifPanel"><div class="nf-head"><span>Notifications</span><button class="icon-btn" onclick="toggleNotifs()">✕</button></div><div id="notifList"></div></div>
+<div id="notifPanel"><div class="nf-head"><span>Notifications</span><button class="icon-btn" onclick="toggleNotifs()"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></div><div id="notifList"></div></div>
 
 <!-- ===== EVENT MODAL ===== -->
 <div class="overlay" id="eventModal">
   <div class="modal">
-    <h2 id="eventModalTitle">＋ Événement jdid</h2>
+    <h2 id="eventModalTitle">Événement jdid</h2>
     <div class="fld"><label>Titre</label><input id="e_title" placeholder="ex: Réunion brief Cartino"></div>
     <div class="fld"><label>Client (optionnel)</label><select id="e_client"></select></div>
     <div class="grid2">
@@ -2272,14 +2326,14 @@ if('serviceWorker' in navigator && location.protocol==='https:'){navigator.servi
   <div class="search-box">
     <input id="searchInput" placeholder="Qelleb 3la client, projet, tâche, paiement…" autocomplete="off">
     <div id="searchResults"></div>
-    <div class="search-foot"><span>↑↓ naviguer</span><span>Entrée fta7</span><span>Échap sedd</span></div>
+    <div class="search-foot"><span>Haut / Bas — naviguer</span><span>Entrée — fta7</span><span>Échap — sedd</span></div>
   </div>
 </div>
 
 <!-- ===== FACTURE OVERLAY ===== -->
 <div id="factureWrap">
   <div class="fact-toolbar">
-    <button class="fact-print" onclick="window.print()">🖨 Imprimer / PDF</button>
+    <button class="fact-print" onclick="window.print()"><svg class="i" aria-hidden="true"><use href="#i-printer"/></svg> Imprimer / PDF</button>
     <button class="fact-close" onclick="closeFacture()">Fermer</button>
   </div>
   <div class="facture" id="factureBody"></div>

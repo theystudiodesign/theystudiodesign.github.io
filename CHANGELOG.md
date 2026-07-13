@@ -1,5 +1,11 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (20) — Sprint 19: Accents sémantiques + THE'Y Icons (Phase 2)
+- **Accents sémantiques** (décision actée) : 4 tokens `--danger/--success/--warning/--info` (+ variantes dark) sur base monochrome. Appliqués aux ÉTATS uniquement : retards en rouge (badge « En retard », chips calendrier, pastille notifications, « fat le délai »), attente en orange (dots), « Livré » en vert (dot), sync cloud (OK/attente/erreur), priorités (dots rouge/orange/vert), hints (filet info). Aliases hérités (`--rouge`…) re-pointés vers les accents. Fix I-1: `--muted` inexistant → `--mut` (20 sites).
+- **THE'Y Icons** : famille SVG unique (25 symboles, stroke 1.7, currentColor, sprite inline) remplaçant ~100 emojis/glyphes/symboles unicode — navigation, actions de ligne, topbar, boutons, états vides, fermetures, chevrons, thème, diagnostic cloud. **Zéro emoji dans l'UI.** Les valeurs STOCKÉES héritées (priorité « 🔴 Urgent », statut « Salit ✅ ») restent intactes (rétro-compat + sync) — affichage mappé via `prioHTML/prioLabel/statutLabel`; les `<option>` gardent les anciennes valeurs en `value`.
+- **Catalogue** `docs/design-system.html` v1.1 (accents + grille des 25 icônes), DESIGN_SYSTEM.md et UI_INVENTORY.md mis à jour (I-1/I-2/I-3 résolus; I-11 documenté: grille calendrier inégale, pré-existant). Captures d'audit régénérées.
+- Comportement inchangé : 98 tests verts. SW v33.
+
 ## 2026-07-13 (19) — Sprint 18: Design System Foundation (Phase 2 UI/UX)
 - **THE'Y DESIGN SYSTEM v1** : tokens officiels définis dans `:root` (`gestion/index.html`) — couleurs sémantiques, échelle typographique (--fs-*), espacement base 4px (--sp-*), rayons (--r-*), ombres/élévation (--sh-1..5), motion (--t-*), z-index (--z-*). **Purement additif : zéro changement visuel**, prouvé par diff pixel (14/14 captures identiques avant/après). Aliases hérités (--nuit/--bleu/--rouge…) figés et marqués dépréciés.
 - **Catalogue vivant** : `docs/design-system.html` — tous les composants (boutons, badges, chips, formulaires, cards/KPI, table, toast, empty, calendrier, notifications, recherche, iconographie) avec toggle light/dark.
