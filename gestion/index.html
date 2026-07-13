@@ -541,6 +541,11 @@ body.dark .search-box{background:#1B1B1A}
       <div class="fld"><label>Email</label><input id="c_email" type="email" placeholder="contact@..."></div>
       <div class="fld"><label>Téléphone / WhatsApp</label><input id="c_phone" placeholder="+212 …"></div>
       <div class="fld"><label>ICE (pour la facture)</label><input id="c_ice" placeholder="ex: 003443452000035"></div>
+      <div class="grid2">
+        <div class="fld"><label>Société</label><input id="c_societe" placeholder="ex: Nibras Electrique SARL"></div>
+        <div class="fld"><label>Website</label><input id="c_website" placeholder="https://…"></div>
+      </div>
+      <div class="fld"><label>Adresse</label><input id="c_adresse" placeholder="ville, quartier…"></div>
       <div class="fld full"><label>Ach ghadi tkhdem l had le client? (services) *</label><textarea id="c_khedma" rows="3" placeholder="ex: Gestion réseaux sociaux — 4 posts/semaine + stories&#10;ex: Logos, flyers o supports print 3la 7ssab talabat"></textarea></div>
       <div class="fld full"><label>Notes</label><textarea id="c_notes" rows="2" placeholder="ex: kayjib les projets mn France…"></textarea></div>
       <div class="hint">Client <b>par projet</b> = koula khedma b prix. Client <b>salaire</b> = flous fixes koula chher (retainer). Ktb f <b>services</b> chno mttafe9 m3ah bach dima tkoun 3aref ach khassek tkhdem lih.</div>
@@ -871,7 +876,7 @@ function renderClients(){
         <td><b>${totStr}</b></td>
         <td>${nbT?'<span class="badge bg-attente">'+nbT+' à faire</span>':'<span class="badge bg-termine">✓ 0</span>'}</td>
         <td><div class="row-acts">
-          <button class="icon-btn" title="Modifier" onclick="openClientModal('${c.id}')">✏️</button>
+          <button class="icon-btn" title="Fiche client" onclick="openClientFiche('${c.id}')">👁</button><button class="icon-btn" title="Modifier" onclick="openClientModal('${c.id}')">✏️</button>
           <button class="icon-btn" title="Supprimer" onclick="delClient('${c.id}')">🗑️</button>
         </div></td></tr>`}).join('')}</tbody></table>`
   :'<div class="empty"><div class="big">◉</div>Ma l9ina 7ta client — zid wa7d b "＋ Zid client"</div>';
@@ -882,13 +887,13 @@ function openClientModal(id){
   document.getElementById('clientModalTitle').textContent=id?'Modifier le client':'＋ Client jdid';
   const c=id?clientById(id):{};
   c_name.value=c.name||'';c_type.value=c.type||'projet';c_statut.value=c.statut||'Actif';
-  c_salaire.value=c.salaire||'';c_devise.value=c.devise||'€';c_email.value=c.email||'';c_phone.value=c.phone||'';c_ice.value=c.ice||'';c_khedma.value=c.khedma||'';c_notes.value=c.notes||'';
+  c_salaire.value=c.salaire||'';c_devise.value=c.devise||'€';c_email.value=c.email||'';c_phone.value=c.phone||'';c_ice.value=c.ice||'';c_societe.value=c.societe||'';c_website.value=c.website||'';c_adresse.value=c.adresse||'';c_khedma.value=c.khedma||'';c_notes.value=c.notes||'';
   toggleSalaire();
   document.getElementById('clientModal').classList.add('show');
 }
 function saveClient(){
   if(!c_name.value.trim())return toast('Dkhel smiya dyal le client');
-  const data={name:c_name.value.trim(),type:c_type.value,statut:c_statut.value,salaire:+c_salaire.value||0,devise:c_devise.value,email:c_email.value.trim(),phone:c_phone.value.trim(),ice:c_ice.value.trim(),khedma:c_khedma.value.trim(),notes:c_notes.value.trim()};
+  const data={name:c_name.value.trim(),type:c_type.value,statut:c_statut.value,salaire:+c_salaire.value||0,devise:c_devise.value,email:c_email.value.trim(),phone:c_phone.value.trim(),ice:c_ice.value.trim(),societe:c_societe.value.trim(),website:c_website.value.trim(),adresse:c_adresse.value.trim(),khedma:c_khedma.value.trim(),notes:c_notes.value.trim()};
   if(editId){Object.assign(clientById(editId),data)}else{DB.clients.push({id:uid(),...data})}
   save();closeModal('clientModal');renderAll();toast('Client t-sauvegarda ✓');
 }
@@ -1436,6 +1441,50 @@ function delEvent(){
   save();closeModal('eventModal');renderCalendar();toast('Événement tmess7');
 }
 
+/* ============ CRM AVANCE — fiche client ============ */
+function clientHistorique(id){
+  return {
+    projets:DB.projets.filter(x=>x.clientId===id),
+    taches:DB.taches.filter(x=>x.clientId===id),
+    paiements:DB.paiements.filter(x=>x.clientId===id).sort((a,b)=>(b.date||'').localeCompare(a.date||'')),
+    events:(DB.events||[]).filter(x=>x.clientId===id)
+  };
+}
+function openClientFiche(id){
+  const c=clientById(id);if(!c)return;
+  const h=clientHistorique(id);
+  const tot={},att={};
+  h.paiements.forEach(p=>{const d=payDevise(p),m=+p.montant||0;(p.statut==='Payé'?tot:att)[d]=((p.statut==='Payé'?tot:att)[d]||0)+m});
+  const fm=o=>Object.entries(o).map(([d,v])=>money(v,d)).join(' + ')||'—';
+  const line=(l,v)=>v?`<div class="s" style="margin-top:3px"><b style="color:var(--ink)">${l}</b> : ${esc(v)}</div>`:'';
+  window.__ficheItems=[];
+  const section=(titre,items)=>{
+    if(!items.length)return '';
+    return `<div style="padding:12px 0;border-bottom:1px solid var(--line)"><h5 style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">${titre} (${items.length})</h5>`+
+      items.map(it=>{const i=window.__ficheItems.push(it.open)-1;
+        return `<div class="dp-ev" data-fi="${i}"><div class="t">${esc(it.t)}</div><div class="s">${esc(it.s)}</div></div>`}).join('')+'</div>';
+  };
+  document.getElementById('dpTitle').textContent=c.name;
+  document.getElementById('dpBody').innerHTML=`
+    <div style="padding-bottom:12px;border-bottom:1px solid var(--line)">
+      <span class="badge ${statutBadge[c.statut]||''}">${esc(c.statut||'')}</span>
+      ${line('Société',c.societe)}${line('Tél',c.phone)}${line('Email',c.email)}
+      ${line('Adresse',c.adresse)}${c.website?`<div class="s" style="margin-top:3px"><b style="color:var(--ink)">Web</b> : <a href="${esc(c.website)}" target="_blank" rel="noopener" style="color:var(--ink)">${esc(c.website)}</a></div>`:''}
+      ${line('ICE',c.ice)}${line('Notes',c.notes)}
+    </div>
+    <div style="padding:12px 0;border-bottom:1px solid var(--line)">
+      <div class="s"><b style="color:var(--ink)">Total encaissé</b> : ${fm(tot)}</div>
+      <div class="s" style="margin-top:3px"><b style="color:var(--ink)">En attente</b> : ${fm(att)}</div>
+    </div>
+    ${section('Projets',h.projets.map(x=>({t:x.name,s:(x.statut||'')+(x.deadline?' · '+fdate(x.deadline):''),open:()=>{closeDayPanel();go('projets');openProjetModal(x.id)}})))}
+    ${section('Paiements',h.paiements.slice(0,8).map(x=>({t:x.label+' — '+money(+x.montant,payDevise(x)),s:(x.statut||'')+(x.date?' · '+fdate(x.date):''),open:()=>{closeDayPanel();go('paiements');openPayModal(x.id)}})))}
+    ${section('Tâches',h.taches.filter(t=>t.statut!=='Salit ✅').map(x=>({t:x.label,s:(x.statut||'')+(x.deadline?' · '+fdate(x.deadline):''),open:()=>{closeDayPanel();go('taches');openTacheModal(x.id)}})))}
+    ${section('Événements',h.events.map(x=>({t:x.title,s:(x.type||'')+' · '+fdate(x.date),open:()=>{closeDayPanel();openEventModal(x.id)}})))}
+    <div style="padding-top:14px"><button class="btn btn-primary btn-sm" onclick="closeDayPanel();openClientModal('${c.id}')">✏️ Modifier la fiche</button></div>`;
+  document.querySelectorAll('#dpBody [data-fi]').forEach(el=>el.onclick=()=>window.__ficheItems[+el.dataset.fi]());
+  document.getElementById('dayPanel').classList.add('open');
+}
+
 /* ============ RAPPORTS ============ */
 function toCSV(rows){ // utilitaire reutilisable: array d'objets -> CSV (RFC4180, BOM Excel)
   if(!rows.length)return '';
@@ -1546,7 +1595,7 @@ function buildSearchIndex(){
   const idx=[];
   const add=(cat,page,title,sub,open,hay)=>idx.push({cat,page,title,sub,open,hay:fold(hay.filter(Boolean).join(' '))});
   DB.clients.forEach(c=>add('Clients','clients',c.name,[c.khedma,c.phone].filter(Boolean).join(' · ')||c.statut,
-    ()=>openClientModal(c.id),[c.name,c.email,c.phone,c.ice,c.khedma,c.notes,c.statut]));
+    ()=>openClientModal(c.id),[c.name,c.email,c.phone,c.ice,c.societe,c.adresse,c.website,c.khedma,c.notes,c.statut]));
   DB.projets.forEach(p=>add('Projets','projets',p.name,clientName(p.clientId)+' · '+p.statut,
     ()=>openProjetModal(p.id),[p.name,p.statut,p.notes,clientName(p.clientId)]));
   DB.taches.forEach(t=>add('Tâches','taches',t.label,clientName(t.clientId)+' · '+(t.statut||''),

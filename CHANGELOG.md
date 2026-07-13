@@ -1,5 +1,8 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (6) — Sprint 07
+- **CRM avancé** : champs Société / Website / Adresse sur la fiche client (rétro-compatibles, inclus dans la recherche). Bouton 👁 → fiche client complète en panneau latéral : profil, totaux encaissé/en attente par devise, historique cliquable (projets, 8 derniers paiements, tâches ouvertes, événements), accès direct à la modification.
+
 ## 2026-07-13 (5) — Sprint 06
 - **Rapports** : bouton sidebar → modal période (mois / mois précédent / année / tout) + type. Exports CSV (paiements avec n° facture/BL, clients avec total payé, projets avec payé vs prix) — utilitaires réutilisables toCSV (RFC4180 + BOM Excel) et downloadFile. Rapport revenus PDF (par client + totaux par devise) via l'overlay d'impression existant.
 

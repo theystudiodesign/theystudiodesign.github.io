@@ -8,7 +8,7 @@
 | 3 | Global Search (Ctrl+K) | ✅ Livré |
 | 4 | Calendrier (mois/semaine + panneau jour, 4 sources + events) | ✅ Livré |
 | 5 | Notifications internes + badge | ✅ Livré |
-| 6 | CRM avancé (société, adresse, historique) | Planifié |
+| 6 | CRM avancé (société, adresse, historique) | ✅ Livré |
 | 7 | Reports (CSV + PDF) | ✅ Livré |
 | 8 | Performance (rendering ciblé) | Planifié |
 | 9 | Responsive audit | Planifié |
