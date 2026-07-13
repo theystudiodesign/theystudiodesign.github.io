@@ -18,6 +18,6 @@
 
 ## Sprints 05→10 : tous livrés (13/07/2026)
 
-## Phase 2 — SaaS (NE PAS IMPLÉMENTER sans approbation explicite)
+## Phase 2 — SaaS (Sprint 11 : fondations livrées — schéma + pilote + auth gate)
 Supabase (Auth + PostgreSQL + Storage + RLS) · Stripe · Multi-user & rôles · Client Portal · Cloud Sync · White Label.
 Préparation en Phase 1 : isoler la couche données (load/save) pour une migration sans toucher l'UI.

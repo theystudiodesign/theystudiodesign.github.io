@@ -1,5 +1,8 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (12) — Sprint 11
+- **Préparation Supabase** : schéma PostgreSQL complet (supabase/schema.sql — 6 tables, relations, index, RLS par utilisateur, bucket storage privé, triggers updated_at, validé par parseur PostgreSQL). Pilote cloud dans l'app : mapping camelCase↔snake_case testé, pull au boot + push débouncé à chaque save, LocalStorage conservé comme cache offline, écran d'authentification (email+mot de passe) affiché uniquement si configuré. supabase-config.js vide = application 100 % locale, zéro changement. Guide: SUPABASE_SETUP.md.
+
 ## 2026-07-13 (11) — Devise DH/MAD
 - **Devise centralisée** : config unique CURRENCY={code:'MAD',symbol:'DH'} + normDevise. Tout € affiché devient DH (Dashboard, charts, tables, fiches, rapports, notifications, factures) — valeurs et données stockées inchangées (mapping à l'affichage via payDevise/money, réversible). Format: 0 DH / 1 500 DH / 12 500 DH. Nouveaux clients/paiements en DH par défaut, option € retirée des sélecteurs ($ conservé). Changer de devise à l'avenir = modifier une seule constante.
 

@@ -356,6 +356,7 @@ body.dark .search-box{background:#1B1B1A}
 }
 @media(max-width:820px){.facture{padding:28px 18px}.f-titlerow{margin-top:0}.f-adresse{width:100%}}
 </style>
+<script src="supabase-config.js"></script>
 </head>
 <body>
 
@@ -681,6 +682,111 @@ let DB={clients:[],projets:[],paiements:[],taches:[],devise:'DH'};
 let clientFilter='all', projetFilter='all', payFilter='all', tacheFilter='all';
 let editId=null;
 
+/* ============ CLOUD SYNC — Supabase (Sprint 11) ============
+   Active UNIQUEMENT si supabase-config.js est rempli.
+   Strategie offline-first: boot depuis LocalStorage (cache),
+   puis pull cloud -> remplace le cache; chaque save() pousse (debounce).
+   Mapping camelCase (app) <-> snake_case (SQL). */
+const Cloud={client:null,user:null,pushTimer:null,enabled:()=>!!(window.SUPABASE_CONFIG&&window.SUPABASE_CONFIG.url&&window.SUPABASE_CONFIG.anonKey)};
+const CLOUD_TABLES={
+  clients:  {cols:['id','name','type','statut','devise','salaire','email','phone','ice','societe','website','adresse','khedma','notes'],map:{}},
+  projets:  {cols:['id','name','type','statut','prix','deadline','notes'],map:{clientId:'client_id'}},
+  taches:   {cols:['id','label','statut','priorite','deadline'],map:{clientId:'client_id'}},
+  paiements:{cols:['id','label','type','montant','devise','statut','date','methode','notes'],map:{clientId:'client_id',projetId:'projet_id',factureNum:'facture_num',blNum:'bl_num'}},
+  events:   {cols:['id','title','type','date','notes'],map:{clientId:'client_id'}}
+};
+function toRow(ent,obj){ // app -> SQL
+  const t=CLOUD_TABLES[ent],row={};
+  t.cols.forEach(c=>{if(obj[c]!==undefined)row[c]=obj[c]===''?null:obj[c]});
+  Object.entries(t.map).forEach(([a,b])=>{row[b]=obj[a]===''?null:(obj[a]??null)});
+  ['deadline','date'].forEach(k=>{if(row[k]==='')row[k]=null});
+  return row;
+}
+function fromRow(ent,row){ // SQL -> app
+  const t=CLOUD_TABLES[ent],obj={};
+  t.cols.forEach(c=>{if(row[c]!=null)obj[c]=row[c]});
+  Object.entries(t.map).forEach(([a,b])=>{if(row[b]!=null)obj[a]=row[b]});
+  if(obj.montant!=null)obj.montant=+obj.montant;
+  if(obj.prix!=null)obj.prix=+obj.prix;
+  if(obj.salaire!=null)obj.salaire=+obj.salaire;
+  return obj;
+}
+async function cloudInit(){
+  if(!Cloud.enabled())return;
+  try{
+    const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    Cloud.client=createClient(window.SUPABASE_CONFIG.url,window.SUPABASE_CONFIG.anonKey);
+    const {data:{session}}=await Cloud.client.auth.getSession();
+    if(!session){showAuthGate();return}
+    Cloud.user=session.user;
+    await cloudPull();
+    toast('☁️ Sync cloud activée');
+  }catch(e){console.warn('Cloud off:',e);toast('☁️ Cloud non joignable — mode local')}
+}
+async function cloudPull(){
+  const c=Cloud.client;if(!c)return;
+  const out={};let empty=true;
+  for(const ent of Object.keys(CLOUD_TABLES)){
+    const {data,error}=await c.from(ent).select('*');
+    if(error)throw error;
+    out[ent]=(data||[]).map(r=>fromRow(ent,r));
+    if(out[ent].length)empty=false;
+  }
+  const {data:meta}=await c.from('meta').select('*').maybeSingle();
+  if(empty){ await cloudPush(true); return } // premier login: le cloud recoit le local
+  DB={...DB,...out,
+      factureCounter:meta?meta.facture_counter:DB.factureCounter,
+      blCounter:meta?meta.bl_counter:DB.blCounter};
+  DataLayer.normalize(DB);
+  DataLayer.write(DB); // LocalStorage = cache du cloud
+  invalidateCaches();renderAll();
+}
+async function cloudPush(immediate){
+  if(!Cloud.client||!Cloud.user)return;
+  const doPush=async()=>{
+    try{
+      for(const ent of Object.keys(CLOUD_TABLES)){
+        const rows=(DB[ent]||[]).map(o=>toRow(ent,o));
+        if(rows.length){const {error}=await Cloud.client.from(ent).upsert(rows);if(error)throw error}
+        // suppression des lignes retirees localement
+        const ids=rows.map(r=>r.id);
+        const q=Cloud.client.from(ent).delete();
+        const {error:e2}=ids.length?await q.not('id','in','('+ids.map(i=>'"'+i+'"').join(',')+')'):await q.neq('id','__none__');
+        if(e2)throw e2;
+      }
+      await Cloud.client.from('meta').upsert({user_id:Cloud.user.id,facture_counter:DB.factureCounter||0,bl_counter:DB.blCounter||0});
+    }catch(e){console.warn('push fail (retry au prochain save):',e)}
+  };
+  clearTimeout(Cloud.pushTimer);
+  if(immediate)return doPush();
+  Cloud.pushTimer=setTimeout(doPush,1500); // debounce
+}
+function showAuthGate(){
+  const d=document.createElement('div');d.id='authGate';
+  d.style.cssText='position:fixed;inset:0;z-index:500;background:var(--bg,#F7F7F4);display:flex;align-items:center;justify-content:center';
+  d.innerHTML=`<div style="width:min(340px,90vw);text-align:center;font-family:'Inter',sans-serif">
+    <div style="font-weight:800;font-size:20px;letter-spacing:-.02em;color:var(--ink)">THE’Y <span style="font-weight:300">CLOUD</span></div>
+    <p class="t-sub" style="margin:8px 0 16px">Connexion au compte cloud</p>
+    <input id="ag_email" type="email" placeholder="Email" style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--card,#fff);color:var(--ink)">
+    <input id="ag_pass" type="password" placeholder="Mot de passe" style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:12px;background:var(--card,#fff);color:var(--ink)">
+    <button class="btn btn-primary" style="width:100%" onclick="authGo(false)">Se connecter</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:6px" onclick="authGo(true)">Créer le compte</button>
+    <div id="ag_msg" class="t-sub" style="margin-top:10px"></div></div>`;
+  document.body.appendChild(d);
+}
+async function authGo(signup){
+  const email=document.getElementById('ag_email').value.trim(),pass=document.getElementById('ag_pass').value;
+  const msg=document.getElementById('ag_msg');
+  if(!email||pass.length<6){msg.textContent='Email + mot de passe (6 caractères min)';return}
+  const fn=signup?Cloud.client.auth.signUp:Cloud.client.auth.signInWithPassword;
+  const {data,error}=await fn.call(Cloud.client.auth,{email,password:pass});
+  if(error){msg.textContent=error.message;return}
+  if(signup&&!data.session){msg.textContent='Compte créé — confirme l’email puis reconnecte-toi';return}
+  Cloud.user=data.session.user;
+  document.getElementById('authGate').remove();
+  await cloudPull();toast('☁️ Connecté');
+}
+
 /* ============ DATA LAYER (Sprint 10) ============
    Contrat de migration: pour passer a Supabase, remplacer UNIQUEMENT
    les methodes de DataLayer par des appels reseau (elles peuvent devenir
@@ -713,6 +819,7 @@ function load(){
 function save(){
   invalidateCaches();
   if(!DataLayer.write(DB))toast('⚠️ Stockage 3amer — dir Export o msse7 les images kbar');
+  if(Cloud.client&&Cloud.user)cloudPush();
 }
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
@@ -1752,7 +1859,7 @@ document.addEventListener('keydown',e=>{
 });
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();closeFacture();document.getElementById('notifPanel').classList.remove('open');document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show'))}});
-load();renderAll();takeSnapshot();autoBackup();notifToastOnLoad();
+load();renderAll();takeSnapshot();autoBackup();notifToastOnLoad();cloudInit();
 if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
 
