@@ -793,14 +793,28 @@ document.addEventListener('visibilitychange',()=>{
 async function cloudPull(){
   const c=Cloud.client;if(!c||!Cloud.user)return;
   const st=syncState();
-  const remote={};let cloudEmpty=true;
+  const remote={},rawRemote={};let cloudEmpty=true;
   for(const ent of Object.keys(CLOUD_TABLES)){
     const {data,error}=await c.from(ent).select('*');
     if(error)throw error;
+    rawRemote[ent]=data; /* [TRACE-SOURCES] réponse Supabase BRUTE, avant tout mapping */
     remote[ent]=(data||[]).map(r=>fromRow(ent,r));
     if(remote[ent].length)cloudEmpty=false;
   }
   const {data:meta}=await c.from('meta').select('*').maybeSingle();
+  /* [TRACE-SOURCES] — LES 6 SOURCES POSSIBLES, dumpées AVANT toute décision/merge */
+  try{
+    const noms=a=>Array.isArray(a)?a.map(x=>x&&(x.name||x.label||x.title)):a;
+    const sn1=JSON.parse(localStorage.getItem('they_snap_1')||'null'),sn2=JSON.parse(localStorage.getItem('they_snap_2')||'null');
+    console.group('%c[TRACE-SOURCES] AVANT merge — qui contient les clients ?','color:#7A3EB0;font-weight:bold');
+    console.log('1) SUPABASE brut (réponse fetch, table clients):',rawRemote.clients&&rawRemote.clients.length,rawRemote.clients);
+    console.log('2) crm_gestion_clients_v1 (LOCALSTORAGE, tel quel sur disque):',noms(JSON.parse(localStorage.getItem(KEY)||'{}').clients||[]));
+    console.log('3) they_snap_1:',sn1?{date:sn1.date,clients:noms(sn1.db.clients)}:'(absent)');
+    console.log('4) they_snap_2:',sn2?{date:sn2.date,clients:noms(sn2.db.clients)}:'(absent)');
+    console.log('5) they_sync_v1 (baseIds/dirty):',localStorage.getItem(SYNC_KEY));
+    console.log('6) DB.clients EN MÉMOIRE (chargé par load() au boot — c’est CETTE variable qui entre dans le merge puis est écrite à L~857):',noms(DB.clients||[]));
+    console.groupEnd();
+  }catch(_){}
   if(cloudEmpty&&!meta){await cloudPush(true);return} // premier login: le cloud reçoit le local
   if(demoPristine()){ // compte existant + démo locale intacte: on JETTE la démo (jamais fusionnée ni poussée)
     for(const ent of Object.keys(CLOUD_TABLES))DB[ent]=[];
@@ -849,6 +863,8 @@ async function cloudPull(){
       (DB.clients||[]).map(c=>({nom:c.name,id:c.id,
         origine:remIds.has(c.id)?'REÇU DU CLOUD':(baseC.has(c.id)?'LOCAL (connu du cloud)':'LOCAL HORS baseIds → gardé + sera POUSSÉ')})));
   }catch(_){}
+  /* [TRACE-SOURCES] la variable EXACTE écrite juste après (DataLayer.write L867) */
+  try{console.log('%c[TRACE-SOURCES] variable écrite → DataLayer.write(DB) · DB.clients='+((DB.clients||[]).length),'color:#7A3EB0;font-weight:bold',(DB.clients||[]).map(c=>({id:c.id,nom:c.name})))}catch(_){}
   DataLayer.write(DB); // LocalStorage = cache du cloud
   st.baseIds={};
   Object.keys(CLOUD_TABLES).forEach(e=>st.baseIds[e]=remote[e].map(r=>r.id));
