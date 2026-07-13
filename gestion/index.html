@@ -884,7 +884,10 @@ async function cloudInit(){
 }
 /* ----- resync automatique ----- */
 window.addEventListener('online',()=>{
-  if(Cloud.client&&Cloud.user&&syncState().dirty)cloudPush(true);
+  /* pull AVANT push (nécessité démontrée par test [21.c]: un push direct upsertait la mémoire
+     périmée et ressuscitait les lignes supprimées ailleurs). cloudPull se termine par un
+     cloudPush si dirty → le travail hors ligne est toujours poussé (offline-first préservé). */
+  if(Cloud.client&&Cloud.user&&syncState().dirty)cloudPull().catch(()=>cloudStatus('pending'));
 });
 document.addEventListener('visibilitychange',()=>{
   if(!document.hidden&&Cloud.client&&Cloud.user)cloudPull().catch(()=>cloudStatus('pending'));
@@ -903,7 +906,14 @@ function trackStep(step){
   }catch(_){}
 }
 async function cloudPull(){
+  /* réentrance: online + visibilitychange peuvent co-déclencher — un seul pull à la fois */
+  if(Cloud.pulling)return Cloud.pulling;
+  Cloud.pulling=cloudPullInner().finally(()=>{Cloud.pulling=null});
+  return Cloud.pulling;
+}
+async function cloudPullInner(){
   const c=Cloud.client;if(!c||!Cloud.user)return;
+  mergeFromDisk(); // multi-instance: partir de l'état disque le plus frais avant le merge distant
   const st=syncState();
   const remote={},rawRemote={};let cloudEmpty=true;
   for(const ent of Object.keys(CLOUD_TABLES)){
@@ -993,6 +1003,7 @@ async function cloudPull(){
   trackStep('4. après merge (avant écriture)');
   DataLayer.write(DB); // LocalStorage = cache du cloud
   trackStep('5. après DataLayer.write');
+  snapshotKnown(DB); // nouveau point de synchro disque/mémoire
   st.baseIds={};
   Object.keys(CLOUD_TABLES).forEach(e=>st.baseIds[e]=remote[e].map(r=>r.id));
   st.dirty=pending;writeSyncState(st);
@@ -1214,6 +1225,49 @@ function sweepOrphans(db){
   removed.total=removed.projets.length+removed.taches.length+removed.paiements.length+removed.events.length;
   return removed;
 }
+/* ============ MULTI-INSTANCE (fix critique — onglets/PWA simultanés) ============
+   DB est une copie MÉMOIRE par onglet; localStorage et they_sync_v1 sont PARTAGÉS.
+   Sans réconciliation, un onglet périmé écrase le storage (et le cloud via le diff
+   baseIds) avec sa photo passée: suppressions ressuscitées, créations effacées.
+   Fix minimal — relire-avant-d'écrire:
+   - DISK_KNOWN = ids présents SUR DISQUE au dernier point de synchro de CET onglet
+     (tombstones locaux: absent du disque + connu = supprimé AILLEURS → respecté;
+      absent du disque + inconnu = création locale → conservée).
+   - mergeFromDisk() = fusion LWW par ligne (updatedAt), même sémantique que le cloud.
+   Appelé par save() (avant toute écriture), cloudPull() (avant le merge distant)
+   et l'event 'storage' (adoption immédiate des écritures des autres instances). */
+let DISK_KNOWN={};
+function snapshotKnown(src){for(const ent of Object.keys(CLOUD_TABLES))DISK_KNOWN[ent]=new Set(((src&&src[ent])||[]).map(r=>r.id))}
+function mergeFromDisk(){
+  const disk=DataLayer.read();
+  if(!disk)return null;
+  DataLayer.normalize(disk);
+  for(const ent of Object.keys(CLOUD_TABLES)){
+    const known=DISK_KNOWN[ent]||new Set();
+    const mem=new Map((DB[ent]||[]).map(r=>[r.id,r]));
+    const merged=[];
+    (disk[ent]||[]).forEach(d=>{
+      const m=mem.get(d.id);
+      if(!m){
+        if(known.has(d.id))return;            // je le connaissais et JE l'ai supprimé → reste supprimé
+        merged.push(d);                        // ligne écrite par une autre instance → adoptée
+        if(Cloud.sig[ent])Cloud.sig[ent][d.id]=rowSig(d); // pas de re-stamp updatedAt à l'adoption
+        return;
+      }
+      mem.delete(d.id);
+      if((m.updatedAt||'')>(d.updatedAt||''))merged.push(m); // ma version est plus récente (LWW)
+      else{merged.push(d);if(Cloud.sig[ent])Cloud.sig[ent][d.id]=rowSig(d)}
+    });
+    mem.forEach(m=>{
+      if(known.has(m.id))return;               // absent du disque mais connu = supprimé ailleurs → respecté
+      merged.push(m);                           // création locale pas encore écrite
+    });
+    DB[ent]=merged;
+  }
+  DB.factureCounter=Math.max(+DB.factureCounter||0,+disk.factureCounter||0);
+  DB.blCounter=Math.max(+DB.blCounter||0,+disk.blCounter||0);
+  return disk;
+}
 function load(){
   const d=DataLayer.read();
   if(d){DB=d;markSeeded()}            // base existante = démo plus jamais réinjectée
@@ -1228,12 +1282,15 @@ function load(){
     try{localStorage.setItem('they_rescue_orphans',JSON.stringify({date:new Date().toISOString(),rows:orphans}))}catch(e){}
     DataLayer.write(DB);
   }
+  snapshotKnown(DB); // point de synchro initial: disque = mémoire
 }
 function save(){
+  cloudStamp(); // horodate d'ABORD les lignes modifiées (LWW) — sinon une édition fraîche perdrait le merge disque
+  mergeFromDisk(); // multi-instance: relire-avant-d'écrire (LWW + tombstones locaux)
   sweepOrphans(DB); // garantie: aucun orphelin ne peut être persisté ni poussé
   invalidateCaches();
-  cloudStamp(); // horodate les lignes modifiées (LWW) — actif même en mode local
-  if(!DataLayer.write(DB))toast('Stockage 3amer — dir Export o msse7 les images kbar');
+  if(DataLayer.write(DB))snapshotKnown(DB); // écriture OK → nouveau point de synchro
+  else toast('Stockage 3amer — dir Export o msse7 les images kbar');
   clearDemoFlag(); // toute sauvegarde utilisateur = la base n'est plus la démo intacte
   cloudOnSave(); // dirty + push debounce si connecté
 }
@@ -2314,9 +2371,21 @@ document.addEventListener('keydown',e=>{
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();closeFacture();document.getElementById('notifPanel').classList.remove('open');document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show'))}});
 load();trackStep('1. load()');cloudBoot();trackStep('2. cloudBoot()');renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();notifToastOnLoad();cloudInit();
+/* Multi-instance: une écriture faite par un AUTRE onglet / fenêtre PWA est adoptée
+   immédiatement (LWW + tombstones locaux) au lieu d'attendre — et surtout au lieu
+   d'être écrasée au prochain save() de cet onglet. */
+window.addEventListener('storage',e=>{
+  if(e.key!==KEY||e.newValue==null)return;
+  try{
+    const disk=mergeFromDisk();
+    DataLayer.normalize(DB);
+    if(disk)snapshotKnown(disk); // point de synchro = ce que le DISQUE contient (pas la mémoire)
+    invalidateCaches();renderAll();
+  }catch(_){}
+});
 /* [TRACE-AUDIT] instrumentation temporaire — diagnostic "clients qui reviennent" */
 try{
-  /* __TAB_ID/__BUILD définis en tête de script (section WLOG) — v34 */
+  /* __TAB_ID/__BUILD définis en tête de script (section WLOG) */
   console.log('%c[TRACE-BOOT] build='+window.__BUILD+' · onglet='+window.__TAB_ID+' · clients au boot: '+JSON.stringify((DB.clients||[]).map(c=>c.name)),'color:#3E7C4F;font-weight:bold',
     {seeded:localStorage.getItem('they_seeded_v1'),demo:localStorage.getItem('they_demo_v1'),
      sync:JSON.parse(localStorage.getItem('they_sync_v1')||'null'),

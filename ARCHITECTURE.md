@@ -4,6 +4,7 @@
 - **Données** : LocalStorage, clé unique `crm_gestion_clients_v1` → `DB = {clients, projets, taches, paiements, factureCounter, blCounter}`.
   Images facture (logos/cachet) : clés séparées `they_fact_ae`, `they_fact_logo`, `they_fact_stamp` (base64).
 - **Couche données** : uniquement `load()` / `save()` — point d'entrée unique pour la future migration Supabase.
+- **Multi-instance (fix critique 13/07)** : `DB` est une copie mémoire par onglet; avant toute écriture, `mergeFromDisk()` fusionne l'état du disque (LWW par `updatedAt` + tombstones locaux `DISK_KNOWN`); l'event `storage` adopte immédiatement les écritures des autres onglets/fenêtres PWA; `online` fait pull→push (jamais push direct). Garde de réentrance sur `cloudPull`.
 - **Intégrité référentielle (fix critique 13/07)** : `sweepOrphans()` — garantie qu'aucune ligne dont le client n'existe plus ne peut être persistée, poussée au cloud, ni adoptée depuis le cloud (appelée par `save()`, `load()` avec filet `they_rescue_orphans`, `cloudPull()`). Les lignes sans client (`clientId` vide, ex. events personnels) restent valides; les `projetId` pendants sont vidés.
 - **Data Providers** : `buildSearchIndex()` et `getCalendarEvents(from,to)` — seules fonctions lisant DB pour leurs modules ; caches invalidés par `invalidateCaches()` (hook dans `save()`).
 - **Entités** : clients, projets, taches, paiements, **events** (réunions/livraisons/rappels/personnel), compteurs facture/BL.
