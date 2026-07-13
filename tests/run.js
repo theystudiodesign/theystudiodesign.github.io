@@ -41,9 +41,9 @@ function staticServer() {
   });
 }
 
-/* contexte navigateur = "un appareil" */
-async function newDevice(browser, { cloud = true } = {}) {
-  const ctx = await browser.newContext();
+/* contexte navigateur = "un appareil" (timezoneId: fuseau horaire simulé — Sprint 17) */
+async function newDevice(browser, { cloud = true, timezoneId } = {}) {
+  const ctx = await browser.newContext(timezoneId ? { timezoneId } : {});
   await ctx.addInitScript(() => sessionStorage.setItem('they_unlocked', '1')); // bypass PIN (testé à part)
   await ctx.route('**/fonts.googleapis.com/**', r => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
   await ctx.route('**/supabase-config.js*', r => r.fulfill({
@@ -463,6 +463,74 @@ const cloudRowsFor = (d, email, table) => {
     const cloudNames = cloudRowsFor(dump18, 'restore@test.ma', 'clients').map(r => r.name);
     ok(cloudNames.length === 1 && cloudNames[0] === 'CloudReal SARL', 'cloud: aucune démo poussée — données réelles intactes');
     await X.ctx.close(); await Y.ctx.close();
+  }
+
+  /* ================================================================ */
+  console.log('\n[19] Timezone (Sprint 17) — dates locales, jamais UTC (Maroc UTC+1 + garde UTC)');
+  {
+    /* 19.a — Maroc (UTC+1), midi local: grille du mois, semaine, chart revenus */
+    const { ctx, page } = await newDevice(browser, { cloud: false, timezoneId: 'Africa/Casablanca' });
+    await page.goto(APP, { waitUntil: 'networkidle' });
+    await page.clock.setFixedTime(new Date('2026-07-13T12:00:00+01:00'));
+    const cell13 = await page.evaluate(() => monthCells(2026, 6).find(c => c.day === 13 && !c.out));
+    ok(cell13 && cell13.iso === '2026-07-13', `monthCells: cellule 13 → iso 2026-07-13 (obtenu ${cell13 && cell13.iso})`);
+    ok((await page.evaluate(() => monthCells(2026, 6)[0].iso)) === '2026-06-29', 'monthCells: 1ère cellule = lundi 29 juin');
+    ok((await page.evaluate(() => weekCells(new Date())))[0] === '2026-07-13', 'weekCells: la semaine commence lundi 13');
+    ok((await page.evaluate(() => CAL_TODAY())) === '2026-07-13', 'CAL_TODAY = date locale');
+    const todayLbl = await page.evaluate(() => {
+      go('calendrier'); Cal.cur = new Date(); Cal.view = 'mois'; renderCalendar();
+      const el = document.querySelector('.cal-cell.today .dnum'); return el ? el.textContent : '';
+    });
+    ok(todayLbl === '13', `vue mois: pastille "today" sur la cellule 13 (obtenu ${todayLbl})`);
+    const evCell = await page.evaluate(() => {
+      DB.events.push({ id: uid(), title: 'RDV-TZ', type: 'Réunion', date: '2026-07-13', notes: '' });
+      save(); renderCalendar();
+      const chip = [...document.querySelectorAll('.cal-ev')].find(e => e.textContent.includes('RDV-TZ'));
+      return chip ? chip.closest('.cal-cell').querySelector('.dnum').textContent : '';
+    });
+    ok(evCell === '13', `vue mois: événement du 13 dans la cellule 13 (obtenu ${evCell})`);
+    const wkCol = await page.evaluate(() => {
+      calView('semaine');
+      const chip = [...document.querySelectorAll('.cal-ev')].find(e => e.textContent.includes('RDV-TZ'));
+      return chip ? chip.closest('.cal-wday').querySelector('h5').textContent : '';
+    });
+    ok(/13/.test(wkCol), `vue semaine: événement du 13 dans la colonne "13" (obtenu "${wkCol}")`);
+    const bucket = await page.evaluate(() => {
+      DB.paiements.push({ id: uid(), clientId: DB.clients[0] ? DB.clients[0].id : '', projetId: '', label: 'TZ pay', type: 'Acompte', montant: 500, devise: 'DH', statut: 'Payé', date: '2026-07-05', methode: 'Cash', notes: '' });
+      save(); const m = monthlyRevenue('DH'); return m[m.length - 1];
+    });
+    ok(bucket.key === '2026-07' && bucket.sum >= 500, `monthlyRevenue: bucket courant 2026-07 (obtenu ${bucket.key})`);
+    await ctx.close();
+
+    /* 19.b — Maroc, 00h30 locale (fenêtre critique: date UTC = veille) */
+    const B = await newDevice(browser, { cloud: false, timezoneId: 'Africa/Casablanca' });
+    await B.page.goto(APP, { waitUntil: 'networkidle' });
+    await B.page.clock.setFixedTime(new Date('2026-07-13T00:30:00+01:00')); // = 2026-07-12T23:30Z
+    ok((await B.page.evaluate(() => CAL_TODAY())) === '2026-07-13', 'CAL_TODAY à 00h30 locale = 13 (pas la date UTC 12)');
+    ok((await B.page.evaluate(() => isOverdue({ statut: 'En attente', date: '2026-07-12' }))) === true, 'isOverdue: dû hier (local) = en retard');
+    const kpi = await B.page.evaluate(() => {
+      DB.paiements.push({ id: uid(), clientId: DB.clients[0] ? DB.clients[0].id : '', projetId: '', label: 'TZ today', type: 'Acompte', montant: 777, devise: 'DH', statut: 'Payé', date: '2026-07-13', methode: 'Cash', notes: '' });
+      save(); go('dash'); renderDash();
+      const card = [...document.querySelectorAll('#statCards .stat')].find(s => s.querySelector('.lbl').textContent === "Aujourd'hui");
+      return card.querySelector('.val').textContent.trim();
+    });
+    ok(/777/.test(kpi), `KPI "Aujourd'hui" compte le paiement du jour local (obtenu "${kpi}")`);
+    await B.ctx.close();
+
+    /* 19.c — garde de régression: en UTC pur, comportement inchangé */
+    const C = await newDevice(browser, { cloud: false, timezoneId: 'UTC' });
+    await C.page.goto(APP, { waitUntil: 'networkidle' });
+    await C.page.clock.setFixedTime(new Date('2026-07-13T12:00:00Z'));
+    const uc = await C.page.evaluate(() => monthCells(2026, 6).find(c => c.day === 13 && !c.out));
+    ok(uc && uc.iso === '2026-07-13', 'UTC: monthCells cellule 13 inchangée');
+    ok((await C.page.evaluate(() => weekCells(new Date())))[0] === '2026-07-13', 'UTC: weekCells inchangé');
+    ok((await C.page.evaluate(() => CAL_TODAY())) === '2026-07-13', 'UTC: CAL_TODAY inchangé');
+    const ub = await C.page.evaluate(() => {
+      DB.paiements.push({ id: uid(), clientId: '', projetId: '', label: 'TZ utc', type: 'Acompte', montant: 300, devise: 'DH', statut: 'Payé', date: '2026-07-05', methode: 'Cash', notes: '' });
+      save(); const m = monthlyRevenue('DH'); return m[m.length - 1];
+    });
+    ok(ub.key === '2026-07', 'UTC: monthlyRevenue bucket courant inchangé');
+    await C.ctx.close();
   }
 
   /* ================================================================ */

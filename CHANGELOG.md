@@ -1,5 +1,11 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (17) — Sprint 17: Fix timezone (calendrier / dashboard)
+- **Bug corrigé** : les dates calendaires étaient construites en heure locale (`new Date(y,m,d)` = minuit local) puis sérialisées en UTC (`toISOString()`). Dans les fuseaux positifs (Maroc UTC+1 : minuit local = veille 23h UTC), toutes les clés date reculaient d'un jour → grille du mois décalée (pastille "aujourd'hui" et événements sur la mauvaise case), chart revenus agrégé sous le mauvais mois, et près de minuit : KPI "Aujourd'hui" à 0, retards non détectés, snapshots datés de la veille.
+- **Fix** : helper unique `isoLocal(d)` (YYYY-MM-DD en heure LOCALE) remplaçant chaque `toISOString().slice(0,10|7|4)` à intention calendaire : `CAL_TODAY`, `monthCells`, `weekCells`, `isOverdue`, KPIs dashboard (jour/mois), `monthlyRevenue`, tâches (today), date par défaut paiement, notifications (soon/past), `reportRange`, année facture/BL, nom du fichier export. Les timestamps `updatedAt` du sync restent en UTC (requis pour le LWW inter-appareils) — non touchés.
+- **Rétro-compatible** : format stocké `YYYY-MM-DD` inchangé; en UTC le comportement est strictement identique (garde de régression).
+- **Tests** : scénario [19] — 15 assertions Playwright avec `timezoneId` Africa/Casablanca (midi + 00h30 locale) et UTC, horloge figée : grille mois/semaine, pastille today, événement sur la bonne case, chart revenus, isOverdue, KPI "Aujourd'hui" (85 au total). Bug reproduit AVANT le fix : 8 échecs Casablanca / 0 UTC. SW v30.
+
 ## 2026-07-13 (16) — Fix Restore: démo DUPLIQUÉE
 - **Source exacte des "4 clients" identifiée** : snapshot hérité (`they_snap_1/2`) contenant la démo **dupliquée** (2 seeds fusionnés par le sync de l'ère v21/v22 = 4 clients). L'empreinte de purge exigeait exactement 2 clients → les doublons passaient au travers et Restore les rendait.
 - **Empreinte généralisée** : détecte la démo à toute multiplicité (uniquement des noms de démo + volumes bornés par le facteur de duplication). La purge au boot (migration automatique) et le refus dans restoreSnapshot utilisent la nouvelle détection.
