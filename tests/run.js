@@ -534,6 +534,135 @@ const cloudRowsFor = (d, email, table) => {
   }
 
   /* ================================================================ */
+  console.log('\n[20] Intégrité référentielle — cascade delete, orphelins (fix critique)');
+  {
+    /* 20.a — delClient doit supprimer TOUTES les entités dépendantes, y compris events */
+    const { ctx, page } = await newDevice(browser, { cloud: false });
+    page.on('dialog', d => d.accept());
+    await page.goto(APP, { waitUntil: 'networkidle' });
+    await sleep(400);
+    await page.evaluate(() => {
+      const c1 = DB.clients[0];
+      DB.events.push({ id: uid(), title: 'Ev lié', type: 'Réunion', date: '2026-07-20', clientId: c1.id, notes: '' });
+      DB.events.push({ id: uid(), title: 'Ev perso', type: 'Personnel', date: '2026-07-21', clientId: '', notes: '' });
+      save();
+    });
+    await page.evaluate(() => delClient(DB.clients[0].id));
+    await sleep(150);
+    let d = await db(page);
+    ok(!d.events.some(e => e.title === 'Ev lié'), 'delClient supprime aussi les events du client');
+    ok(d.events.some(e => e.title === 'Ev perso'), 'les events SANS client (personnels) survivent');
+    await page.evaluate(() => delClient(DB.clients[0].id));
+    await sleep(150);
+    d = await db(page);
+    ok(d.clients.length === 0 && d.projets.length === 0 && d.taches.length === 0 && d.paiements.length === 0,
+      `suppression de tous les clients → zéro dépendant (obtenu p=${d.projets.length} t=${d.taches.length} y=${d.paiements.length})`);
+    /* 20.b — delProjet ne laisse pas de projetId pendant sur les tâches */
+    await page.evaluate(() => {
+      const c = { id: uid(), name: 'IntegCo', type: 'projet', statut: 'Actif', devise: 'DH' };
+      const p = { id: uid(), clientId: c.id, name: 'Proj', statut: 'En cours', prix: 100 };
+      DB.clients.push(c); DB.projets.push(p);
+      DB.taches.push({ id: uid(), clientId: c.id, projetId: p.id, label: 'T-dangling', statut: 'À faire' });
+      save(); delProjet(p.id);
+    });
+    await sleep(150);
+    d = await db(page);
+    ok(d.taches.length === 1 && !d.taches[0].projetId, 'delProjet nettoie projetId des tâches (référence pendante)');
+    await ctx.close();
+
+    /* 20.c — état réel du bug: orphelins hérités en storage → purgés au boot, KPIs à zéro */
+    const ORPHANS = {
+      clients: [],
+      projets: [{ id: 'p1', clientId: 'ghost1', name: 'Orphan Proj', statut: 'En cours', prix: 600 }],
+      taches: [{ id: 't1', clientId: 'ghost1', label: 'T1', statut: 'À faire' }, { id: 't2', clientId: 'ghost1', label: 'T2', statut: 'À faire' }, { id: 't3', clientId: 'ghost2', label: 'T3', statut: 'En cours' }],
+      paiements: [{ id: 'y1', clientId: 'ghost1', label: 'Acompte', montant: 300, devise: 'DH', statut: 'Payé', date: '2026-06-20' }, { id: 'y2', clientId: 'ghost1', label: 'Solde', montant: 300, devise: 'DH', statut: 'En attente', date: '2026-07-20' }, { id: 'y3', clientId: 'ghost2', label: 'Salaire', montant: 800, devise: 'DH', statut: 'Payé', date: '2026-07-01' }, { id: 'y4', clientId: 'ghost2', label: 'Bonus', montant: 2000, devise: 'DH', statut: 'Payé', date: '2026-07-05' }],
+      events: []
+    };
+    const C = await newDevice(browser, { cloud: false });
+    await C.ctx.addInitScript(o => {
+      localStorage.setItem('crm_gestion_clients_v1', JSON.stringify(o));
+      localStorage.setItem('they_seeded_v1', '1');
+    }, ORPHANS);
+    const pageC = await C.ctx.newPage();
+    await pageC.goto(APP, { waitUntil: 'networkidle' });
+    await sleep(400);
+    d = await db(pageC);
+    ok(d.projets.length === 0 && d.taches.length === 0 && d.paiements.length === 0,
+      `boot: orphelins hérités purgés (obtenu p=${d.projets.length} t=${d.taches.length} y=${d.paiements.length})`);
+    const kpi = await pageC.evaluate(() => {
+      go('dash'); renderDash();
+      return [...document.querySelectorAll('#statCards .stat')].find(s => s.querySelector('.lbl').textContent === 'Total encaissé').querySelector('.val').textContent.trim();
+    });
+    ok(/^0\s?DH$/.test(kpi), `dashboard: Total encaissé = 0 DH après purge (obtenu "${kpi}")`);
+    ok(await pageC.evaluate(() => { const r = JSON.parse(localStorage.getItem('they_rescue_orphans') || 'null'); return r && r.rows.paiements.length === 4 }),
+      'filet de sécurité: les orphelins purgés au boot sont conservés dans they_rescue_orphans');
+    await C.ctx.close();
+
+    /* 20.d — Import JSON contenant des orphelins → nettoyé à l'entrée */
+    const D = await newDevice(browser, { cloud: false });
+    await D.page.goto(APP, { waitUntil: 'networkidle' });
+    await sleep(300);
+    const importPayload = {
+      clients: [{ id: 'c9', name: 'RealImport', type: 'projet', statut: 'Actif', devise: 'DH' }],
+      projets: [], taches: [],
+      paiements: [
+        { id: 'k1', clientId: 'c9', label: 'Légitime', montant: 100, devise: 'DH', statut: 'Payé', date: '2026-07-01' },
+        { id: 'k2', clientId: 'ghostX', label: 'Orphelin', montant: 999, devise: 'DH', statut: 'Payé', date: '2026-07-02' }],
+      events: []
+    };
+    fs.writeFileSync('/tmp/import-orphans.json', JSON.stringify(importPayload));
+    await D.page.setInputFiles('#importFile', '/tmp/import-orphans.json');
+    await sleep(300);
+    d = await db(D.page);
+    ok(d.paiements.length === 1 && d.paiements[0].label === 'Légitime', 'import: orphelin rejeté, ligne légitime conservée');
+    /* 20.e — Restore d'un snapshot contenant des orphelins → nettoyé */
+    D.page.on('dialog', x => x.accept());
+    await D.page.evaluate(o => {
+      o.clients = [{ id: 'c9', name: 'RealImport', type: 'projet', statut: 'Actif', devise: 'DH' }];
+      localStorage.setItem('they_snap_1', JSON.stringify({ date: '2026-07-12', db: o }));
+      return restoreSnapshot(0);
+    }, importPayload);
+    await sleep(200);
+    d = await db(D.page);
+    ok(d.paiements.length === 1 && d.paiements[0].label === 'Légitime', 'restore: orphelins du snapshot purgés, données réelles restaurées');
+    await D.ctx.close();
+
+    /* 20.f — Cloud: la suppression cascade se propage; le pull ne ressuscite pas d'orphelins */
+    await fetch(MOCK + '/__reset');
+    const A2 = await newDevice(browser);
+    A2.page.on('dialog', x => x.accept());
+    await A2.page.goto(APP, { waitUntil: 'networkidle' });
+    await A2.page.evaluate(() => {
+      const c = { id: 'cc1', name: 'CloudCascade', type: 'projet', statut: 'Actif', devise: 'DH' };
+      DB.clients = [c]; DB.projets = []; DB.events = [{ id: 'ee1', title: 'EvCloud', type: 'Réunion', date: '2026-07-20', clientId: 'cc1', notes: '' }];
+      DB.taches = [{ id: 'tt1', clientId: 'cc1', label: 'TCloud', statut: 'À faire' }]; DB.paiements = []; save();
+    });
+    await login(A2.page, 'cascade@test.ma', 'secret123', true);
+    const B2 = await newDevice(browser);
+    await B2.page.goto(APP, { waitUntil: 'networkidle' });
+    await login(B2.page, 'cascade@test.ma', 'secret123');
+    ok((await db(B2.page)).events.some(e => e.id === 'ee1'), 'B a reçu l’event du client (pré-condition)');
+    await A2.page.evaluate(() => delClient('cc1'));
+    await sleep(2200); // push debounce
+    let dumpF = await dump();
+    const rowsF = t => cloudRowsFor(dumpF, 'cascade@test.ma', t);
+    ok(rowsF('clients').length === 0 && rowsF('taches').length === 0 && rowsF('events').length === 0,
+      'cloud: cascade complète propagée (client + tâches + events supprimés)');
+    await B2.page.evaluate(() => cloudPull()); await sleep(400);
+    d = await db(B2.page);
+    ok(d.clients.length === 0 && d.taches.length === 0 && d.events.length === 0, 'B converge: zéro orphelin après pull');
+    /* orphelin injecté au cloud (simule un historique sale) → le pull le refuse */
+    await B2.page.evaluate(async () => {
+      await Cloud.client.from('taches').upsert([{ id: 'ttX', client_id: 'ghost-cloud', label: 'OrphCloud', statut: 'À faire', updated_at: new Date().toISOString() }]);
+      return cloudPull();
+    });
+    await sleep(400);
+    d = await db(B2.page);
+    ok(!d.taches.some(t => t.id === 'ttX'), 'pull: un orphelin présent au cloud n’est pas adopté localement');
+    await A2.ctx.close(); await B2.ctx.close();
+  }
+
+  /* ================================================================ */
   await deviceA.ctx.close(); await deviceB.ctx.close();
   await browser.close(); app.close(); mock.close();
   console.log(`\n========== RÉSULTAT: ${passed} ✓ / ${failed} ✗ ==========`);
