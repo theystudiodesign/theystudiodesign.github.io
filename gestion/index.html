@@ -2171,7 +2171,7 @@ load();cloudBoot();renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();
 /* [TRACE-AUDIT] instrumentation temporaire — diagnostic "clients qui reviennent" */
 try{
   window.__TAB_ID=Math.random().toString(36).slice(2,7);
-  window.__BUILD='v30'; // = version du SW (they-gestion-vXX) — tenir synchronisé à chaque release
+  window.__BUILD='v31'; // = version du SW (they-gestion-vXX) — tenir synchronisé à chaque release
   console.log('%c[TRACE-BOOT] build='+window.__BUILD+' · onglet='+window.__TAB_ID+' · clients au boot: '+JSON.stringify((DB.clients||[]).map(c=>c.name)),'color:#3E7C4F;font-weight:bold',
     {seeded:localStorage.getItem('they_seeded_v1'),demo:localStorage.getItem('they_demo_v1'),
      sync:JSON.parse(localStorage.getItem('they_sync_v1')||'null'),
