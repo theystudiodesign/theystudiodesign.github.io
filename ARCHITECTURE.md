@@ -8,6 +8,7 @@
 - **Entités** : clients, projets, taches, paiements, **events** (réunions/livraisons/rappels/personnel), compteurs facture/BL.
 - **Rendering** : `renderAll()` global (dette acceptée à cette échelle ; optimisation ciblée prévue en Phase 1 #8).
 - **PWA** : `sw.js` — network-first pour HTML, cache-first pour assets. Bump de version obligatoire à chaque release.
+- **Dates (Sprint 17)** : toute date **calendaire** (`YYYY-MM-DD`) passe par `isoLocal(d)` — heure LOCALE, jamais `toISOString()` (décale d'un jour en fuseau positif, ex. Maroc UTC+1). `toISOString()` est réservé aux **timestamps** du sync (`updatedAt`, `lastSync`) qui doivent rester en UTC (LWW inter-appareils).
 - **Sécurité** : PIN client-side (SHA-256, dissuasif seulement — pas une vraie auth), `esc()` sur toute sortie, try/catch sur storage/JSON.
 - **Hébergement** : GitHub Pages + domaine theystudiodesign.com (CNAME).
 

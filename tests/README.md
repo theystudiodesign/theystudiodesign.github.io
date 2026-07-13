@@ -15,7 +15,7 @@ npm test
 
 Si Chromium Playwright n'est pas au chemin par défaut : `CHROME_PATH=/chemin/vers/chrome npm test`.
 
-## Scénarios couverts (49 assertions)
+## Scénarios couverts (85 assertions)
 
 1. Régression — config vide = 100 % local, indicateur ☁ caché, seed intact
 2. Inscription + premier push local → cloud (user_id/RLS posé)
@@ -32,3 +32,9 @@ Si Chromium Playwright n'est pas au chemin par défaut : `CHROME_PATH=/chemin/ve
 13. « Continuer sans cloud » — l'app n'est jamais bloquée
 14. Diagnostic — schema.sql non exécuté détecté avec fix exact
 15. Diagnostic — config vide / URL invalide expliquées
+16. Seed anti-réinjection — la démo ne revient jamais après un reset
+17. Restore — ne rend jamais la démo (snapshots réels uniquement, purge, backup vide/corrompu)
+18. Restore cloud — démo locale intacte jamais fusionnée ni poussée
+19. Timezone (Sprint 17) — dates locales via `isoLocal()` : grille mois/semaine, pastille today,
+    événements sur la bonne case, chart revenus, isOverdue, KPI "Aujourd'hui" — testés avec
+    `timezoneId` Africa/Casablanca (UTC+1, midi + 00h30 locale) et garde de régression UTC

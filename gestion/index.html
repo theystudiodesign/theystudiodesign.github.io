@@ -1080,6 +1080,11 @@ const DEVISE_MAP={'€':CURRENCY.symbol,'EUR':CURRENCY.symbol}; // affichage: l'
 const normDevise=d=>DEVISE_MAP[d]||d||CURRENCY.symbol;
 function money(n,d){return (n||0).toLocaleString('fr-FR')+' '+normDevise(d)}
 function fdate(d){if(!d)return '—';const x=new Date(d+'T00:00');return isNaN(x)?esc(d):x.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})}
+/* Date calendaire LOCALE au format YYYY-MM-DD (Sprint 17).
+   JAMAIS toISOString() pour une date de calendrier: il convertit en UTC et
+   décale d'un jour dans les fuseaux positifs (Maroc UTC+1: minuit local = veille 23h UTC).
+   toISOString() reste correct — et requis — pour les timestamps updatedAt du sync (LWW). */
+function isoLocal(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
 function seed(){
@@ -1123,7 +1128,7 @@ function sumByDevise(f,fb){
 const statutBadge={'Actif':'bg-actif','En pause':'bg-pause','Prospect':'bg-prospect','Archivé':'bg-archive','Payé':'bg-paye','En attente':'bg-attente','En retard':'bg-retard','Brief reçu':'bg-brief','En cours':'bg-encours','En attente client':'bg-attclient','Livré':'bg-livre','Terminé & payé':'bg-termine','Annulé':'bg-annule','À faire':'bg-attente','Salit ✅':'bg-termine'};
 
 /* ============ DASHBOARD 2.0 — helpers ============ */
-function isOverdue(p){const t=new Date().toISOString().slice(0,10);return p.statut!=='Payé'&&p.date&&p.date<t}
+function isOverdue(p){const t=isoLocal();return p.statut!=='Payé'&&p.date&&p.date<t}
 function dominantDevises(){
   const vol={};
   DB.paiements.forEach(p=>{if(p.statut==='Payé'){const d=payDevise(p);vol[d]=(vol[d]||0)+(+p.montant||0)}});
@@ -1133,7 +1138,7 @@ function monthlyRevenue(devise,n=12){
   const out=[];const now=new Date();
   for(let i=n-1;i>=0;i--){
     const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-    const key=d.toISOString().slice(0,7);
+    const key=isoLocal(d).slice(0,7);
     const sum=DB.paiements.filter(p=>p.statut==='Payé'&&payDevise(p)===devise&&(p.date||'').startsWith(key))
       .reduce((a,p)=>a+(+p.montant||0),0);
     out.push({key,label:d.toLocaleDateString('fr-FR',{month:'short'}).replace('.',''),sum});
@@ -1175,13 +1180,13 @@ function renderDash(){
   const actifs=DB.clients.filter(c=>c.statut==='Actif');
   const nbProjet=actifs.filter(c=>c.type==='projet').length;
   const nbSalaire=actifs.filter(c=>c.type==='salaire').length;
-  const now=new Date();const mois=now.toISOString().slice(0,7);
+  const now=new Date();const mois=isoLocal(now).slice(0,7);
   const enCours=DB.projets.filter(p=>['Brief reçu','En cours','En attente client','Livré'].includes(p.statut)).length;
   const dv=normDevise(DB.clients[0]&&DB.clients[0].devise);
   const totalPayeStr=sumByDevise(p=>p.statut==='Payé',dv);
   const moisPayeStr=sumByDevise(p=>p.statut==='Payé'&&(p.date||'').startsWith(mois),dv);
   const attenteStr=sumByDevise(p=>p.statut!=='Payé',dv);
-  const jour=now.toISOString().slice(0,10), annee=now.getFullYear().toString();
+  const jour=isoLocal(now), annee=now.getFullYear().toString();
   const jourStr=sumByDevise(p=>p.statut==='Payé'&&p.date===jour,dv);
   const anStr=sumByDevise(p=>p.statut==='Payé'&&(p.date||'').startsWith(annee),dv);
   const retards=DB.paiements.filter(isOverdue);
@@ -1205,7 +1210,7 @@ function renderDash(){
   document.getElementById('dashChart').innerHTML=buildRevenueChart();
 
   const todo=DB.taches.filter(t=>t.statut!=='Salit ✅').sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999'));
-  const today=new Date().toISOString().slice(0,10);
+  const today=isoLocal();
   document.getElementById('dashTaches').innerHTML=todo.length?todo.map(t=>{
     const late=t.deadline&&t.deadline<today;
     return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)">
@@ -1302,7 +1307,7 @@ function renderTaches(){
   const sel=document.getElementById('tacheClientFilter');
   const cur=sel.value;
   sel.innerHTML='<option value="">Ga3 les clients</option>'+DB.clients.map(c=>`<option value="${c.id}" ${c.id===cur?'selected':''}>${esc(c.name)}</option>`).join('');
-  const today=new Date().toISOString().slice(0,10);
+  const today=isoLocal();
   let list=[...DB.taches].sort((a,b)=>(a.statut==='Salit ✅')-(b.statut==='Salit ✅')||(a.deadline||'9999').localeCompare(b.deadline||'9999'));
   if(tacheFilter!=='all')list=list.filter(t=>t.statut===tacheFilter);
   if(sel.value)list=list.filter(t=>t.clientId===sel.value);
@@ -1441,7 +1446,7 @@ function openPayModal(id){
   fillPayProjets();
   y_projet.value=p.projetId||'';y_type.value=p.type||'Acompte';y_montant.value=p.montant||'';
   y_devise.value=p.devise||clientDevise(y_client.value);
-  y_statut.value=p.statut||'Payé';y_date.value=p.date||new Date().toISOString().slice(0,10);y_methode.value=p.methode||'Virement';y_notes.value=p.notes||'';
+  y_statut.value=p.statut||'Payé';y_date.value=p.date||isoLocal();y_methode.value=p.methode||'Virement';y_notes.value=p.notes||'';
   document.getElementById('payModal').classList.add('show');
 }
 function savePay(){
@@ -1460,7 +1465,7 @@ function delPay(id){
 function exportData(){
   const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='they-studio-crm-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  a.download='they-studio-crm-backup-'+isoLocal()+'.json';a.click();
   localStorage.setItem('they_last_backup',Date.now());
   const bb=document.getElementById('backupBanner');if(bb)bb.style.display='none';
   toast('Backup téléchargé ✓');
@@ -1574,7 +1579,7 @@ function factureNum(p){
   if(p.factureNum)return p.factureNum;
   if(!DB.factureCounter)DB.factureCounter=0;
   DB.factureCounter++;
-  const y=(p.date||new Date().toISOString()).slice(0,4);
+  const y=(p.date||isoLocal()).slice(0,4);
   p.factureNum='AE-'+y+'-'+String(DB.factureCounter).padStart(3,'0');
   save();
   return p.factureNum;
@@ -1583,7 +1588,7 @@ function blNum(p){
   if(p.blNum)return p.blNum;
   if(!DB.blCounter)DB.blCounter=0;
   DB.blCounter++;
-  const y=(p.date||new Date().toISOString()).slice(0,4);
+  const y=(p.date||isoLocal()).slice(0,4);
   p.blNum='BL-'+y+'-'+String(DB.blCounter).padStart(3,'0');
   save();
   return p.blNum;
@@ -1705,7 +1710,7 @@ function dismissBackup(){
 
 /* ============ CALENDRIER ============ */
 const Cal={cur:new Date(),view:'mois',dirty:true,cache:null,cacheKey:'',filters:{cats:new Set(['Projets','Tâches','Paiements','Événements']),statut:'',client:''}};
-const CAL_TODAY=()=>new Date().toISOString().slice(0,10);
+const CAL_TODAY=()=>isoLocal();
 
 /* ---- Data Provider (seule couche qui lit DB — remplacable par Supabase) ---- */
 function getCalendarEvents(from,to){
@@ -1735,13 +1740,13 @@ function monthCells(y,m){ // m: 0-11 -> 42 cells {iso,day,out}
   const cells=[];
   for(let i=0;i<42;i++){
     const d=new Date(y,m,1-start+i);
-    cells.push({iso:d.toISOString().slice(0,10),day:d.getDate(),out:d.getMonth()!==m});
+    cells.push({iso:isoLocal(d),day:d.getDate(),out:d.getMonth()!==m});
   }
   return cells;
 }
 function weekCells(ref){ // 7 jours de la semaine de ref (lundi)
   const d=new Date(ref);const start=(d.getDay()+6)%7;
-  return Array.from({length:7},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()-start+i);return x.toISOString().slice(0,10)});
+  return Array.from({length:7},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()-start+i);return isoLocal(x)});
 }
 
 /* ---- Rendering ---- */
@@ -1956,8 +1961,8 @@ function downloadFile(name,content,mime){
 }
 function reportRange(per){
   const now=new Date();
-  if(per==='mois')return [now.toISOString().slice(0,7),now.toISOString().slice(0,7)];
-  if(per==='moisprec'){const d=new Date(now.getFullYear(),now.getMonth()-1,1);const k=d.toISOString().slice(0,7);return[k,k]}
+  if(per==='mois'){const k=isoLocal(now).slice(0,7);return [k,k]}
+  if(per==='moisprec'){const d=new Date(now.getFullYear(),now.getMonth()-1,1);const k=isoLocal(d).slice(0,7);return[k,k]}
   if(per==='annee')return [String(now.getFullYear()),String(now.getFullYear())];
   return ['',''];
 }
@@ -2003,8 +2008,8 @@ function genReport(){
 const NOTIF_SEEN='they_notif_seen';
 function getNotifications(){
   const today=CAL_TODAY();
-  const soon=new Date(Date.now()+3*864e5).toISOString().slice(0,10);
-  const past=new Date(Date.now()-90*864e5).toISOString().slice(0,10);
+  const soon=isoLocal(new Date(Date.now()+3*864e5));
+  const past=isoLocal(new Date(Date.now()-90*864e5));
   // filtres calendrier non appliques: notifications = etat reel complet
   const saved={cats:Cal.filters.cats,statut:Cal.filters.statut,client:Cal.filters.client};
   Cal.filters={cats:new Set(['Projets','Tâches','Paiements','Événements']),statut:'',client:''};
@@ -2135,7 +2140,7 @@ load();cloudBoot();renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();
 /* [TRACE-AUDIT] instrumentation temporaire — diagnostic "clients qui reviennent" */
 try{
   window.__TAB_ID=Math.random().toString(36).slice(2,7);
-  window.__BUILD='v29'; // = version du SW (they-gestion-vXX) — tenir synchronisé à chaque release
+  window.__BUILD='v30'; // = version du SW (they-gestion-vXX) — tenir synchronisé à chaque release
   console.log('%c[TRACE-BOOT] build='+window.__BUILD+' · onglet='+window.__TAB_ID+' · clients au boot: '+JSON.stringify((DB.clients||[]).map(c=>c.name)),'color:#3E7C4F;font-weight:bold',
     {seeded:localStorage.getItem('they_seeded_v1'),demo:localStorage.getItem('they_demo_v1'),
      sync:JSON.parse(localStorage.getItem('they_sync_v1')||'null'),
