@@ -90,3 +90,62 @@ Confirmation possible en production : ouvrir la console → chercher les warns
 
 Recommandation : **1 + 2 + 4** (aucun changement de schéma, réutilise le LWW existant, testable
 avec le harnais multi-onglets déjà écrit). L'option 3 est plus simple mais dégrade l'usage.
+
+
+---
+
+# ADDENDUM (audit 2) — « le bug persiste en production » : diagnostic complet
+
+## Fait n°1 — la production n'a PAS le fix
+`theystudiodesign.com/gestion/` sert **v33** (`__BUILD='v33'`, zéro occurrence de `mergeFromDisk`) :
+la PR #19 n'est **pas mergée** (consigne « do not merge »). La reproduction en production est donc
+attendue — c'est le build audité, pas le build corrigé. Vérifié par `tests/repro-mixed-version.js` :
+- **[P1]** build v33, **1 seul onglet** : create/refresh et delete/refresh **SAINS** → le scénario
+  rapporté implique nécessairement une **2ᵉ instance** (fenêtre PWA installée restée ouverte,
+  autre onglet, autre fenêtre). Confirmation côté production : console → warns `[TRACE-AUTRE-ONGLET]`.
+- **[P2]** build v33, 2 instances : 🔴 reproduit (l'état actuel de la prod).
+
+## Fait n°2 — LE STALE WRITE RESTANT (même après déploiement du fix)
+**[P3] build MIXTE** : onglet corrigé (v34) + instance **v33 jamais rechargée** (même origine →
+même localStorage). Une fenêtre PWA ouverte depuis avant le déploiement **garde l'ancien code en
+mémoire** (le SW network-first ne met à jour qu'à la navigation). Résultat : 🔴 5/5 reproduit.
+
+### Trace d'exécution exacte
+```
+ONGLET CORRIGÉ (v34)                                INSTANCE v33 (PWA restée ouverte)
+────────────────────                                ─────────────────────────────────
+load() → DB={A,B} → snapshotKnown: KNOWN={A,B}      load() → DB₃₃={A,B}  (copie mémoire)
+create C → save():
+  cloudStamp → mergeFromDisk(disk={A,B}: rien à
+  adopter) → write({A,B,C}) → KNOWN={A,B,C}
+delete B → save(): … write({A,C}) → KNOWN={A,C}
+                                                    save() anodin (v33: AUCUN mergeFromDisk)
+                                                    → DataLayer.write(DB₃₃={A,B})   ◄── LE STALE WRITE
+                                                      localStorage = {A,B}  (B ressuscité, C effacé)
+event 'storage' → handler du fix:
+  mergeFromDisk():
+    disk B: absent de mémoire, B ∉ KNOWN({A,C})
+      → branche « inconnu → adopté »  → B RESSUSCITÉ EN MÉMOIRE          🔴
+    mémoire C: absent du disque, C ∈ KNOWN
+      → branche « connu+absent = supprimé ailleurs » → C ABANDONNÉ        🔴
+  snapshotKnown(disk={A,B}) → KNOWN={A,B}
+refresh → load({A,B}) → render : B revenu, C disparu — MALGRÉ le fix     🔴
+```
+
+### Cause exacte
+Le fix protège les instances **qui l'exécutent**. Une instance à l'ancien code écrit toujours
+inconditionnellement (`DataLayer.write`, v33 L.1108) ; et l'onglet corrigé, ne pouvant pas
+distinguer « suppression légitime par un autre onglet corrigé » d'un « écrasement par un
+ancien build », **se rend** : `mergeFromDisk` adopte la résurrection (branche inconnu→adopté)
+et honore la fausse suppression (branche connu+absent). Lignes en cause dans le build corrigé :
+les deux branches de `mergeFromDisk` + `snapshotKnown(disk)` du handler `storage`.
+
+## Piste de complément (À APPROUVER — rien d'implémenté)
+Marquer chaque écriture du nouveau code d'un **jeton de génération** (`they_writer = {rev:n+1, build}`
+écrit dans la même transaction que la clé DB). À l'event `storage` / au `mergeFromDisk` :
+- si le disque a été écrit **sans progression du jeton** (ancien build) → écriture SUSPECTE :
+  ne pas honorer les suppressions, re-fusionner en union+LWW et **réécrire immédiatement**
+  l'état sain (l'onglet corrigé reprend la main) ;
+- si le jeton a progressé (autre instance corrigée) → comportement actuel (tombstones respectés).
+Les instances v33 disparaissent d'elles-mêmes au premier rechargement (SW network-first) —
+le jeton n'est qu'un sas de transition, sans changement de schéma des données.
