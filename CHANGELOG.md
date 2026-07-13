@@ -1,5 +1,8 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (4) — Sprint 05
+- **Notification Center** : cloche topbar avec badge, panneau des alertes (retards en ●, échéances ≤3 jours en ○, rappel backup), clic ouvre l'élément concerné, toast au chargement si nouvelles alertes. Dérivé du data provider calendrier (zéro duplication).
+
 ## 2026-07-13 (3) — Sprint 04
 - **Smart Calendar** : vues Mois/Semaine (grille CSS native, semaine commençant lundi), navigation ‹ › / Aujourd'hui / saut mois+année, panneau latéral du jour (bottom sheet sur mobile, dots au lieu de chips sur petits écrans), événements en retard en rouge.
 - **Nouvelle entité `DB.events`** (réunions, livraisons, rappels, personnel) : CRUD complet, init auto rétro-compatible, incluse dans Import/Export et dans la recherche globale.

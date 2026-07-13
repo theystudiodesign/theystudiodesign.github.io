@@ -306,6 +306,23 @@ body.dark .dp-inner{background:#1B1B1A}
 }
 @media(min-width:701px){.cal-dots{display:none}}
 
+/* ===== NOTIFICATIONS ===== */
+#notifBtn{position:relative;background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:13px;padding:5px 10px;cursor:pointer;margin-right:8px}
+#notifBtn:hover{color:var(--ink)}
+#notifBadge{position:absolute;top:-6px;right:-6px;background:var(--rouge,#C0392B);color:#fff;font-size:9.5px;font-weight:800;border-radius:9px;padding:1px 5px;display:none}
+#notifPanel{display:none;position:fixed;z-index:360;top:54px;right:16px;width:min(360px,92vw);background:var(--card,#fff);border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 48px rgba(0,0,0,.22);overflow:hidden}
+body.dark #notifPanel{background:#1B1B1A}
+#notifPanel.open{display:block}
+.nf-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:700;font-size:13px;color:var(--ink)}
+#notifList{max-height:50vh;overflow:auto}
+.nf-item{padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.nf-item:hover{background:rgba(0,0,0,.03)}
+body.dark .nf-item:hover{background:rgba(255,255,255,.05)}
+.nf-item .t{font-size:13px;font-weight:600;color:var(--ink)}
+.nf-item .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.nf-item.late .t::before{content:'● ';color:var(--rouge,#C0392B)}
+.nf-item.soon .t::before{content:'○ ';color:var(--muted)}
+
 /* ===== GLOBAL SEARCH (Ctrl+K) ===== */
 #searchWrap{display:none;position:fixed;inset:0;z-index:400;background:rgba(17,17,16,.5);backdrop-filter:blur(2px)}
 #searchWrap.open{display:flex;align-items:flex-start;justify-content:center;padding:12vh 16px 16px}
@@ -381,7 +398,7 @@ body.dark .search-box{background:#1B1B1A}
 
   <!-- MAIN -->
   <main class="main">
-    <div class="topbar"><span><b>THE’Y STUDIO DESIGN</b> · Espace de gestion</span><button id="searchBtn" onclick="openSearch()">🔍 Recherche &nbsp;<b>Ctrl K</b></button><span id="topDate"></span></div>
+    <div class="topbar"><span><b>THE’Y STUDIO DESIGN</b> · Espace de gestion</span><button id="notifBtn" onclick="toggleNotifs()" title="Notifications">🔔<span id="notifBadge"></span></button><button id="searchBtn" onclick="openSearch()">🔍 Recherche &nbsp;<b>Ctrl K</b></button><span id="topDate"></span></div>
     <div id="backupBanner"><span>⚠️ <b>Backup:</b> <span id="backupBannerTxt"></span></span><button onclick="exportData()">Export daba</button><button class="bb-x" onclick="dismissBackup()">✕</button></div>
 
     <!-- ====== DASHBOARD ====== -->
@@ -1099,7 +1116,7 @@ applyTheme();
 /* ============ INIT ============ */
 function closeModal(id){document.getElementById(id).classList.remove('show');editId=null}
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}));
-function renderAll(){renderDash();renderClients();renderTaches();renderProjets();renderPays();if(document.getElementById('tab-calendrier')&&document.getElementById('tab-calendrier').style.display!=='none')renderCalendar()}
+function renderAll(){renderDash();renderClients();renderTaches();renderProjets();renderPays();if(document.getElementById('tab-calendrier')&&document.getElementById('tab-calendrier').style.display!=='none')renderCalendar();if(document.getElementById('notifBadge'))renderNotifBadge()}
 /* ============ FACTURE (Auto-Entrepreneur officielle) ============ */
 const AE={
   nom:"Moulay Yassine El fassi",
@@ -1418,6 +1435,50 @@ function delEvent(){
   save();closeModal('eventModal');renderCalendar();toast('Événement tmess7');
 }
 
+/* ============ NOTIFICATIONS (derivees du data provider) ============ */
+const NOTIF_SEEN='they_notif_seen';
+function getNotifications(){
+  const today=CAL_TODAY();
+  const soon=new Date(Date.now()+3*864e5).toISOString().slice(0,10);
+  const past=new Date(Date.now()-90*864e5).toISOString().slice(0,10);
+  // filtres calendrier non appliques: notifications = etat reel complet
+  const saved={cats:Cal.filters.cats,statut:Cal.filters.statut,client:Cal.filters.client};
+  Cal.filters={cats:new Set(['Projets','Tâches','Paiements','Événements']),statut:'',client:''};
+  const evs=getCalendarEvents(past,soon);
+  Cal.filters=saved;
+  const out=[];
+  evs.forEach(e=>{
+    if(isLateEv(e))out.push({kind:'late',title:e.title,sub:e.cat+(e.client?' · '+e.client:'')+' · fat le délai ('+fdate(e.date)+')',open:e.open});
+    else if(e.date>=today&&e.date<=soon&&!['Payé','Salit ✅','Terminé & payé'].includes(e.statut))
+      out.push({kind:'soon',title:e.title,sub:e.cat+(e.client?' · '+e.client:'')+' · '+(e.date===today?"aujourd'hui":fdate(e.date)),open:e.open});
+  });
+  const lastBk=+localStorage.getItem('they_last_backup')||0;
+  if(!lastBk||Date.now()-lastBk>7*864e5)out.push({kind:'late',title:'Backup ma tdarch had simana',sub:'Dir Export bach t7mi les données',open:()=>exportData()});
+  return out;
+}
+function renderNotifBadge(){
+  const n=getNotifications().length;
+  const b=document.getElementById('notifBadge');
+  b.style.display=n?'block':'none';b.textContent=n>9?'9+':n;
+}
+function toggleNotifs(){
+  const p=document.getElementById('notifPanel');
+  if(p.classList.contains('open')){p.classList.remove('open');return}
+  const list=getNotifications();
+  document.getElementById('notifList').innerHTML=list.length?list.map((n,i)=>
+    `<div class="nf-item ${n.kind}" data-nf="${i}"><div class="t">${esc(n.title)}</div><div class="s">${esc(n.sub)}</div></div>`).join('')
+    :'<div class="sr-empty">Kolchi mzyan — 7ta notification ✓</div>';
+  document.querySelectorAll('#notifList [data-nf]').forEach(el=>el.onclick=()=>{toggleNotifs();list[+el.dataset.nf].open()});
+  localStorage.setItem(NOTIF_SEEN,String(getNotifications().length));
+  p.classList.add('open');
+}
+function notifToastOnLoad(){
+  const n=getNotifications().length;
+  const seen=+localStorage.getItem(NOTIF_SEEN)||0;
+  if(n>seen)toast('🔔 '+n+' notification(s) — chouf la cloche');
+  renderNotifBadge();
+}
+
 /* ============ GLOBAL SEARCH (Ctrl+K) ============ */
 const Search={idx:null,dirty:true,sel:0,results:[],RECENT_KEY:'they_search_recent'};
 function fold(x){return (x||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
@@ -1505,10 +1566,13 @@ document.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openSearch()}
 });
 
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();closeFacture();document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show'))}});
-load();renderAll();checkBackup();
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();closeFacture();document.getElementById('notifPanel').classList.remove('open');document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show'))}});
+load();renderAll();checkBackup();notifToastOnLoad();
 if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
+
+<!-- ===== NOTIFICATIONS ===== -->
+<div id="notifPanel"><div class="nf-head"><span>Notifications</span><button class="icon-btn" onclick="toggleNotifs()">✕</button></div><div id="notifList"></div></div>
 
 <!-- ===== EVENT MODAL ===== -->
 <div class="overlay" id="eventModal">
