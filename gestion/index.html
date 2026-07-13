@@ -390,6 +390,7 @@ body.dark .search-box{background:#1B1B1A}
     <div class="foot">
       <button id="themeBtn" onclick="toggleTheme()">🌙 Mode sombre</button>
       <button onclick="openReports()">Rapports</button>
+      <button onclick="openRestore()">Restore</button>
       <button onclick="exportData()">Export JSON</button>
       <button onclick="document.getElementById('importFile').click()">Import JSON</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
@@ -1450,6 +1451,45 @@ function delEvent(){
   save();closeModal('eventModal');renderCalendar();toast('Événement tmess7');
 }
 
+/* ============ AUTO BACKUP & RESTORE ============ */
+const SNAP_KEYS=['they_snap_1','they_snap_2']; // rotation: 1 = plus recent
+function takeSnapshot(){ // quotidien, silencieux, protege par quota
+  try{
+    const last=JSON.parse(localStorage.getItem(SNAP_KEYS[0])||'null');
+    const today=CAL_TODAY();
+    if(last&&last.date===today)return; // deja fait aujourd'hui
+    const snap={date:today,db:DB};
+    if(last)localStorage.setItem(SNAP_KEYS[1],JSON.stringify(last));
+    localStorage.setItem(SNAP_KEYS[0],JSON.stringify(snap));
+  }catch(e){/* quota: les snapshots sont best-effort, jamais bloquants */}
+}
+function autoBackup(){ // fichier hebdo automatique (remplace la banniere passive)
+  const last=+localStorage.getItem('they_last_backup')||0;
+  if(!last||Date.now()-last>7*864e5){
+    try{exportData();toast('💾 Backup automatique téléchargé')}catch(e){}
+  }
+}
+function openRestore(){
+  const list=document.getElementById('snapList');
+  const snaps=SNAP_KEYS.map(k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}});
+  list.innerHTML=snaps.some(Boolean)?snaps.map((sn,i)=>sn?
+    `<div class="dp-ev" style="display:flex;justify-content:space-between;align-items:center">
+      <div><div class="t">Snapshot ${i===0?'récent':'précédent'}</div>
+      <div class="s">${fdate(sn.date)} · ${sn.db.clients.length} clients · ${sn.db.paiements.length} paiements · ${sn.db.projets.length} projets</div></div>
+      <button class="btn btn-sm btn-primary" onclick="restoreSnapshot(${i})">Restaurer</button></div>`:'').join('')
+    :'<div class="sr-empty">Ba9i ma kayn 7ta snapshot — ghadi itsawbo automatiquement kol nhar</div>';
+  document.getElementById('restoreModal').classList.add('show');
+}
+function restoreSnapshot(i){
+  if(!confirm('⚠️ Had l opération ghadi t3awed les données l snapshot dyal '+ (i===0?'lyoum/lbare7':'9bel') +'. Les données dyal daba ghadi itbeddlo. Nkemlo?'))return;
+  try{
+    const sn=JSON.parse(localStorage.getItem(SNAP_KEYS[i]));
+    if(!sn||!sn.db||!sn.db.clients){toast('Snapshot machi valide');return}
+    DB=sn.db;if(!DB.taches)DB.taches=[];if(!DB.projets)DB.projets=[];if(!DB.events)DB.events=[];
+    save();closeModal('restoreModal');renderAll();toast('Données restaurées ✓');
+  }catch(e){toast('Erreur f la restauration')}
+}
+
 /* ============ CRM AVANCE — fiche client ============ */
 function clientHistorique(id){
   return {
@@ -1683,9 +1723,22 @@ document.addEventListener('keydown',e=>{
 });
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();closeFacture();document.getElementById('notifPanel').classList.remove('open');document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show'))}});
-load();renderAll();checkBackup();notifToastOnLoad();
+load();renderAll();takeSnapshot();autoBackup();notifToastOnLoad();
 if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
+
+<!-- ===== RESTORE ===== -->
+<div class="overlay" id="restoreModal">
+  <div class="modal">
+    <h2>Backup &amp; Restore</h2>
+    <p class="t-sub" style="margin-bottom:10px">Snapshots automatiques locaux (2 max, rotation quotidienne) + backup fichier hebdomadaire automatique.</p>
+    <div id="snapList"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('restoreModal')">Fermer</button>
+      <button class="btn btn-primary" onclick="exportData()">Export fichier daba</button>
+    </div>
+  </div>
+</div>
 
 <!-- ===== RAPPORTS ===== -->
 <div class="overlay" id="reportModal">

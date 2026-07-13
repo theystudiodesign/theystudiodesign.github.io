@@ -13,7 +13,8 @@
 | 8 | Performance (rendering ciblé) | ✅ Livré |
 | 9 | Responsive audit | Planifié |
 | 10 | UI Polish + raccourcis clavier | Planifié |
-| + | Activity log, filtres avancés, Settings, auto-backup | Backlog |
+| + | Auto-backup & Restore | ✅ Livré (Sprint 09) |
+| + | Activity log, filtres avancés, Settings | Backlog |
 
 ## Phase 2 — SaaS (NE PAS IMPLÉMENTER sans approbation explicite)
 Supabase (Auth + PostgreSQL + Storage + RLS) · Stripe · Multi-user & rôles · Client Portal · Cloud Sync · White Label.

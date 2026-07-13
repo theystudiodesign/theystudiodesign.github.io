@@ -4,4 +4,4 @@
 2. Détection "En retard" basée sur `date` du paiement (pas de champ `échéance` dédié) — heuristique assumée.
 3. `renderAll()` re-rend tout — acceptable < quelques centaines d'enregistrements.
 4. Images facture en base64 consomment le quota LocalStorage partagé.
-5. Backup manuel uniquement (rappel 7 jours en place) — auto-backup au backlog.
+5. ~~Backup manuel uniquement~~ Résolu Sprint 09 : snapshots quotidiens + backup fichier hebdo automatique. Les snapshots doublent l usage LocalStorage (surveillé, best-effort).
