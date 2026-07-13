@@ -1,5 +1,15 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (13) — Sprint 12
+- **Cloud Sync v2 (Supabase)** : moteur de synchronisation complet, testé de bout en bout.
+  - **Conflits (LWW par ligne)** : chaque ligne est horodatée (updatedAt) à la modification; au pull, fusion ligne par ligne — la version la plus récente gagne, sur tous les appareils. Trigger SQL adapté pour respecter l'horodatage client. Limite documentée: suppression locale > édition distante.
+  - **Suppressions sûres** : diff contre les ids connus du cloud au dernier sync (baseIds) — corrige le bug Sprint 11 où un push effaçait les lignes créées par un autre appareil.
+  - **Offline-first renforcé** : flag "dirty" persistant — un push raté est rejoué automatiquement au retour du réseau (event online), au retour sur l'onglet (visibilitychange) et au boot. LocalStorage reste le cache; l'app démarre toujours en local d'abord.
+  - **Auth v2** : inscription + connexion + reprise de session, messages d'erreur traduits, bouton "Continuer sans cloud" (l'app n'est jamais bloquée), déconnexion propre.
+  - **Diagnostic automatique** : indicateur ☁ dans la topbar (sync ✓ / en attente / erreur) → panneau qui détecte et explique exactement quoi corriger: config vide, URL invalide, mauvaise clé (ou service_role), projet en pause/injoignable, schema.sql non exécuté.
+  - **Schéma corrigé** : colonnes taches.projet_id + taches.details ajoutées (étaient perdues au round-trip cloud), compteurs facture/BL fusionnés par max().
+  - **Suite d'intégration (tests/)** : 49 assertions — vrai client supabase-js contre un mock Supabase local (auth GoTrue + REST PostgREST + isolation RLS), piloté par Playwright: inscription, login, sync auto 2 appareils, offline→resync, conflits LWW, suppressions croisées, round-trip des champs, isolation par compte, régression mode local. `cd tests && npm install && npm run build:vendor && npm test`. SW v22.
+
 ## 2026-07-13 (12) — Sprint 11
 - **Préparation Supabase** : schéma PostgreSQL complet (supabase/schema.sql — 6 tables, relations, index, RLS par utilisateur, bucket storage privé, triggers updated_at, validé par parseur PostgreSQL). Pilote cloud dans l'app : mapping camelCase↔snake_case testé, pull au boot + push débouncé à chaque save, LocalStorage conservé comme cache offline, écran d'authentification (email+mot de passe) affiché uniquement si configuré. supabase-config.js vide = application 100 % locale, zéro changement. Guide: SUPABASE_SETUP.md.
 
