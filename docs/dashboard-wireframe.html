@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE'Y — Dashboard UX Proposal · Wireframes (Sprint 20)</title>
+<style>
+/* ============================================================
+   WIREFRAMES — proposition UX Dashboard (Sprint 20). PAS du code de production.
+   3 artboards: desktop 1440 · tablet 834 · mobile 390. Tokens du Design System.
+   ============================================================ */
+:root{
+  --ink:#111110; --ink2:#2A2A28; --mut:#6F6F6C; --mut2:#9A9A96;
+  --line:#E8E8E5; --line2:#D9D9D5; --bg:#F7F7F4; --card:#FFFFFF; --side:#0F0F0E;
+  --danger:#B04A3E; --success:#3E7C4F; --warning:#B08834; --info:#3E6B8F;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,sans-serif;background:#E9E9E6;color:var(--ink);padding:30px;-webkit-font-smoothing:antialiased}
+.board{margin-bottom:44px}
+.board>h2{font-size:15px;font-weight:700;margin-bottom:4px}
+.board>p{font-size:12px;color:var(--mut);margin-bottom:14px}
+.frame{background:var(--bg);border:1px solid var(--line2);border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(17,17,16,.08)}
+.note{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--info);color:#fff;font-size:9.5px;font-weight:800;vertical-align:2px;margin-left:6px}
+/* ---- primitives wireframe ---- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px}
+.lbl{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.big{font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.sub{font-size:11.5px;color:var(--mut)}
+.delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;border-radius:999px;padding:2px 8px}
+.delta.up{color:var(--success);background:rgba(62,124,79,.09)}
+.delta.warn{color:var(--danger);background:rgba(176,74,62,.09)}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.row{display:flex;align-items:center;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:7px 13px;border-radius:8px}
+.btn.pri{background:var(--ink);color:#fff}
+.btn.gho{background:var(--card);border:1px solid var(--line2)}
+.link{font-size:11.5px;color:var(--mut);font-weight:500}
+.hr{height:1px;background:var(--line)}
+.bar{background:var(--ink);border-radius:2.5px 2.5px 0 0}
+.sk{background:var(--line);border-radius:5px}
+/* ================= DESKTOP 1440 ================= */
+.d-wrap{width:1440px;display:flex}
+.d-side{width:232px;background:var(--side);min-height:960px;padding:20px 16px;color:#B9B9B5;font-size:12.5px}
+.d-side .logo{color:#fff;font-weight:300;font-size:21px;letter-spacing:5px;padding:8px 6px 20px;border-bottom:1px solid rgba(255,255,255,.09);margin-bottom:14px}
+.d-side .logo b{font-weight:800;font-size:29px;letter-spacing:0}
+.d-side .it{padding:8px 10px;border-radius:8px;margin-bottom:2px;display:flex;gap:9px;align-items:center}
+.d-side .it.on{background:rgba(255,255,255,.12);color:#fff;font-weight:600}
+.d-side .sq{width:14px;height:14px;border:1.5px solid currentColor;border-radius:3.5px;opacity:.8}
+.d-main{flex:1;padding:26px 40px 48px;max-width:1208px}
+.d-top{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:26px;font-size:12px;color:var(--mut)}
+.d-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px}
+.d-head h1{font-size:24px;font-weight:700;letter-spacing:-.02em}
+.d-head p{font-size:12.5px;color:var(--mut);margin-top:3px}
+.grid12{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.hero{grid-column:span 6;padding:22px 24px}
+.hero .big{font-size:34px;margin:10px 0 6px}
+.strip{grid-column:span 12;display:flex;padding:14px 24px;gap:0}
+.strip .cell{flex:1;display:flex;flex-direction:column;gap:5px;padding:2px 22px;border-left:1px solid var(--line)}
+.strip .cell:first-child{border-left:0;padding-left:0}
+.strip .v{font-size:16.5px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.chart{grid-column:span 12;padding:20px 24px}
+.queue{grid-column:span 7;padding:18px 22px}
+.due{grid-column:span 5;padding:18px 22px}
+.projs{grid-column:span 12;padding:18px 22px}
+.sec{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sec .t{font-size:13px;font-weight:600}
+.sec .t span{color:var(--mut2);font-weight:600;margin-left:6px;font-size:12px}
+.q-item{display:flex;align-items:center;gap:11px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:13px}
+.q-item:last-child{border-bottom:0}
+.q-item .meta{font-size:11.5px;color:var(--mut);margin-top:2px}
+.q-item .act{margin-left:auto;font-size:11.5px;font-weight:600;border:1px solid var(--line2);padding:4px 10px;border-radius:7px;background:var(--card)}
+.amount{font-weight:700;font-variant-numeric:tabular-nums;margin-left:auto;text-align:right}
+.pill{font-size:10.5px;font-weight:600;border-radius:999px;padding:2px 8px;border:1px solid var(--line2)}
+.pill.late{color:var(--danger);border-color:var(--danger)}
+.prog{height:4px;border-radius:999px;background:var(--line);margin-top:8px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ink);border-radius:999px}
+/* charts fake */
+.bars{display:flex;align-items:flex-end;gap:14px;height:130px;margin-top:16px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.bars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+.bars .m{font-size:10px;color:var(--mut2)}
+.spark{display:flex;align-items:flex-end;gap:3px;height:26px}
+.spark i{width:5px;border-radius:2px;background:var(--line2)}
+.spark i.hi{background:var(--ink)}
+/* ================= TABLET 834 ================= */
+.t-wrap{width:834px}
+.t-main{padding:22px 26px 40px}
+.t-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.t-full{grid-column:1/-1}
+.t-hero{padding:18px 20px}
+.t-hero .big{font-size:28px;margin:8px 0 5px}
+.t-strip{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:6px 20px}
+.t-strip .cell{display:flex;justify-content:space-between;align-items:center;padding:11px 2px;border-bottom:1px solid var(--line);font-size:12.5px}
+.t-strip .cell:nth-last-child(-n+2){border-bottom:0}
+.t-strip .cell:nth-child(odd){margin-right:20px}
+.t-strip .v{font-weight:700;font-variant-numeric:tabular-nums}
+/* ================= MOBILE 390 ================= */
+.m-wrap{width:390px}
+.m-main{padding:16px 16px 84px}
+.m-hero{padding:16px 18px}
+.m-hero .big{font-size:26px;margin:7px 0 4px}
+.m-tabbar{position:sticky;bottom:0;background:var(--side);border-radius:0 0 13px 13px;display:flex;padding:9px 6px calc(9px + 6px);margin:16px -16px -84px}
+.m-tabbar .ti{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#8f8f8b;font-size:9.5px}
+.m-tabbar .ti.on{color:#fff}
+.m-tabbar .sq{width:16px;height:16px;border:1.6px solid currentColor;border-radius:4px}
+.m-seg{display:flex;background:var(--line);border-radius:9px;padding:3px;margin-bottom:14px}
+.m-seg span{flex:1;text-align:center;font-size:11.5px;font-weight:600;padding:6px;border-radius:7px;color:var(--mut)}
+.m-seg span.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ DESKTOP -->
+<div class="board">
+  <h2>Artboard 1 — Desktop 1440</h2>
+  <p>Grille 12 colonnes · hero 2×6 · strip 12 · chart 12 · queue 7 + à encaisser 5 · projets 12</p>
+  <div class="frame d-wrap">
+    <div class="d-side">
+      <div class="logo">THE’<b>Y</b></div>
+      <div class="it on"><span class="sq"></span> Dashboard</div>
+      <div class="it"><span class="sq" style="border-radius:50%"></span> Clients</div>
+      <div class="it"><span class="sq"></span> Tâches</div>
+      <div class="it"><span class="sq"></span> Projets</div>
+      <div class="it"><span class="sq" style="transform:rotate(45deg);border-radius:2px"></span> Paiements</div>
+      <div class="it"><span class="sq"></span> Calendrier</div>
+    </div>
+    <div class="d-main">
+      <div class="d-top"><span><b style="color:var(--ink)">THE’Y STUDIO DESIGN</b> · Espace de gestion</span><span class="row" style="gap:14px"><span>cloud · sync OK</span><span>notifications</span><span>Recherche <b>Ctrl K</b></span><span>lundi 13 juillet 2026</span></span></div>
+      <div class="d-head">
+        <div><h1>Salam, Yassine — Dashboard<span class="note">1</span></h1><p>lundi 13 juillet · 2 clients actifs · 1 projet en cours</p></div>
+        <div class="row"><span class="btn gho">+ Paiement</span><span class="btn pri">+ Client</span></div>
+      </div>
+      <div class="grid12">
+        <!-- HERO -->
+        <div class="card hero">
+          <div class="row" style="justify-content:space-between"><span class="lbl">Total encaissé — juillet<span class="note">2</span></span><span class="delta up">▲ +18% vs juin</span></div>
+          <div class="big">2 800 DH</div>
+          <div class="row" style="justify-content:space-between"><span class="sub">3 100 DH cette année · 3 paiements</span>
+          <span class="spark"><i style="height:30%"></i><i style="height:20%"></i><i style="height:45%"></i><i style="height:38%"></i><i style="height:60%"></i><i class="hi" style="height:90%"></i></span></div>
+        </div>
+        <div class="card hero">
+          <div class="row" style="justify-content:space-between"><span class="lbl">À encaisser<span class="note">3</span></span><span class="delta warn">● 1 500 DH en retard</span></div>
+          <div class="big">1 800 DH</div>
+          <div class="sub">2 paiements en attente · le plus ancien: 5 jours</div>
+        </div>
+        <!-- METRICS STRIP -->
+        <div class="card strip">
+          <div class="cell"><span class="lbl">Aujourd'hui</span><span class="v">0 DH</span></div>
+          <div class="cell"><span class="lbl">Ce mois</span><span class="v">2 800 DH</span></div>
+          <div class="cell"><span class="lbl">Cette année</span><span class="v">3 100 DH</span></div>
+          <div class="cell"><span class="lbl">Moy. / projet</span><span class="v">300 DH</span></div>
+          <div class="cell"><span class="lbl">Projets livrés</span><span class="v">1 / 1</span></div>
+          <span class="note" style="align-self:center">4</span>
+        </div>
+        <!-- CHART -->
+        <div class="card chart">
+          <div class="sec"><span class="t">Revenus <span>12 derniers mois</span><span class="note">5</span></span><span class="link">DH · tout →</span></div>
+          <div class="bars">
+            <div class="b"><div class="bar sk" style="height:8%"></div><span class="m">août</span></div>
+            <div class="b"><div class="bar sk" style="height:14%"></div><span class="m">sept</span></div>
+            <div class="b"><div class="bar sk" style="height:6%"></div><span class="m">oct</span></div>
+            <div class="b"><div class="bar sk" style="height:22%"></div><span class="m">nov</span></div>
+            <div class="b"><div class="bar sk" style="height:12%"></div><span class="m">déc</span></div>
+            <div class="b"><div class="bar sk" style="height:18%"></div><span class="m">janv</span></div>
+            <div class="b"><div class="bar sk" style="height:9%"></div><span class="m">févr</span></div>
+            <div class="b"><div class="bar sk" style="height:26%"></div><span class="m">mars</span></div>
+            <div class="b"><div class="bar sk" style="height:15%"></div><span class="m">avr</span></div>
+            <div class="b"><div class="bar sk" style="height:11%"></div><span class="m">mai</span></div>
+            <div class="b"><div class="bar" style="height:34%;width:100%"></div><span class="m">juin</span></div>
+            <div class="b"><div class="bar" style="height:88%;width:100%;opacity:.92"></div><span class="m" style="color:var(--ink);font-weight:700">juil</span></div>
+          </div>
+          <div class="sub" style="margin-top:8px">Survol: mois + montant · clic: Paiements du mois</div>
+        </div>
+        <!-- WORK QUEUE -->
+        <div class="card queue">
+          <div class="sec"><span class="t">Daba <span>· 4</span><span class="note">6</span></span><span class="link">Tâches →</span></div>
+          <div class="q-item"><span class="dot" style="background:var(--danger)"></span><div><b>Solde site vitrine — 1 500 DH</b><div class="meta">Paiement · Mouhamed K. · <b style="color:var(--danger)">5 jours de retard</b></div></div><span class="act">Relancer</span></div>
+          <div class="q-item"><span class="dot" style="background:var(--danger)"></span><div><b>Envoyer le pack logo + charte PDF</b><div class="meta">Tâche · Mouhamed K. · aujourd'hui</div></div><span class="act">Salit</span></div>
+          <div class="q-item"><span class="dot" style="background:var(--warning)"></span><div><b>Réunion brief — Atlas Café</b><div class="meta">Événement · aujourd'hui 15h</div></div><span class="act">Ouvrir</span></div>
+          <div class="q-item"><span class="dot" style="background:var(--warning)"></span><div><b>Design 4 posts Instagram</b><div class="meta">Tâche · Client Exemple · mercredi</div></div><span class="act">Salit</span></div>
+        </div>
+        <!-- MONEY DUE -->
+        <div class="card due">
+          <div class="sec"><span class="t">À encaisser <span>· 2</span><span class="note">7</span></span><span class="link">Paiements →</span></div>
+          <div class="q-item"><div><b>Solde site vitrine</b><div class="meta">Mouhamed K. · 08 juil.</div></div><div class="amount">1 500 DH<div><span class="pill late">en retard</span></div></div></div>
+          <div class="q-item"><div><b>Solde final — Pack Logo</b><div class="meta">Mouhamed K. · 20 juil.</div></div><div class="amount">300 DH<div><span class="pill">dans 7 j</span></div></div></div>
+          <div class="hr" style="margin:10px 0"></div>
+          <div class="row" style="justify-content:space-between;font-size:12.5px"><span class="sub">Total attendu</span><b style="font-variant-numeric:tabular-nums">1 800 DH</b></div>
+        </div>
+        <!-- PROJECTS -->
+        <div class="card projs">
+          <div class="sec"><span class="t">Projets en cours <span>· 1</span><span class="note">8</span></span><span class="link">Projets →</span></div>
+          <div class="q-item" style="border-bottom:0"><div style="flex:1"><div class="row" style="justify-content:space-between"><b>Pack Logo &amp; Charte Graphique <span class="sub" style="font-weight:400">— Mouhamed K.</span></b><span class="pill" style="color:var(--success);border-color:var(--success)">livré</span></div><div class="prog"><i style="width:50%"></i></div><div class="meta" style="margin-top:6px">300 / 600 DH encaissé (50%) · deadline 10 juil.</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ TABLET -->
+<div class="board">
+  <h2>Artboard 2 — Tablet 834</h2>
+  <p>2 colonnes · hero côte à côte · strip 2×2 (listes clé-valeur) · sections empilées pleine largeur</p>
+  <div class="frame t-wrap">
+    <div class="t-main">
+      <div class="d-head" style="margin-bottom:16px">
+        <div><h1 style="font-size:21px">Dashboard</h1><p>lundi 13 juillet · 2 clients actifs</p></div>
+        <span class="btn pri">+ Client</span>
+      </div>
+      <div class="t-grid">
+        <div class="card t-hero">
+          <div class="row" style="justify-content:space-between"><span class="lbl">Encaissé — juillet</span><span class="delta up">▲ +18%</span></div>
+          <div class="big">2 800 DH</div><div class="sub">3 100 DH cette année</div>
+        </div>
+        <div class="card t-hero">
+          <div class="row" style="justify-content:space-between"><span class="lbl">À encaisser</span><span class="delta warn">● 1 500 DH retard</span></div>
+          <div class="big">1 800 DH</div><div class="sub">2 paiements en attente</div>
+        </div>
+        <div class="card t-full t-strip">
+          <div class="cell"><span class="lbl">Aujourd'hui</span><span class="v">0 DH</span></div>
+          <div class="cell"><span class="lbl">Ce mois</span><span class="v">2 800 DH</span></div>
+          <div class="cell"><span class="lbl">Cette année</span><span class="v">3 100 DH</span></div>
+          <div class="cell"><span class="lbl">Moy. / projet</span><span class="v">300 DH</span></div>
+        </div>
+        <div class="card t-full chart" style="padding:16px 20px">
+          <div class="sec"><span class="t">Revenus <span>12 mois</span></span></div>
+          <div class="bars" style="height:100px;gap:10px">
+            <div class="b"><div class="bar sk" style="height:10%"></div></div><div class="b"><div class="bar sk" style="height:16%"></div></div><div class="b"><div class="bar sk" style="height:8%"></div></div><div class="b"><div class="bar sk" style="height:24%"></div></div><div class="b"><div class="bar sk" style="height:13%"></div></div><div class="b"><div class="bar sk" style="height:19%"></div></div><div class="b"><div class="bar sk" style="height:10%"></div></div><div class="b"><div class="bar sk" style="height:27%"></div></div><div class="b"><div class="bar sk" style="height:16%"></div></div><div class="b"><div class="bar sk" style="height:12%"></div></div><div class="b"><div class="bar" style="height:36%;width:100%"></div></div><div class="b"><div class="bar" style="height:90%;width:100%"></div></div>
+          </div>
+        </div>
+        <div class="card t-full queue" style="padding:16px 20px">
+          <div class="sec"><span class="t">Daba <span>· 4</span></span><span class="link">Tâches →</span></div>
+          <div class="q-item"><span class="dot" style="background:var(--danger)"></span><div><b>Solde site vitrine — 1 500 DH</b><div class="meta">Paiement · 5 j de retard</div></div><span class="act">Relancer</span></div>
+          <div class="q-item"><span class="dot" style="background:var(--danger)"></span><div><b>Envoyer le pack logo + charte</b><div class="meta">Tâche · aujourd'hui</div></div><span class="act">Salit</span></div>
+        </div>
+        <div class="card t-full due" style="padding:16px 20px">
+          <div class="sec"><span class="t">À encaisser <span>· 2</span></span><span class="link">Paiements →</span></div>
+          <div class="q-item"><div><b>Solde site vitrine</b><div class="meta">08 juil.</div></div><div class="amount">1 500 DH <span class="pill late">retard</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ MOBILE -->
+<div class="board">
+  <h2>Artboard 3 — Mobile 390</h2>
+  <p>Pile unique · segmented control Aperçu/Daba · tab bar système en bas · cibles 44px</p>
+  <div class="frame m-wrap">
+    <div class="m-main">
+      <div class="row" style="justify-content:space-between;margin-bottom:14px">
+        <div><div style="font-weight:700;font-size:18px;letter-spacing:-.02em">Salam, Yassine</div><div class="sub">lundi 13 juillet</div></div>
+        <span class="btn pri" style="border-radius:999px;width:34px;height:34px;justify-content:center;padding:0">+</span>
+      </div>
+      <div class="m-seg"><span class="on">Aperçu</span><span>Daba · 4</span></div><!-- note 9: segmented control -->
+      <div class="card m-hero" style="margin-bottom:10px">
+        <div class="row" style="justify-content:space-between"><span class="lbl">Encaissé — juillet</span><span class="delta up">▲ +18%</span></div>
+        <div class="big">2 800 DH</div>
+        <div class="hr" style="margin:12px 0"></div>
+        <div class="row" style="justify-content:space-between"><span class="lbl">À encaisser</span><span class="delta warn">1 500 DH retard</span></div>
+        <div class="big" style="font-size:20px;margin:6px 0 0">1 800 DH</div>
+      </div>
+      <div class="card t-strip" style="grid-template-columns:1fr;margin-bottom:10px">
+        <div class="cell"><span class="lbl">Aujourd'hui</span><span class="v">0 DH</span></div>
+        <div class="cell"><span class="lbl">Cette année</span><span class="v">3 100 DH</span></div>
+        <div class="cell" style="border-bottom:0"><span class="lbl">Moy. / projet</span><span class="v">300 DH</span></div>
+      </div>
+      <div class="card chart" style="padding:14px 16px;margin-bottom:10px">
+        <div class="sec"><span class="t">Revenus <span>6 mois</span><span class="note">10</span></span></div>
+        <div class="bars" style="height:76px;gap:9px">
+          <div class="b"><div class="bar sk" style="height:19%"></div><span class="m">f</span></div>
+          <div class="b"><div class="bar sk" style="height:10%"></div><span class="m">m</span></div>
+          <div class="b"><div class="bar sk" style="height:27%"></div><span class="m">a</span></div>
+          <div class="b"><div class="bar sk" style="height:16%"></div><span class="m">m</span></div>
+          <div class="b"><div class="bar" style="height:36%;width:100%"></div><span class="m">j</span></div>
+          <div class="b"><div class="bar" style="height:90%;width:100%"></div><span class="m" style="font-weight:700;color:var(--ink)">j</span></div>
+        </div>
+      </div>
+      <div class="card queue" style="padding:14px 16px">
+        <div class="sec"><span class="t">Daba <span>· 4</span></span><span class="link">tout →</span></div>
+        <div class="q-item" style="min-height:44px"><span class="dot" style="background:var(--danger)"></span><div><b style="font-size:12.5px">Solde site vitrine — 1 500 DH</b><div class="meta">5 j de retard</div></div><span class="act">Relancer</span></div>
+        <div class="q-item" style="min-height:44px"><span class="dot" style="background:var(--danger)"></span><div><b style="font-size:12.5px">Envoyer le pack logo + charte</b><div class="meta">aujourd'hui</div></div><span class="act">Salit</span></div>
+        <div class="q-item" style="min-height:44px;border-bottom:0"><span class="dot" style="background:var(--warning)"></span><div><b style="font-size:12.5px">Réunion brief — Atlas Café</b><div class="meta">15h</div></div><span class="act">Ouvrir</span></div>
+      </div>
+      <div class="m-tabbar">
+        <div class="ti on"><span class="sq"></span>Dashboard</div>
+        <div class="ti"><span class="sq" style="border-radius:50%"></span>Clients</div>
+        <div class="ti"><span class="sq"></span>Tâches</div>
+        <div class="ti"><span class="sq" style="transform:rotate(45deg)"></span>Paiements</div>
+        <div class="ti"><span class="sq"></span>Calendrier</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="max-width:900px;font-size:12px;color:var(--mut);line-height:1.7">
+<b style="color:var(--ink)">Légende des annotations</b> —
+<b>1</b> Salutation + contexte du jour (Apple) ·
+<b>2</b> KPI héros nº1: encaissé du mois, delta vs mois précédent, sparkline 6 mois (Stripe) ·
+<b>3</b> KPI héros nº2: à encaisser, part en retard en danger ·
+<b>4</b> Metrics strip: 5 chiffres calmes, séparés par filets (Vercel) ·
+<b>5</b> Chart: mois courant en encre pleine, historique atténué, hover tooltip, clic → Paiements filtrés ·
+<b>6</b> « Daba »: file de travail unique triée retards→aujourd'hui→semaine, action contextuelle par ligne (Linear) ·
+<b>7</b> À encaisser: liste compacte + total, CTA Relancer ·
+<b>8</b> Projets: en-tête avec compteur, progress 4px ·
+<b>9</b> Mobile: segmented control Aperçu/Daba (2 jobs, 1 écran) ·
+<b>10</b> Mobile: chart réduit à 6 mois, lisible sans scroll horizontal.
+</div>
+
+</body>
+</html>
