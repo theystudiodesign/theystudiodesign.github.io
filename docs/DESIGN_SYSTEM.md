@@ -1,6 +1,7 @@
 # THE'Y DESIGN SYSTEM — v1 (Sprint 18)
 
 > **Source de vérité** des règles visuelles de THE'Y STUDIO DESIGN (app Gestion + futur site).
+> L'âme et les intentions derrière ces règles : [DESIGN_LANGUAGE.md](DESIGN_LANGUAGE.md) (à lire en premier).
 > Catalogue vivant : [`docs/design-system.html`](design-system.html) · Captures d'audit : [`docs/design-audit/`](design-audit/) · Inventaire : [`docs/UI_INVENTORY.md`](UI_INVENTORY.md)
 >
 > **Statut Sprint 18** : fondation. Les tokens sont définis dans `gestion/index.html` (`:root`) avec les valeurs *actuelles* — zéro changement visuel. La migration des styles existants vers les tokens se fait écran par écran en phase redesign.
