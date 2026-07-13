@@ -1,5 +1,8 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (7) — Sprint 08
+- **Performance** : rendering ciblé — seul l'onglet visible est re-rendu (map RENDERERS + currentTab), au lieu des 6 pages à chaque modification. Le changement d'onglet rend la page fraîche via go(). LocalStorage inchangé (déjà 1 lecture au boot / 1 écriture par save).
+
 ## 2026-07-13 (6) — Sprint 07
 - **CRM avancé** : champs Société / Website / Adresse sur la fiche client (rétro-compatibles, inclus dans la recherche). Bouton 👁 → fiche client complète en panneau latéral : profil, totaux encaissé/en attente par devise, historique cliquable (projets, 8 derniers paiements, tâches ouvertes, événements), accès direct à la modification.
 

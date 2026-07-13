@@ -10,7 +10,7 @@
 | 5 | Notifications internes + badge | ✅ Livré |
 | 6 | CRM avancé (société, adresse, historique) | ✅ Livré |
 | 7 | Reports (CSV + PDF) | ✅ Livré |
-| 8 | Performance (rendering ciblé) | Planifié |
+| 8 | Performance (rendering ciblé) | ✅ Livré |
 | 9 | Responsive audit | Planifié |
 | 10 | UI Polish + raccourcis clavier | Planifié |
 | + | Activity log, filtres avancés, Settings, auto-backup | Backlog |

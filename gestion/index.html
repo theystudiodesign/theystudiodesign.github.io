@@ -1122,7 +1122,16 @@ applyTheme();
 /* ============ INIT ============ */
 function closeModal(id){document.getElementById(id).classList.remove('show');editId=null}
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}));
-function renderAll(){renderDash();renderClients();renderTaches();renderProjets();renderPays();if(document.getElementById('tab-calendrier')&&document.getElementById('tab-calendrier').style.display!=='none')renderCalendar();if(document.getElementById('notifBadge'))renderNotifBadge()}
+/* Rendering cible: seule la page visible est re-rendue (Sprint 08) */
+const RENDERERS={dash:renderDash,clients:renderClients,taches:renderTaches,projets:renderProjets,paiements:renderPays,calendrier:renderCalendar};
+function currentTab(){
+  for(const t of Object.keys(RENDERERS)){const el=document.getElementById('tab-'+t);if(el&&el.style.display!=='none')return t}
+  return 'dash';
+}
+function renderAll(){
+  RENDERERS[currentTab()]();
+  if(document.getElementById('notifBadge'))renderNotifBadge();
+}
 /* ============ FACTURE (Auto-Entrepreneur officielle) ============ */
 const AE={
   nom:"Moulay Yassine El fassi",
