@@ -18,6 +18,10 @@
 
 ## Sprints 05→10 : tous livrés (13/07/2026)
 
-## Phase 2 — SaaS (Sprint 11 : fondations livrées — schéma + pilote + auth gate)
-Supabase (Auth + PostgreSQL + Storage + RLS) · Stripe · Multi-user & rôles · Client Portal · Cloud Sync · White Label.
-Préparation en Phase 1 : isoler la couche données (load/save) pour une migration sans toucher l'UI.
+## Phase 2 — SaaS
+| Étape | Statut |
+|-------|--------|
+| Sprint 11 — schéma SQL + pilote cloud + auth gate | ✅ Livré |
+| Sprint 12 — Cloud Sync v2 : auth complète, sync auto, offline-first, conflits LWW, suppressions sûres, diagnostic auto, suite d'intégration (49 tests) | ✅ Livré |
+| Activation production : créer le projet supabase.com, exécuter supabase/schema.sql, remplir gestion/supabase-config.js (10 min — voir SUPABASE_SETUP.md) | ⏳ Action manuelle requise |
+| Stripe · Multi-user & rôles · Client Portal · White Label | Backlog |

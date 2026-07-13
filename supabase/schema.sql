@@ -32,10 +32,15 @@ create table if not exists public.taches (
   id text primary key,
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   client_id text references public.clients(id) on delete set null,
+  projet_id text references public.projets(id) on delete set null,
   label text not null,
-  statut text, priorite text, deadline date,
+  statut text, priorite text, deadline date, details text,
   updated_at timestamptz not null default now()
 );
+
+-- Sprint 12: colonnes ajoutées (sans effet si la table vient d'être créée ci-dessus)
+alter table public.taches add column if not exists projet_id text references public.projets(id) on delete set null;
+alter table public.taches add column if not exists details text;
 
 create table if not exists public.paiements (
   id text primary key,
@@ -108,9 +113,16 @@ create policy "own_assets_all" on storage.objects
   with check (bucket_id = 'they-assets' and owner = auth.uid());
 
 -- ===== updated_at automatique =====
+-- Sprint 12 (LWW): si le client fournit un nouvel updated_at (sync multi-appareils),
+-- on le respecte; sinon (édition directe dans le dashboard), horodatage automatique.
 create or replace function public.touch_updated_at()
 returns trigger language plpgsql as $$
-begin new.updated_at = now(); return new; end $$;
+begin
+  if new.updated_at is not distinct from old.updated_at then
+    new.updated_at = now();
+  end if;
+  return new;
+end $$;
 
 do $$
 declare t text;

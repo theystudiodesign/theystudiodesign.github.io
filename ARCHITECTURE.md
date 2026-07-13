@@ -11,6 +11,19 @@
 - **Sécurité** : PIN client-side (SHA-256, dissuasif seulement — pas une vraie auth), `esc()` sur toute sortie, try/catch sur storage/JSON.
 - **Hébergement** : GitHub Pages + domaine theystudiodesign.com (CNAME).
 
+## Cloud Sync v2 (Sprint 12)
+Actif uniquement si `gestion/supabase-config.js` est rempli — sinon 100 % local, zéro changement.
+- **Boot** : toujours depuis LocalStorage (cache) → UI instantanée, puis `cloudInit()` en arrière-plan.
+- **Horodatage** : `save()` → `cloudStamp()` compare chaque ligne à sa signature précédente et stampe `updatedAt` sur les lignes modifiées (actif même en mode local — prépare la migration).
+- **Pull-merge (LWW)** : `cloudPull()` fusionne ligne par ligne — la plus récente (`updatedAt`) gagne. Une ligne présente au cloud mais absente localement: si elle était connue au dernier sync (`baseIds`) → suppression locale en attente (skip); sinon → nouvelle ligne d'un autre appareil (ajout).
+- **Push** : upsert de toutes les lignes + suppression UNIQUEMENT des ids `baseIds − local` (tombstones implicites). Jamais de `not.in` global (bug Sprint 11 corrigé: effaçait les lignes des autres appareils).
+- **État persistant** : clé `they_sync_v1` = `{dirty, lastSync, baseIds}`. `dirty=true` tant qu'un push n'a pas réussi → rejoué sur event `online`, `visibilitychange` et au boot.
+- **Compteurs** : `meta.facture_counter/bl_counter` fusionnés par `max()`.
+- **Trigger SQL** : `touch_updated_at` respecte l'`updated_at` fourni par le client (LWW), horodate seulement les éditions directes dashboard.
+- **Limite documentée** : suppression locale > édition distante (pas d'horodatage des suppressions).
+- **Diagnostic** : `cloudDiagChecks()` — config vide, URL invalide, clé anon incorrecte/service_role, projet en pause, schema.sql non exécuté — chaque échec avec le fix exact. Indicateur ☁ topbar (`cloudStatus`).
+- **Tests** : `tests/` — mock Supabase (GoTrue+PostgREST+RLS, zéro dépendance) + Playwright avec le vrai bundle supabase-js. 49 assertions (15 scénarios). `cd tests && npm install && npm run build:vendor && npm test`.
+
 ## Migration Supabase (contrat — Sprint 10)
 `DataLayer` est l'unique point de contact stockage. Pour migrer :
 1. Tables : `clients`, `projets`, `taches`, `paiements`, `events` (+ table `meta` pour factureCounter/blCounter) — colonnes = champs actuels, `id` text (uid existants), `user_id` uuid + RLS par utilisateur.

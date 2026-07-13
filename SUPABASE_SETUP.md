@@ -14,3 +14,12 @@
 ## Sécurité
 - RLS activée : chaque utilisateur ne voit que ses lignes (`user_id = auth.uid()`).
 - Le PIN local reste en place; l'authentification réelle est celle de Supabase.
+
+## En cas de problème (Sprint 12)
+Clique sur l'indicateur **☁** dans la barre du haut (ou le lien *Diagnostic de la connexion* sur l'écran de login) : le diagnostic automatique détecte et explique quoi corriger — config vide, URL invalide, mauvaise clé (ou service_role interdite), projet en pause, `schema.sql` non exécuté.
+
+## Multi-appareils (Sprint 12)
+- Chaque modification est horodatée; en cas de conflit entre deux appareils, **la modification la plus récente gagne** (ligne par ligne).
+- Les suppressions sont propagées sans jamais effacer les lignes créées sur un autre appareil.
+- Hors ligne: tout continue en local; la synchronisation repart automatiquement au retour du réseau, au retour sur l'onglet, ou au prochain lancement.
+- Limite connue: si un appareil supprime une ligne pendant qu'un autre la modifie, la suppression gagne.
