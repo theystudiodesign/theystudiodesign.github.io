@@ -983,7 +983,16 @@ const DataLayer={
     try{const d=JSON.parse(raw);return (d&&d.clients)?d:null}catch(e){return null}
   },
   write(db){ // persiste tout l etat; retourne false si echec (quota…)
-    try{localStorage.setItem(KEY,JSON.stringify(db));return true}catch(e){return false}
+    try{
+      /* [TRACE-AUDIT] instrumentation temporaire: identifier QUI réécrit la base */
+      try{
+        console.groupCollapsed('%c[TRACE-WRITE] crm_gestion_clients_v1 ← '+((db.clients||[]).length)+' client(s) · '+new Date().toISOString()+' · visibilité='+document.visibilityState,'color:#B04A3E;font-weight:bold');
+        console.log('clients écrits:',(db.clients||[]).map(c=>c.name));
+        console.trace('pile d’appel (QUI écrit):');
+        console.groupEnd();
+      }catch(_){}
+      localStorage.setItem(KEY,JSON.stringify(db));return true
+    }catch(e){return false}
   },
   normalize(db){ // garanties de schema retro-compatibles
     if(!db.taches)db.taches=[];
@@ -2079,6 +2088,21 @@ document.addEventListener('keydown',e=>{
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();closeFacture();document.getElementById('notifPanel').classList.remove('open');document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show'))}});
 load();cloudBoot();renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();notifToastOnLoad();cloudInit();
+/* [TRACE-AUDIT] instrumentation temporaire — diagnostic "clients qui reviennent" */
+try{
+  window.__TAB_ID=Math.random().toString(36).slice(2,7);
+  console.log('%c[TRACE-BOOT] build=v25 · onglet='+window.__TAB_ID+' · clients au boot: '+JSON.stringify((DB.clients||[]).map(c=>c.name)),'color:#3E7C4F;font-weight:bold',
+    {seeded:localStorage.getItem('they_seeded_v1'),demo:localStorage.getItem('they_demo_v1'),
+     sync:JSON.parse(localStorage.getItem('they_sync_v1')||'null'),
+     snap1_clients:(JSON.parse(localStorage.getItem('they_snap_1')||'null')||{db:{}}).db.clients?.length,
+     snap2_clients:(JSON.parse(localStorage.getItem('they_snap_2')||'null')||{db:{}}).db.clients?.length});
+  window.addEventListener('storage',e=>{
+    if(e.key===KEY){const v=JSON.parse(e.newValue||'{}');
+      console.warn('%c[TRACE-AUTRE-ONGLET] ⚠️ crm_gestion_clients_v1 vient d’être RÉÉCRIT PAR UN AUTRE ONGLET/FENÊTRE !','color:#B04A3E;font-weight:bold',
+        {clients:(v.clients||[]).map(c=>c.name),quand:new Date().toISOString()});}
+    if(e.key==='they_sync_v1')console.warn('[TRACE-AUTRE-ONGLET] they_sync_v1 modifié par un autre onglet:',e.newValue);
+  });
+}catch(_){}
 if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
 
