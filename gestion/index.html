@@ -683,10 +683,14 @@ let editId=null;
 
 function load(){
   const raw=localStorage.getItem(KEY);
-  if(raw){try{const d=JSON.parse(raw);if(d&&d.clients)DB=d}catch(e){}}
+  if(raw){
+    try{const d=JSON.parse(raw);if(d&&d.clients)DB=d}catch(e){}
+  }else{
+    seed();save();
+  }
   if(!DB.events)DB.events=[];
-  else{seed();save()}
   if(!DB.taches)DB.taches=[];
+  if(!DB.projets)DB.projets=[];
 }
 function save(){searchInvalidate();try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){toast('⚠️ Stockage 3amer — dir Export o msse7 les images kbar')}}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}

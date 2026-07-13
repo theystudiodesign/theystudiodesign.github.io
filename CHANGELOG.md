@@ -1,5 +1,8 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (9) — HOTFIX CRITIQUE
+- **Bug critique corrigé** : depuis Sprint 04, un else mal rattaché dans load() faisait exécuter seed() (données de démonstration) au 2e chargement, ÉCRASANT les données réelles. Corrigé + tests d'intégration ajoutés (données existantes préservées, seed uniquement au premier lancement). Si des données ont été perdues : restaurer via Import JSON du dernier export, ou via Restore (snapshots).
+
 ## 2026-07-13 (8) — Sprint 09
 - **Auto Backup & Restore** : snapshot local quotidien avec rotation (2 max, best-effort protégé quota), backup fichier hebdomadaire automatique au chargement (toast), bouton Restore sidebar → liste des snapshots avec contenu résumé + restauration avec confirmation. Bannière backup conservée en fallback.
 
