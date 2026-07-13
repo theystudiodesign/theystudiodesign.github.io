@@ -1,8 +1,7 @@
-/* THE'Y Gestion — configuration Supabase (Sprint 11)
-   Khali had le fichier فارغ = التطبيق كيبقى محلي 100% (وضع offline).
-   من بعد ما تصاوب مشروع Supabase وتنفذ supabase/schema.sql:
-   عمر جوج القيم وارفع الملف — الاتصال كيتفعل بوحدو. */
+/* THE'Y Gestion — configuration Supabase (Sprint 12)
+   Projet: tychqyohodvjwafzfycg · clé "publishable" (publique, protégée par RLS).
+   JAMAIS de clé secrète (sb_secret_ / service_role) ici. */
 window.SUPABASE_CONFIG = {
-  url: "",      // ex: https://xxxx.supabase.co
-  anonKey: ""   // Settings > API > anon public key
+  url: "https://tychqyohodvjwafzfycg.supabase.co",
+  anonKey: "sb_publishable_6BfJQ3aFVQJmQ5D70RF2kw_ooIOFj11"
 };
