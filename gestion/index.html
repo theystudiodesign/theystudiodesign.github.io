@@ -807,6 +807,16 @@ async function cloudPull(){
     clearDemoFlag();
   }
   let pending=st.dirty;
+  /* [TRACE-PULL] instrumentation temporaire — payload exact AVANT merge */
+  try{
+    console.groupCollapsed('%c[TRACE-PULL] AVANT merge · '+new Date().toISOString(),'color:#2A6CB0;font-weight:bold');
+    console.log('syncState (baseIds/dirty/lastSync):',JSON.parse(JSON.stringify(st)));
+    for(const ent of Object.keys(CLOUD_TABLES))
+      console.log('remote.'+ent+' ('+remote[ent].length+'):',remote[ent].map(r=>({id:r.id,nom:r.name||r.label||r.title,updatedAt:r.updatedAt})));
+    console.log('meta reçu du cloud:',meta);
+    console.log('local.clients EN MÉMOIRE ('+((DB.clients||[]).length)+'):',(DB.clients||[]).map(c=>({id:c.id,nom:c.name,updatedAt:c.updatedAt,dansBaseIds:(st.baseIds.clients||[]).includes(c.id)})));
+    console.groupEnd();
+  }catch(_){}
   for(const ent of Object.keys(CLOUD_TABLES)){
     const base=new Set(st.baseIds[ent]||[]);
     const localMap=new Map((DB[ent]||[]).map(r=>[r.id,r]));
@@ -832,6 +842,13 @@ async function cloudPull(){
     DB.blCounter=Math.max(+DB.blCounter||0,+meta.bl_counter||0);
   }
   DataLayer.normalize(DB);
+  /* [TRACE-PULL] résultat du merge + raison ligne par ligne */
+  try{
+    const remIds=new Set(remote.clients.map(r=>r.id)),baseC=new Set(st.baseIds.clients||[]);
+    console.log('%c[TRACE-PULL] APRÈS merge → clients='+((DB.clients||[]).length)+' · pending(push)='+pending,'color:#2A6CB0;font-weight:bold',
+      (DB.clients||[]).map(c=>({nom:c.name,id:c.id,
+        origine:remIds.has(c.id)?'REÇU DU CLOUD':(baseC.has(c.id)?'LOCAL (connu du cloud)':'LOCAL HORS baseIds → gardé + sera POUSSÉ')})));
+  }catch(_){}
   DataLayer.write(DB); // LocalStorage = cache du cloud
   st.baseIds={};
   Object.keys(CLOUD_TABLES).forEach(e=>st.baseIds[e]=remote[e].map(r=>r.id));
@@ -848,19 +865,26 @@ async function cloudPush(immediate){
   const doPush=async()=>{
     try{
       const s=syncState();
+      const pushed={}; /* [TRACE-PUSH] */
       for(const ent of Object.keys(CLOUD_TABLES)){
         const rows=(DB[ent]||[]).map(o=>toRow(ent,o));
-        if(rows.length){const {error}=await Cloud.client.from(ent).upsert(rows);if(error)throw error}
+        if(rows.length){const {error}=await Cloud.client.from(ent).upsert(rows);if(error){error.__ent=ent;error.__op='upsert';throw error}}
         const localIds=new Set(rows.map(r=>r.id));
         const dead=(s.baseIds[ent]||[]).filter(id=>!localIds.has(id));
-        if(dead.length){const {error:e2}=await Cloud.client.from(ent).delete().in('id',dead);if(e2)throw e2}
+        if(dead.length){const {error:e2}=await Cloud.client.from(ent).delete().in('id',dead);if(e2){e2.__ent=ent;e2.__op='delete';throw e2}}
         s.baseIds[ent]=[...localIds];
+        pushed[ent]={upserts:rows.length,deletes:dead.length};
       }
       const {error:e3}=await Cloud.client.from('meta').upsert({user_id:Cloud.user.id,facture_counter:DB.factureCounter||0,bl_counter:DB.blCounter||0});
-      if(e3)throw e3;
+      if(e3){e3.__ent='meta';e3.__op='upsert';throw e3}
       s.dirty=false;s.lastSync=new Date().toISOString();writeSyncState(s);
+      try{console.log('%c[TRACE-PUSH] ✓ push réussi vers Supabase','color:#3E7C4F;font-weight:bold',pushed)}catch(_){}
       cloudStatus('ok');
-    }catch(e){console.warn('push fail (retry auto: online/onglet/boot):',e);cloudStatus('pending')}
+    }catch(e){
+      try{console.error('%c[TRACE-PUSH] ✗ ÉCHEC du push — VOICI POURQUOI Supabase ne reçoit rien:','color:#B04A3E;font-weight:bold',
+        {table:e&&e.__ent,operation:e&&e.__op,code:e&&e.code,message:e&&e.message,details:e&&e.details,hint:e&&e.hint,erreur_complete:e})}catch(_){}
+      cloudStatus('pending');
+    }
   };
   clearTimeout(Cloud.pushTimer);
   if(immediate)return doPush();
