@@ -802,6 +802,10 @@ async function cloudPull(){
   }
   const {data:meta}=await c.from('meta').select('*').maybeSingle();
   if(cloudEmpty&&!meta){await cloudPush(true);return} // premier login: le cloud reçoit le local
+  if(demoPristine()){ // compte existant + démo locale intacte: on JETTE la démo (jamais fusionnée ni poussée)
+    for(const ent of Object.keys(CLOUD_TABLES))DB[ent]=[];
+    clearDemoFlag();
+  }
   let pending=st.dirty;
   for(const ent of Object.keys(CLOUD_TABLES)){
     const base=new Set(st.baseIds[ent]||[]);
@@ -996,10 +1000,19 @@ const DataLayer={
 const SEED_KEY='they_seeded_v1';
 const seedDone=()=>{try{return localStorage.getItem(SEED_KEY)==='1'}catch(e){return true}};
 const markSeeded=()=>{try{localStorage.setItem(SEED_KEY,'1')}catch(e){}};
+/* Drapeau "démo intacte": posé juste après le seed, retiré à la PREMIÈRE
+   modification réelle (save). Tant qu'il est présent: pas de snapshot,
+   et la démo est jetée (jamais poussée/fusionnée) si le cloud a des données. */
+const DEMO_KEY='they_demo_v1';
+const demoPristine=()=>{try{return localStorage.getItem(DEMO_KEY)==='1'}catch(e){return false}};
+const clearDemoFlag=()=>{try{localStorage.removeItem(DEMO_KEY)}catch(e){}};
 function load(){
   const d=DataLayer.read();
   if(d){DB=d;markSeeded()}            // base existante = démo plus jamais réinjectée
-  else if(!seedDone()){seed();save()} // premier lancement uniquement
+  else if(!seedDone()){
+    seed();save();                    // premier lancement uniquement
+    try{localStorage.setItem(DEMO_KEY,'1')}catch(e){} // démo encore intacte
+  }
   // else: reset volontaire → on repart sur une base vide, sans démo
   DataLayer.normalize(DB);
 }
@@ -1007,6 +1020,7 @@ function save(){
   invalidateCaches();
   cloudStamp(); // horodate les lignes modifiées (LWW) — actif même en mode local
   if(!DataLayer.write(DB))toast('⚠️ Stockage 3amer — dir Export o msse7 les images kbar');
+  clearDemoFlag(); // toute sauvegarde utilisateur = la base n'est plus la démo intacte
   cloudOnSave(); // dirty + push debounce si connecté
 }
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
@@ -1778,7 +1792,20 @@ function delEvent(){
 
 /* ============ AUTO BACKUP & RESTORE ============ */
 const SNAP_KEYS=['they_snap_1','they_snap_2']; // rotation: 1 = plus recent
+/* Empreinte de la base de démonstration (pour purger les snapshots pollués
+   par l'ancien bug: snapshot pris au boot juste après le seed). */
+const DEMO_NAMES=['Mouhamed K. — DATA FUNNEL PRO','Client Exemple — Retainer'];
+function isDemoDB(db){
+  if(!db||!Array.isArray(db.clients)||db.clients.length!==2)return false;
+  if(db.clients.map(c=>c.name).sort().join('|')!==[...DEMO_NAMES].sort().join('|'))return false;
+  return (db.projets||[]).length<=1&&(db.paiements||[]).length<=4&&(db.taches||[]).length<=3&&(db.events||[]).length===0;
+}
+function purgeDemoSnapshots(){ // au boot: on supprime les snapshots qui ne contiennent que la démo
+  SNAP_KEYS.forEach(k=>{try{const sn=JSON.parse(localStorage.getItem(k)||'null');if(sn&&sn.db&&isDemoDB(sn.db))localStorage.removeItem(k)}catch(e){}});
+}
 function takeSnapshot(){ // quotidien, silencieux, protege par quota
+  if(demoPristine()||isDemoDB(DB))return; // JAMAIS snapshotter la démo — Restore ne doit rendre que des données réelles
+  if(!((DB.clients||[]).length||(DB.projets||[]).length||(DB.taches||[]).length||(DB.paiements||[]).length||(DB.events||[]).length))return; // base vide: on ne détruit pas les backups réels par rotation
   try{
     const last=JSON.parse(localStorage.getItem(SNAP_KEYS[0])||'null');
     const today=CAL_TODAY();
@@ -1809,7 +1836,10 @@ function restoreSnapshot(i){
   if(!confirm('⚠️ Had l opération ghadi t3awed les données l snapshot dyal '+ (i===0?'lyoum/lbare7':'9bel') +'. Les données dyal daba ghadi itbeddlo. Nkemlo?'))return;
   try{
     const sn=JSON.parse(localStorage.getItem(SNAP_KEYS[i]));
-    if(!sn||!sn.db||!sn.db.clients){toast('Snapshot machi valide');return}
+    if(!sn||!sn.db||!Array.isArray(sn.db.clients)){toast('Snapshot machi valide');return}
+    if(isDemoDB(sn.db)){ // ceinture: un snapshot de démo n'est JAMAIS restauré
+      localStorage.removeItem(SNAP_KEYS[i]);toast('Snapshot dyal la démo tmess7 — machi données réelles');openRestore();return;
+    }
     DB=sn.db;if(!DB.taches)DB.taches=[];if(!DB.projets)DB.projets=[];if(!DB.events)DB.events=[];
     save();closeModal('restoreModal');renderAll();toast('Données restaurées ✓');
   }catch(e){toast('Erreur f la restauration')}
@@ -2048,7 +2078,7 @@ document.addEventListener('keydown',e=>{
 });
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();closeFacture();document.getElementById('notifPanel').classList.remove('open');document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show'))}});
-load();cloudBoot();renderAll();takeSnapshot();autoBackup();notifToastOnLoad();cloudInit();
+load();cloudBoot();renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();notifToastOnLoad();cloudInit();
 if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
 

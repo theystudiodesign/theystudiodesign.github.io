@@ -367,6 +367,81 @@ const cloudRowsFor = (d, email, table) => {
   }
 
   /* ================================================================ */
+  console.log('\n[17] Restore — ne rend JAMAIS la démo, uniquement les données choisies');
+  {
+    const { ctx, page } = await newDevice(browser, { cloud: false });
+    page.on('dialog', d => d.accept()); // confirm() de restoreSnapshot
+    await page.goto(APP, { waitUntil: 'networkidle' });
+    await sleep(400);
+    // 17.a — au premier boot (démo intacte): AUCUN snapshot n'est pris
+    ok(await page.evaluate(() => localStorage.getItem('they_demo_v1')) === '1', 'drapeau "démo intacte" posé au premier boot');
+    ok(await page.evaluate(() => localStorage.getItem('they_snap_1')) === null, 'la démo intacte n’est JAMAIS snapshotée');
+    // 17.b — purge des snapshots pollués par l'ancien bug (snapshot de démo hérité)
+    await page.evaluate(() => localStorage.setItem('they_snap_1', JSON.stringify({ date: '2026-07-10', db: DB })));
+    await page.reload({ waitUntil: 'networkidle' }); await sleep(400);
+    ok(await page.evaluate(() => localStorage.getItem('they_snap_1')) === null, 'snapshot de démo hérité purgé au boot');
+    // 17.c — restore d'un VRAI backup → seules les données réelles reviennent
+    await page.evaluate(() => {
+      DB.clients = [{ id: uid(), name: 'RealCo SARL', type: 'projet', statut: 'Actif', devise: 'DH' }];
+      DB.projets = []; DB.taches = []; DB.paiements = []; DB.events = []; save();
+      takeSnapshot();
+      localStorage.setItem('they_snap_2', localStorage.getItem('they_snap_1')); // copie pour 17.e
+    });
+    ok(await page.evaluate(() => JSON.parse(localStorage.getItem('they_snap_1')).db.clients[0].name) === 'RealCo SARL', 'snapshot des données réelles pris après 1ère modif');
+    await page.evaluate(() => { DB.clients = []; save(); return restoreSnapshot(0); });
+    await sleep(200);
+    let d = await db(page);
+    ok(d.clients.length === 1 && d.clients[0].name === 'RealCo SARL', 'restore réel → uniquement les données réelles');
+    ok(!d.clients.some(c => /Mouhamed K\.|Client Exemple/.test(c.name)), 'aucune démo après restore réel');
+    // 17.d — restore d'un backup VIDE → la base reste VIDE
+    await page.evaluate(() => {
+      localStorage.setItem('they_snap_1', JSON.stringify({ date: '2026-07-12', db: { clients: [], projets: [], taches: [], paiements: [], events: [] } }));
+      return restoreSnapshot(0);
+    });
+    await sleep(200);
+    d = await db(page);
+    ok(d.clients.length === 0, 'restore d’un backup vide → base vide, rien d’injecté');
+    // 17.e — restore APRÈS reset → seed ne tourne jamais
+    await page.evaluate(() => localStorage.removeItem('crm_gestion_clients_v1'));
+    await page.reload({ waitUntil: 'networkidle' }); await sleep(400);
+    ok((await db(page)).clients.length === 0, 'après reset: base vide (pas de seed)');
+    await page.evaluate(() => restoreSnapshot(1)); await sleep(200);
+    d = await db(page);
+    ok(d.clients.length === 1 && d.clients[0].name === 'RealCo SARL', 'restore après reset → données réelles, jamais la démo');
+    // 17.f — backup corrompu → erreur propre, données actuelles intactes, zéro démo
+    await page.evaluate(() => { localStorage.setItem('they_snap_1', '{corrompu'); return restoreSnapshot(0); });
+    await sleep(200);
+    d = await db(page);
+    ok(d.clients.length === 1 && d.clients[0].name === 'RealCo SARL', 'backup corrompu: données actuelles préservées, pas de démo');
+    await ctx.close();
+  }
+
+  /* ================================================================ */
+  console.log('\n[18] Restore depuis le cloud — la démo locale intacte n’est jamais fusionnée ni poussée');
+  {
+    // appareil X: compte neuf avec UNIQUEMENT des données réelles
+    const X = await newDevice(browser);
+    await X.page.goto(APP, { waitUntil: 'networkidle' });
+    await X.page.evaluate(() => {
+      DB.clients = [{ id: uid(), name: 'CloudReal SARL', type: 'projet', statut: 'Actif', devise: 'DH' }];
+      DB.projets = []; DB.taches = []; DB.paiements = []; DB.events = []; save();
+    });
+    await login(X.page, 'restore@test.ma', 'secret789', true);
+    // appareil Y: navigateur neuf → seed démo intact, puis login sur le compte existant
+    const Y = await newDevice(browser);
+    await Y.page.goto(APP, { waitUntil: 'networkidle' });
+    ok((await db(Y.page)).clients.length === 2, 'appareil Y: démo locale avant login (navigateur neuf)');
+    await login(Y.page, 'restore@test.ma', 'secret789');
+    await sleep(400);
+    const dy = await db(Y.page);
+    ok(dy.clients.length === 1 && dy.clients[0].name === 'CloudReal SARL', 'après login: UNIQUEMENT les données du cloud, démo jetée');
+    const dump18 = await dump();
+    const cloudNames = cloudRowsFor(dump18, 'restore@test.ma', 'clients').map(r => r.name);
+    ok(cloudNames.length === 1 && cloudNames[0] === 'CloudReal SARL', 'cloud: aucune démo poussée — données réelles intactes');
+    await X.ctx.close(); await Y.ctx.close();
+  }
+
+  /* ================================================================ */
   await deviceA.ctx.close(); await deviceB.ctx.close();
   await browser.close(); app.close(); mock.close();
   console.log(`\n========== RÉSULTAT: ${passed} ✓ / ${failed} ✗ ==========`);
