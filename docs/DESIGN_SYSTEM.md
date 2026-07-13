@@ -79,9 +79,8 @@ Usages canoniques : gap grilles cards 14–16 · padding cards 18–22 · paddin
 
 ## 8 · Iconographie
 
-**État actuel (v1)** : glyphes géométriques pour la navigation (▦ ◉ ✓ ▤ ◈) + emojis pour les actions (✏️ 🗑️ 👁 🧾 📦 🔔 🔍 ☁ 🌙).
-
-**Direction phase redesign** : set SVG custom monochrome, stroke 1.5px, 20×20, aligné sur la géométrie du logo (angles nets). Les emojis sont dépréciés pour les actions (rendu inconsistant entre OS, pas de dark mode).
+**THE'Y Icons (Sprint 19 — livré)** : famille SVG unique — 25 symboles, stroke 1.7, coins arrondis, `currentColor`, viewBox 24×24, sprite inline (`<symbol id="i-*">`). Usage : `icon('nom')` en JS ou `<svg class="i"><use href="#i-nom"/></svg>`. **Zéro emoji, zéro symbole unicode** dans l'UI.
+Exception : les *valeurs stockées* héritées (`priorite` « 🔴 Urgent », statut « Salit ✅ ») restent intactes (rétro-compat + sync) — seul l'affichage est mappé (`prioHTML/prioLabel/statutLabel`).
 
 ## 9 · États des composants
 
@@ -91,7 +90,7 @@ Usages canoniques : gap grilles cards 14–16 · padding cards 18–22 · paddin
 | Focus (champs) | Bordure `--ink` + halo `0 0 0 3px rgba(17,17,16,.07)` |
 | Sélection | Inversion : fond `--ink`, texte `--bg` (chips `.on`, résultats `.sel`, nav `.active`) |
 | Vide | `.empty` : glyphe 32px grisé + phrase en darija, jamais un écran blanc |
-| Retard/alerte | Graisse 700 + bordure 1.5px `--ink` (badge) ; ● préfixe (notifications) |
+| Retard/alerte | `--danger` : badge bordure+texte, chips calendrier, pastille notifications, marqueurs « fat le délai » |
 | Désactivé | **Non défini** — à spécifier en phase redesign |
 | Chargement | **Non défini** (app locale instantanée) — nécessaire pour les états cloud |
 

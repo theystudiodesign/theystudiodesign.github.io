@@ -37,9 +37,9 @@
 
 | # | Incohérence | Détail | Impact |
 |---|---|---|---|
-| I-1 | `--muted` vs `--mut` | ~25 règles calendrier/notifs/recherche référencent `var(--muted)` **qui n'existe pas** → la propriété est invalide et la couleur héritée. Fallbacks présents parfois (`var(--muted,#9A9A96)`), parfois non | Gris incohérents selon le composant |
-| I-2 | « Rouge » = noir | `--rouge:#111110` ; `.cal-ev.late` et `#notifBadge` gardent des fallbacks `#C0392B` jamais atteints ; en dark mode les marqueurs retard sont quasi invisibles | Alerte illisible en dark |
-| I-3 | Icônes hybrides | Glyphes texte (nav) + emojis (actions) : rendu OS-dépendant, pas de contrôle de couleur | Non premium |
+| I-1 ✅ résolu S19 | `--muted` vs `--mut` | ~25 règles calendrier/notifs/recherche référencent `var(--muted)` **qui n'existe pas** → la propriété est invalide et la couleur héritée. Fallbacks présents parfois (`var(--muted,#9A9A96)`), parfois non | Gris incohérents selon le composant |
+| I-2 ✅ résolu S19 (`--danger`) | « Rouge » = noir | `--rouge:#111110` ; `.cal-ev.late` et `#notifBadge` gardent des fallbacks `#C0392B` jamais atteints ; en dark mode les marqueurs retard sont quasi invisibles | Alerte illisible en dark |
+| I-3 ✅ résolu S19 (THE'Y Icons) | Icônes hybrides | Glyphes texte (nav) + emojis (actions) : rendu OS-dépendant, pas de contrôle de couleur | Non premium |
 | I-4 | `btn-danger` = `btn-ghost` | Aucune sémantique destructive (suppression = même style que Annuler) | UX risquée |
 | I-5 | Tables mobile | `min-width:560px` + scroll horizontal dans `.card` — pattern à revoir (cartes empilées ?) | Ergonomie mobile |
 | I-6 | Valeurs hors échelle | Tailles 12.5 / 11.5 / 10.5 / 13px et radius 5/6/7/9px éparpillés hors tokens | Dette de migration |
@@ -47,6 +47,7 @@
 | I-8 | Dashboard dense | 8 KPI + 5 cards empilées sans hiérarchie de lecture claire ; `font-size` inline conditionnel (`length>14?'17px':'26px'`) | → roadmap redesign |
 | I-9 | Modal Client | 13 champs d'un bloc, pas de groupement (identité / contact / facturation / notes) | Charge cognitive |
 | I-10 | Accessibilité | Icon-btns sans `aria-label` systématique, contrastes gris à vérifier (AA), focus visible non uniforme | À auditer en redesign |
+| I-11 | Grille calendrier inégale | `.cal-grid` colonnes `1fr` sans `minmax(0,1fr)` : les chips `white-space:nowrap` élargissent les colonnes chargées (pré-existant, constaté à l'audit S19) | Redesign calendrier |
 
 ## 5 · Points forts à préserver
 
