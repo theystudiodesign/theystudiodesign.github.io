@@ -1,5 +1,8 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (5) — Sprint 06
+- **Rapports** : bouton sidebar → modal période (mois / mois précédent / année / tout) + type. Exports CSV (paiements avec n° facture/BL, clients avec total payé, projets avec payé vs prix) — utilitaires réutilisables toCSV (RFC4180 + BOM Excel) et downloadFile. Rapport revenus PDF (par client + totaux par devise) via l'overlay d'impression existant.
+
 ## 2026-07-13 (4) — Sprint 05
 - **Notification Center** : cloche topbar avec badge, panneau des alertes (retards en ●, échéances ≤3 jours en ○, rappel backup), clic ouvre l'élément concerné, toast au chargement si nouvelles alertes. Dérivé du data provider calendrier (zéro duplication).
 

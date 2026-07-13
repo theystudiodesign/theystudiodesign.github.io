@@ -9,7 +9,7 @@
 | 4 | Calendrier (mois/semaine + panneau jour, 4 sources + events) | ✅ Livré |
 | 5 | Notifications internes + badge | ✅ Livré |
 | 6 | CRM avancé (société, adresse, historique) | Planifié |
-| 7 | Reports (CSV + PDF) | ⏳ En cours |
+| 7 | Reports (CSV + PDF) | ✅ Livré |
 | 8 | Performance (rendering ciblé) | Planifié |
 | 9 | Responsive audit | Planifié |
 | 10 | UI Polish + raccourcis clavier | Planifié |

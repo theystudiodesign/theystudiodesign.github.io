@@ -389,6 +389,7 @@ body.dark .search-box{background:#1B1B1A}
     <button class="nav-btn" data-tab="calendrier" onclick="go('calendrier')"><span class="ic">▦</span><span class="txt">Calendrier</span></button>
     <div class="foot">
       <button id="themeBtn" onclick="toggleTheme()">🌙 Mode sombre</button>
+      <button onclick="openReports()">Rapports</button>
       <button onclick="exportData()">Export JSON</button>
       <button onclick="document.getElementById('importFile').click()">Import JSON</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
@@ -1435,6 +1436,63 @@ function delEvent(){
   save();closeModal('eventModal');renderCalendar();toast('Événement tmess7');
 }
 
+/* ============ RAPPORTS ============ */
+function toCSV(rows){ // utilitaire reutilisable: array d'objets -> CSV (RFC4180, BOM Excel)
+  if(!rows.length)return '';
+  const cols=Object.keys(rows[0]);
+  const cell=v=>{v=(v==null?'':String(v));return /[";\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  return '\ufeff'+cols.join(';')+'\n'+rows.map(r=>cols.map(c=>cell(r[c])).join(';')).join('\n');
+}
+function downloadFile(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime}));
+  a.download=name;a.click();URL.revokeObjectURL(a.href);
+}
+function reportRange(per){
+  const now=new Date();
+  if(per==='mois')return [now.toISOString().slice(0,7),now.toISOString().slice(0,7)];
+  if(per==='moisprec'){const d=new Date(now.getFullYear(),now.getMonth()-1,1);const k=d.toISOString().slice(0,7);return[k,k]}
+  if(per==='annee')return [String(now.getFullYear()),String(now.getFullYear())];
+  return ['',''];
+}
+function inPeriod(dateStr,per){
+  const [a]=reportRange(per);
+  return per==='tout'||((dateStr||'').startsWith(a));
+}
+function openReports(){document.getElementById('reportModal').classList.add('show')}
+function genReport(){
+  const per=r_periode.value,type=r_type.value;
+  const tag=per==='tout'?'tout':reportRange(per)[0];
+  if(type==='paiements'){
+    const rows=DB.paiements.filter(p=>inPeriod(p.date,per)).map(p=>({Date:p.date||'',Client:clientName(p.clientId),Libelle:p.label,Type:p.type||'',Montant:p.montant,Devise:payDevise(p),Statut:p.statut,Methode:p.methode||'',Facture:p.factureNum||'',BL:p.blNum||''}));
+    if(!rows.length){toast('Walou f had la période');return}
+    downloadFile('rapport-paiements-'+tag+'.csv',toCSV(rows),'text/csv');
+  }else if(type==='clients'){
+    const rows=DB.clients.map(c=>({Nom:c.name,Type:c.type||'',Statut:c.statut||'',Devise:c.devise||'',Email:c.email||'',Tel:c.phone||'',ICE:c.ice||'',TotalPaye:DB.paiements.filter(p=>p.clientId===c.id&&p.statut==='Payé'&&inPeriod(p.date,per)).reduce((a,p)=>a+(+p.montant||0),0)}));
+    downloadFile('rapport-clients-'+tag+'.csv',toCSV(rows),'text/csv');
+  }else if(type==='projets'){
+    const rows=DB.projets.map(x=>({Projet:x.name,Client:clientName(x.clientId),Statut:x.statut||'',Deadline:x.deadline||'',Prix:x.prix||0,Paye:DB.paiements.filter(p=>p.projetId===x.id&&p.statut==='Payé').reduce((a,p)=>a+(+p.montant||0),0)}));
+    downloadFile('rapport-projets-'+tag+'.csv',toCSV(rows),'text/csv');
+  }else{ // PDF revenus — reutilise l'overlay d'impression facture
+    const pays=DB.paiements.filter(p=>p.statut==='Payé'&&inPeriod(p.date,per));
+    if(!pays.length){toast('Walou f had la période');return}
+    const byClient={},byDev={};
+    pays.forEach(p=>{const d=payDevise(p);byDev[d]=(byDev[d]||0)+(+p.montant||0);
+      const k=clientName(p.clientId);(byClient[k]=byClient[k]||{}) [d]=(byClient[k][d]||0)+(+p.montant||0)});
+    const perLbl={mois:'Ce mois',moisprec:'Mois précédent',annee:'Cette année',tout:'Toutes périodes'}[per];
+    document.getElementById('factureBody').innerHTML=`
+      <div class="f-titre"><h1>Rapport revenus</h1><div class="f-num">${esc(perLbl)} — généré le ${fdateFR('')}</div></div>
+      <div class="f-devnote">&nbsp;</div>
+      <div class="f-tablebox"><table class="f-table"><thead><tr><th style="width:60%">Client</th><th class="c">Montant</th></tr></thead>
+      <tbody>${Object.entries(byClient).map(([k,m])=>`<tr><td style="height:auto;padding:10px"><b>${esc(k)}</b></td><td class="c" style="height:auto;padding:10px">${Object.entries(m).map(([d,v])=>money(v,d)).join(' + ')}</td></tr>`).join('')}</tbody></table></div>
+      <div class="f-total" style="margin-top:20px"><div class="box">${Object.entries(byDev).map(([d,v])=>`<div class="r grand"><span>TOTAL ${d}</span><span>${money(v,d)}</span></div>`).join('')}</div></div>
+      <div class="f-footinfo"><b>THE'Y STUDIO DESIGN</b> — rapport interne · ${pays.length} paiement(s)</div>`;
+    document.getElementById('factureWrap').classList.add('open');
+    document.body.classList.add('fact-open');
+  }
+  closeModal('reportModal');
+}
+
 /* ============ NOTIFICATIONS (derivees du data provider) ============ */
 const NOTIF_SEEN='they_notif_seen';
 function getNotifications(){
@@ -1570,6 +1628,23 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();close
 load();renderAll();checkBackup();notifToastOnLoad();
 if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
+
+<!-- ===== RAPPORTS ===== -->
+<div class="overlay" id="reportModal">
+  <div class="modal">
+    <h2>Rapports</h2>
+    <div class="fld"><label>Période</label><select id="r_periode">
+      <option value="mois">Ce mois</option><option value="moisprec">Mois précédent</option>
+      <option value="annee">Cette année</option><option value="tout">Tout</option></select></div>
+    <div class="fld"><label>Type</label><select id="r_type">
+      <option value="paiements">Paiements (CSV)</option><option value="clients">Clients (CSV)</option>
+      <option value="projets">Projets (CSV)</option><option value="pdf">Rapport revenus (PDF)</option></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('reportModal')">Annuler</button>
+      <button class="btn btn-primary" onclick="genReport()">Générer</button>
+    </div>
+  </div>
+</div>
 
 <!-- ===== NOTIFICATIONS ===== -->
 <div id="notifPanel"><div class="nf-head"><span>Notifications</span><button class="icon-btn" onclick="toggleNotifs()">✕</button></div><div id="notifList"></div></div>
