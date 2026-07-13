@@ -538,7 +538,7 @@ body.dark .search-box{background:#1B1B1A}
         <select id="c_statut"><option>Actif</option><option>En pause</option><option>Prospect</option><option>Archivé</option></select>
       </div>
       <div class="fld" id="salaireFld" style="display:none"><label>Salaire mensuel</label><input id="c_salaire" type="number" min="0" placeholder="ex: 800"></div>
-      <div class="fld"><label>Devise</label><select id="c_devise"><option>€</option><option>DH</option><option>$</option></select></div>
+      <div class="fld"><label>Devise</label><select id="c_devise"><option>DH</option><option>$</option></select></div>
       <div class="fld"><label>Email</label><input id="c_email" type="email" placeholder="contact@..."></div>
       <div class="fld"><label>Téléphone / WhatsApp</label><input id="c_phone" placeholder="+212 …"></div>
       <div class="fld"><label>ICE (pour la facture)</label><input id="c_ice" placeholder="ex: 003443452000035"></div>
@@ -595,7 +595,7 @@ body.dark .search-box{background:#1B1B1A}
       </div>
       <div class="fld"><label>Montant *</label><input id="y_montant" type="number" min="0" placeholder="ex: 300"></div>
       <div class="fld"><label>Devise *</label>
-        <select id="y_devise"><option>€</option><option>DH</option><option>$</option></select>
+        <select id="y_devise"><option>DH</option><option>$</option></select>
       </div>
       <div class="fld"><label>Statut</label>
         <select id="y_statut"><option>Payé</option><option>En attente</option><option>En retard</option></select>
@@ -677,7 +677,7 @@ lockInit();
 
 /* ============ STATE ============ */
 const KEY='crm_gestion_clients_v1';
-let DB={clients:[],projets:[],paiements:[],taches:[],devise:'€'};
+let DB={clients:[],projets:[],paiements:[],taches:[],devise:'DH'};
 let clientFilter='all', projetFilter='all', payFilter='all', tacheFilter='all';
 let editId=null;
 
@@ -716,19 +716,23 @@ function save(){
 }
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
-function money(n,d){return (n||0).toLocaleString('fr-FR')+' '+(d||'€')}
+/* ===== CONFIG DEVISE (source unique — changer ici suffit) ===== */
+const CURRENCY={code:'MAD',symbol:'DH'};
+const DEVISE_MAP={'€':CURRENCY.symbol,'EUR':CURRENCY.symbol}; // affichage: l'ancien € devient DH (valeurs inchangées)
+const normDevise=d=>DEVISE_MAP[d]||d||CURRENCY.symbol;
+function money(n,d){return (n||0).toLocaleString('fr-FR')+' '+normDevise(d)}
 function fdate(d){if(!d)return '—';const x=new Date(d+'T00:00');return isNaN(x)?esc(d):x.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
 function seed(){
-  const c1={id:uid(),name:'Mouhamed K. — DATA FUNNEL PRO',type:'projet',statut:'Actif',email:'contact@datafunnelpro.com',phone:'',devise:'€',salaire:0,khedma:'Identité visuelle complète: logo, charte graphique, favicon, badge Path — o mn ba3d les déclinaisons (bannières, signature email…)',notes:'Refonte identité AKM Online → Data Funnel Pro'};
-  const c2={id:uid(),name:'Client Exemple — Retainer',type:'salaire',statut:'Actif',email:'',phone:'',devise:'€',salaire:800,khedma:'Gestion réseaux sociaux: 4 posts/semaine + 2 stories/jour + reporting mensuel',notes:'Exemple: client b salaire fixe koula chher — bedlo b client dyalek'};
+  const c1={id:uid(),name:'Mouhamed K. — DATA FUNNEL PRO',type:'projet',statut:'Actif',email:'contact@datafunnelpro.com',phone:'',devise:'DH',salaire:0,khedma:'Identité visuelle complète: logo, charte graphique, favicon, badge Path — o mn ba3d les déclinaisons (bannières, signature email…)',notes:'Refonte identité AKM Online → Data Funnel Pro'};
+  const c2={id:uid(),name:'Client Exemple — Retainer',type:'salaire',statut:'Actif',email:'',phone:'',devise:'DH',salaire:800,khedma:'Gestion réseaux sociaux: 4 posts/semaine + 2 stories/jour + reporting mensuel',notes:'Exemple: client b salaire fixe koula chher — bedlo b client dyalek'};
   const p1={id:uid(),clientId:c1.id,name:'Pack Logo & Charte Graphique',type:'Logo & identité',prix:600,statut:'Livré',deadline:'2026-07-10',notes:'En attente validation client'};
   DB.clients=[c1,c2];DB.projets=[p1];
   DB.paiements=[
-    {id:uid(),clientId:c1.id,projetId:p1.id,label:'Acompte 50% — Pack Logo',type:'Acompte',montant:300,devise:'€',statut:'Payé',date:'2026-06-20',methode:'Virement',notes:''},
-    {id:uid(),clientId:c1.id,projetId:p1.id,label:'Solde final — Pack Logo',type:'Solde final',montant:300,devise:'€',statut:'En attente',date:'2026-07-20',methode:'Virement',notes:''},
-    {id:uid(),clientId:c2.id,projetId:'',label:'Salaire Juillet 2026',type:'Salaire mensuel',montant:800,devise:'€',statut:'Payé',date:'2026-07-01',methode:'Wise',notes:''},
+    {id:uid(),clientId:c1.id,projetId:p1.id,label:'Acompte 50% — Pack Logo',type:'Acompte',montant:300,devise:'DH',statut:'Payé',date:'2026-06-20',methode:'Virement',notes:''},
+    {id:uid(),clientId:c1.id,projetId:p1.id,label:'Solde final — Pack Logo',type:'Solde final',montant:300,devise:'DH',statut:'En attente',date:'2026-07-20',methode:'Virement',notes:''},
+    {id:uid(),clientId:c2.id,projetId:'',label:'Salaire Juillet 2026',type:'Salaire mensuel',montant:800,devise:'DH',statut:'Payé',date:'2026-07-01',methode:'Wise',notes:''},
     {id:uid(),clientId:c2.id,projetId:'',label:'Exemple: Bonus b Dirham',type:'Bonus',montant:2000,devise:'DH',statut:'Payé',date:'2026-07-05',methode:'Cash',notes:'Exemple bach tchouf paiement b DH — mes7o ila bghiti'}
   ];
   DB.taches=[
@@ -748,14 +752,14 @@ function go(tab){
 /* ============ HELPERS ============ */
 const clientById=id=>DB.clients.find(c=>c.id===id);
 const clientName=id=>{const c=clientById(id);return c?c.name:'—'};
-const clientDevise=id=>{const c=clientById(id);return c?c.devise||'€':'€'};
+const clientDevise=id=>{const c=clientById(id);return c?c.devise||CURRENCY.symbol:CURRENCY.symbol};
 const payeSum=f=>DB.paiements.filter(f).reduce((s,p)=>s+(+p.montant||0),0);
-const payDevise=p=>p.devise||clientDevise(p.clientId);
+const payDevise=p=>normDevise(p.devise||clientDevise(p.clientId));
 function sumByDevise(f,fb){
   const m={};
   DB.paiements.filter(f).forEach(p=>{const d=payDevise(p);m[d]=(m[d]||0)+(+p.montant||0)});
   const parts=Object.entries(m).filter(([,v])=>v>0).map(([d,v])=>money(v,d));
-  return parts.length?parts.join(' + '):money(0,fb||'€');
+  return parts.length?parts.join(' + '):money(0,fb||CURRENCY.symbol);
 }
 const statutBadge={'Actif':'bg-actif','En pause':'bg-pause','Prospect':'bg-prospect','Archivé':'bg-archive','Payé':'bg-paye','En attente':'bg-attente','En retard':'bg-retard','Brief reçu':'bg-brief','En cours':'bg-encours','En attente client':'bg-attclient','Livré':'bg-livre','Terminé & payé':'bg-termine','Annulé':'bg-annule','À faire':'bg-attente','Salit ✅':'bg-termine'};
 
@@ -814,7 +818,7 @@ function renderDash(){
   const nbSalaire=actifs.filter(c=>c.type==='salaire').length;
   const now=new Date();const mois=now.toISOString().slice(0,7);
   const enCours=DB.projets.filter(p=>['Brief reçu','En cours','En attente client','Livré'].includes(p.statut)).length;
-  const dv=DB.clients[0]?DB.clients[0].devise||'€':'€';
+  const dv=normDevise(DB.clients[0]&&DB.clients[0].devise);
   const totalPayeStr=sumByDevise(p=>p.statut==='Payé',dv);
   const moisPayeStr=sumByDevise(p=>p.statut==='Payé'&&(p.date||'').startsWith(mois),dv);
   const attenteStr=sumByDevise(p=>p.statut!=='Payé',dv);
@@ -913,7 +917,7 @@ function openClientModal(id){
   document.getElementById('clientModalTitle').textContent=id?'Modifier le client':'＋ Client jdid';
   const c=id?clientById(id):{};
   c_name.value=c.name||'';c_type.value=c.type||'projet';c_statut.value=c.statut||'Actif';
-  c_salaire.value=c.salaire||'';c_devise.value=c.devise||'€';c_email.value=c.email||'';c_phone.value=c.phone||'';c_ice.value=c.ice||'';c_societe.value=c.societe||'';c_website.value=c.website||'';c_adresse.value=c.adresse||'';c_khedma.value=c.khedma||'';c_notes.value=c.notes||'';
+  c_salaire.value=c.salaire||'';c_devise.value=c.devise||CURRENCY.symbol;c_email.value=c.email||'';c_phone.value=c.phone||'';c_ice.value=c.ice||'';c_societe.value=c.societe||'';c_website.value=c.website||'';c_adresse.value=c.adresse||'';c_khedma.value=c.khedma||'';c_notes.value=c.notes||'';
   toggleSalaire();
   document.getElementById('clientModal').classList.add('show');
 }

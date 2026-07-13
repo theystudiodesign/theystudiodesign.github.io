@@ -1,5 +1,8 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (11) — Devise DH/MAD
+- **Devise centralisée** : config unique CURRENCY={code:'MAD',symbol:'DH'} + normDevise. Tout € affiché devient DH (Dashboard, charts, tables, fiches, rapports, notifications, factures) — valeurs et données stockées inchangées (mapping à l'affichage via payDevise/money, réversible). Format: 0 DH / 1 500 DH / 12 500 DH. Nouveaux clients/paiements en DH par défaut, option € retirée des sélecteurs ($ conservé). Changer de devise à l'avenir = modifier une seule constante.
+
 ## 2026-07-13 (10) — Sprint 10
 - **Data Layer** : façade DataLayer (read / write / normalize) — unique point de contact avec LocalStorage. load()/save() sont désormais des orchestrateurs. Migration Supabase = réécrire ces 3 méthodes uniquement (contrat documenté dans ARCHITECTURE.md). Suite d'intégration: données réelles préservées, seed premier lancement seulement, JSON corrompu sans crash, roundtrip, échec quota.
 
