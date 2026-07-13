@@ -380,6 +380,30 @@ const cloudRowsFor = (d, email, table) => {
     await page.evaluate(() => localStorage.setItem('they_snap_1', JSON.stringify({ date: '2026-07-10', db: DB })));
     await page.reload({ waitUntil: 'networkidle' }); await sleep(400);
     ok(await page.evaluate(() => localStorage.getItem('they_snap_1')) === null, 'snapshot de démo hérité purgé au boot');
+    // 17.b2 — snapshot de démo DUPLIQUÉE (4 clients — fusion v21/v22) : purgé aussi
+    await page.evaluate(() => {
+      const dup = JSON.parse(JSON.stringify(DB));
+      dup.clients = [...dup.clients, ...dup.clients.map(c => ({ ...c, id: c.id + 'x' }))];       // 4 clients
+      dup.paiements = [...dup.paiements, ...dup.paiements.map(p => ({ ...p, id: p.id + 'x' }))]; // 8 paiements
+      dup.taches = [...dup.taches, ...dup.taches.map(t => ({ ...t, id: t.id + 'x' }))];           // 6 tâches
+      dup.projets = [...dup.projets, ...dup.projets.map(p => ({ ...p, id: p.id + 'x' }))];        // 2 projets
+      localStorage.setItem('they_snap_1', JSON.stringify({ date: '2026-07-11', db: dup }));
+      localStorage.setItem('they_snap_2', JSON.stringify({ date: '2026-07-10', db: dup }));
+    });
+    await page.reload({ waitUntil: 'networkidle' }); await sleep(400);
+    ok(await page.evaluate(() => localStorage.getItem('they_snap_1')) === null
+      && await page.evaluate(() => localStorage.getItem('they_snap_2')) === null,
+      'snapshot de démo DUPLIQUÉE (4 clients) purgé au boot — bug "Restore rend 4 démos" corrigé');
+    // 17.b3 — même si un snapshot démo dupliquée réapparaissait, restoreSnapshot le refuse
+    await page.evaluate(() => {
+      const dup = JSON.parse(JSON.stringify(DB));
+      dup.clients = [...dup.clients, ...dup.clients.map(c => ({ ...c, id: c.id + 'y' }))];
+      localStorage.setItem('they_snap_1', JSON.stringify({ date: '2026-07-11', db: dup }));
+      return restoreSnapshot(0);
+    });
+    await sleep(200);
+    ok((await db(page)).clients.length === 2 && await page.evaluate(() => localStorage.getItem('they_snap_1')) === null,
+      'restoreSnapshot REFUSE et supprime un snapshot de démo dupliquée (données actuelles intactes)');
     // 17.c — restore d'un VRAI backup → seules les données réelles reviennent
     await page.evaluate(() => {
       DB.clients = [{ id: uid(), name: 'RealCo SARL', type: 'projet', statut: 'Actif', devise: 'DH' }];

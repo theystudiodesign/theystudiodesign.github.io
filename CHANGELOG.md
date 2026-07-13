@@ -1,5 +1,10 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (16) — Fix Restore: démo DUPLIQUÉE
+- **Source exacte des "4 clients" identifiée** : snapshot hérité (`they_snap_1/2`) contenant la démo **dupliquée** (2 seeds fusionnés par le sync de l'ère v21/v22 = 4 clients). L'empreinte de purge exigeait exactement 2 clients → les doublons passaient au travers et Restore les rendait.
+- **Empreinte généralisée** : détecte la démo à toute multiplicité (uniquement des noms de démo + volumes bornés par le facteur de duplication). La purge au boot (migration automatique) et le refus dans restoreSnapshot utilisent la nouvelle détection.
+- TRACE-BOOT affiche désormais les noms des clients contenus dans chaque snapshot. 2 tests ajoutés (70 au total). SW v26.
+
 ## 2026-07-13 (15) — Fix critique Restore
 - **Restore ne rend plus jamais la démo**. Cause racine: au premier lancement, le snapshot quotidien était pris au boot juste après le seed → il capturait la démo, et comme un seul snapshot est pris par jour, les données réelles du même jour n'étaient jamais capturées → Restore rendait "Mouhamed K."/"Client Exemple". Corrections en 4 couches:
   1. Drapeau `they_demo_v1` "démo intacte" (posé après le seed, retiré à la première vraie sauvegarde) → la démo intacte n'est **jamais snapshotée**.
