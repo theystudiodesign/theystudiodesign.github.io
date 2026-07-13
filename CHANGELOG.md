@@ -1,5 +1,14 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (15) — Fix critique Restore
+- **Restore ne rend plus jamais la démo**. Cause racine: au premier lancement, le snapshot quotidien était pris au boot juste après le seed → il capturait la démo, et comme un seul snapshot est pris par jour, les données réelles du même jour n'étaient jamais capturées → Restore rendait "Mouhamed K."/"Client Exemple". Corrections en 4 couches:
+  1. Drapeau `they_demo_v1` "démo intacte" (posé après le seed, retiré à la première vraie sauvegarde) → la démo intacte n'est **jamais snapshotée**.
+  2. **Purge au boot** des snapshots pollués par l'ancien bug (empreinte de la base de démo).
+  3. **Ceinture dans restoreSnapshot** : un snapshot de démo est refusé et supprimé.
+  4. **Cloud** : au login sur un compte existant, une démo locale intacte est **jetée** (jamais fusionnée ni poussée vers le cloud).
+- **Bonus** : une base vide n'est plus snapshotée (un reset ne détruit plus les backups réels par rotation).
+- 13 tests d'intégration ajoutés (68 au total) : snapshot réel → restore réel uniquement, backup vide → base vide, restore après reset sans seed, backup corrompu → données intactes, login cloud → zéro démo poussée. SW v24.
+
 ## 2026-07-13 (14) — Fix critique seed
 - **Anti-réinjection des données de démonstration** : marqueur persistant `they_seeded_v1` — le seed ("Mouhamed K.", "Client Exemple") ne s'exécute qu'une seule fois par navigateur. Après un reset volontaire (suppression de toutes les données), l'app repart VIDE, la démo n'est jamais recréée. Bonus: des données corrompues ne sont plus écrasées par la démo. 6 tests d'intégration ajoutés (55 au total). SW v23.
 
