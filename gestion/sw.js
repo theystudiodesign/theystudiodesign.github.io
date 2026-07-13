@@ -1,4 +1,4 @@
-const CACHE = 'they-gestion-v28';
+const CACHE = 'they-gestion-v29';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
