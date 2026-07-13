@@ -15,6 +15,16 @@ npm test
 
 Si Chromium Playwright n'est pas au chemin par défaut : `CHROME_PATH=/chemin/vers/chrome npm test`.
 
+## Captures d'écran (Sprint 18)
+
+```bash
+node screenshots.js diff  /tmp/avant    # 14 PNG déterministes (hash-comparables) — non-régression visuelle
+node screenshots.js audit ../docs/design-audit   # 65 JPEG — set complet (3 viewports × 2 thèmes + overlays)
+```
+
+Rendu déterministe : horloge figée (13/07/2026, Casablanca), polices bloquées, animations désactivées,
+fixtures stables. Workflow de non-régression : `diff` avant → modification → `diff` après → comparer les sha256.
+
 ## Scénarios couverts (98 assertions)
 
 1. Régression — config vide = 100 % local, indicateur ☁ caché, seed intact
