@@ -1804,10 +1804,14 @@ const SNAP_KEYS=['they_snap_1','they_snap_2']; // rotation: 1 = plus recent
 /* Empreinte de la base de démonstration (pour purger les snapshots pollués
    par l'ancien bug: snapshot pris au boot juste après le seed). */
 const DEMO_NAMES=['Mouhamed K. — DATA FUNNEL PRO','Client Exemple — Retainer'];
+/* Détecte une base qui ne contient QUE la démo — y compris DUPLIQUÉE (×2, ×3…),
+   artefact des fusions cloud de l'ère v21/v22 (2 seeds mergés = 4 clients).
+   L'ancienne empreinte exigeait exactement 2 clients et laissait passer les doublons. */
 function isDemoDB(db){
-  if(!db||!Array.isArray(db.clients)||db.clients.length!==2)return false;
-  if(db.clients.map(c=>c.name).sort().join('|')!==[...DEMO_NAMES].sort().join('|'))return false;
-  return (db.projets||[]).length<=1&&(db.paiements||[]).length<=4&&(db.taches||[]).length<=3&&(db.events||[]).length===0;
+  if(!db||!Array.isArray(db.clients)||!db.clients.length)return false;
+  if(!db.clients.every(c=>DEMO_NAMES.includes(c&&c.name)))return false; // uniquement des noms de démo
+  const k=Math.max(1,Math.ceil(db.clients.length/2)); // facteur de duplication
+  return (db.projets||[]).length<=1*k&&(db.paiements||[]).length<=4*k&&(db.taches||[]).length<=3*k&&(db.events||[]).length===0;
 }
 function purgeDemoSnapshots(){ // au boot: on supprime les snapshots qui ne contiennent que la démo
   SNAP_KEYS.forEach(k=>{try{const sn=JSON.parse(localStorage.getItem(k)||'null');if(sn&&sn.db&&isDemoDB(sn.db))localStorage.removeItem(k)}catch(e){}});
@@ -2094,8 +2098,8 @@ try{
   console.log('%c[TRACE-BOOT] build=v25 · onglet='+window.__TAB_ID+' · clients au boot: '+JSON.stringify((DB.clients||[]).map(c=>c.name)),'color:#3E7C4F;font-weight:bold',
     {seeded:localStorage.getItem('they_seeded_v1'),demo:localStorage.getItem('they_demo_v1'),
      sync:JSON.parse(localStorage.getItem('they_sync_v1')||'null'),
-     snap1_clients:(JSON.parse(localStorage.getItem('they_snap_1')||'null')||{db:{}}).db.clients?.length,
-     snap2_clients:(JSON.parse(localStorage.getItem('they_snap_2')||'null')||{db:{}}).db.clients?.length});
+     snap1_clients:(JSON.parse(localStorage.getItem('they_snap_1')||'null')||{db:{}}).db.clients?.map(c=>c.name),
+     snap2_clients:(JSON.parse(localStorage.getItem('they_snap_2')||'null')||{db:{}}).db.clients?.map(c=>c.name)});
   window.addEventListener('storage',e=>{
     if(e.key===KEY){const v=JSON.parse(e.newValue||'{}');
       console.warn('%c[TRACE-AUTRE-ONGLET] ⚠️ crm_gestion_clients_v1 vient d’être RÉÉCRIT PAR UN AUTRE ONGLET/FENÊTRE !','color:#B04A3E;font-weight:bold',
