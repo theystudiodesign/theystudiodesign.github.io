@@ -681,18 +681,39 @@ let DB={clients:[],projets:[],paiements:[],taches:[],devise:'€'};
 let clientFilter='all', projetFilter='all', payFilter='all', tacheFilter='all';
 let editId=null;
 
-function load(){
-  const raw=localStorage.getItem(KEY);
-  if(raw){
-    try{const d=JSON.parse(raw);if(d&&d.clients)DB=d}catch(e){}
-  }else{
-    seed();save();
+/* ============ DATA LAYER (Sprint 10) ============
+   Contrat de migration: pour passer a Supabase, remplacer UNIQUEMENT
+   les methodes de DataLayer par des appels reseau (elles peuvent devenir
+   async — load()/save() restent les seuls points d entree de l UI).
+   Entites -> tables: clients, projets, taches, paiements, events (+ meta compteurs). */
+const DataLayer={
+  driver:'localstorage',
+  read(){ // -> objet DB valide ou null
+    const raw=localStorage.getItem(KEY);
+    if(!raw)return null;
+    try{const d=JSON.parse(raw);return (d&&d.clients)?d:null}catch(e){return null}
+  },
+  write(db){ // persiste tout l etat; retourne false si echec (quota…)
+    try{localStorage.setItem(KEY,JSON.stringify(db));return true}catch(e){return false}
+  },
+  normalize(db){ // garanties de schema retro-compatibles
+    if(!db.taches)db.taches=[];
+    if(!db.projets)db.projets=[];
+    if(!db.events)db.events=[];
+    if(!db.paiements)db.paiements=[];
+    return db;
   }
-  if(!DB.events)DB.events=[];
-  if(!DB.taches)DB.taches=[];
-  if(!DB.projets)DB.projets=[];
+};
+function load(){
+  const d=DataLayer.read();
+  if(d){DB=d}
+  else{seed();save()}
+  DataLayer.normalize(DB);
 }
-function save(){searchInvalidate();try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){toast('⚠️ Stockage 3amer — dir Export o msse7 les images kbar')}}
+function save(){
+  invalidateCaches();
+  if(!DataLayer.write(DB))toast('⚠️ Stockage 3amer — dir Export o msse7 les images kbar');
+}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
 function money(n,d){return (n||0).toLocaleString('fr-FR')+' '+(d||'€')}

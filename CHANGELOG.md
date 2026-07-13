@@ -1,5 +1,8 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (10) — Sprint 10
+- **Data Layer** : façade DataLayer (read / write / normalize) — unique point de contact avec LocalStorage. load()/save() sont désormais des orchestrateurs. Migration Supabase = réécrire ces 3 méthodes uniquement (contrat documenté dans ARCHITECTURE.md). Suite d'intégration: données réelles préservées, seed premier lancement seulement, JSON corrompu sans crash, roundtrip, échec quota.
+
 ## 2026-07-13 (9) — HOTFIX CRITIQUE
 - **Bug critique corrigé** : depuis Sprint 04, un else mal rattaché dans load() faisait exécuter seed() (données de démonstration) au 2e chargement, ÉCRASANT les données réelles. Corrigé + tests d'intégration ajoutés (données existantes préservées, seed uniquement au premier lancement). Si des données ont été perdues : restaurer via Import JSON du dernier export, ou via Restore (snapshots).
 

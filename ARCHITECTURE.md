@@ -11,5 +11,13 @@
 - **Sécurité** : PIN client-side (SHA-256, dissuasif seulement — pas une vraie auth), `esc()` sur toute sortie, try/catch sur storage/JSON.
 - **Hébergement** : GitHub Pages + domaine theystudiodesign.com (CNAME).
 
+## Migration Supabase (contrat — Sprint 10)
+`DataLayer` est l'unique point de contact stockage. Pour migrer :
+1. Tables : `clients`, `projets`, `taches`, `paiements`, `events` (+ table `meta` pour factureCounter/blCounter) — colonnes = champs actuels, `id` text (uid existants), `user_id` uuid + RLS par utilisateur.
+2. Réécrire `DataLayer.read/write` en appels Supabase (peuvent devenir async ; load()/save() restent les seuls appelants).
+3. `normalize()` inchangé (garanties de schéma).
+4. Auth Supabase remplace le PIN ; Storage remplace les images base64.
+L'UI, les data providers (recherche, calendrier, notifications) et les rapports ne changent pas.
+
 ## Limites structurelles (→ Phase 2 uniquement)
 Auth réelle, multi-user, fichiers lourds (quota ~5MB), paiements Stripe : impossibles côté client. Ne jamais simuler.
