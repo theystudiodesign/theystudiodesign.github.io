@@ -46,7 +46,7 @@ async function newDevice(browser, { cloud = true } = {}) {
   const ctx = await browser.newContext();
   await ctx.addInitScript(() => sessionStorage.setItem('they_unlocked', '1')); // bypass PIN (testé à part)
   await ctx.route('**/fonts.googleapis.com/**', r => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
-  await ctx.route('**/supabase-config.js', r => r.fulfill({
+  await ctx.route('**/supabase-config.js*', r => r.fulfill({
     status: 200, contentType: 'text/javascript',
     body: cloud
       ? `window.SUPABASE_CONFIG={url:"${MOCK}",anonKey:"mock-anon-key-0123456789abcdef"};`
