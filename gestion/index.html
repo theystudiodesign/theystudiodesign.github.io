@@ -751,6 +751,33 @@ lockInit();
 
 /* ============ STATE ============ */
 const KEY='crm_gestion_clients_v1';
+/* ============ [WLOG] INSTRUMENTATION RUNTIME (diagnostic production) ============
+   Journal PERSISTANT (localStorage, ring-buffer 80 entrées) de TOUTES les écritures:
+   qui (onglet+build+pile d'appel), quand, visibilité, état avant/après (noms clients),
+   push/pull cloud. Lisible depuis N'IMPORTE QUEL onglet, même après refresh:
+   console → __WLOG()
+   Empreinte anti-fantôme: chaque écriture instrumentée bumpe they_wnonce —
+   une écriture de la clé DB SANS bump = instance NON instrumentée (ancien build encore ouvert). */
+window.__TAB_ID=window.__TAB_ID||Math.random().toString(36).slice(2,7);
+window.__BUILD='v34';
+const WLOG_KEY='they_wlog',WNONCE='they_wnonce';
+let __lastNonce=null;try{__lastNonce=localStorage.getItem(WNONCE)}catch(e){}
+function wnames(db){try{return ((db&&db.clients)||[]).map(c=>c&&c.name)}catch(e){return['(illisible)']}}
+function wlog(type,data){
+  try{
+    const l=JSON.parse(localStorage.getItem(WLOG_KEY)||'[]');
+    l.push(Object.assign({t:new Date().toISOString(),tab:window.__TAB_ID,build:window.__BUILD,vis:document.visibilityState,type},data));
+    while(l.length>80)l.shift();
+    localStorage.setItem(WLOG_KEY,JSON.stringify(l));
+  }catch(e){}
+}
+window.__WLOG=function(){
+  const l=JSON.parse(localStorage.getItem(WLOG_KEY)||'[]');
+  console.table(l.map(e=>({heure:(e.t||'').slice(11,23),onglet:e.tab,build:e.build,vis:e.vis,type:e.type,
+    info:(e.info||'').slice(0,110),avant:(e.before||[]).join(' | '),apres:(e.after||[]).join(' | ')})));
+  console.log('[WLOG] '+l.length+' entrées — copie complète:');console.log(JSON.stringify(l));
+  return l;
+};
 let DB={clients:[],projets:[],paiements:[],taches:[],devise:'DH'};
 let clientFilter='all', projetFilter='all', payFilter='all', tacheFilter='all';
 let editId=null;
@@ -875,6 +902,7 @@ async function cloudPull(){
     if(remote[ent].length)cloudEmpty=false;
   }
   const {data:meta}=await c.from('meta').select('*').maybeSingle();
+  wlog('PULL-REMOTE',{info:'cloud AVANT merge · dirty='+st.dirty,after:(remote.clients||[]).map(r=>r.name)}); /* [WLOG] */
   /* [TRACE-SOURCES] — LES 6 SOURCES POSSIBLES, dumpées AVANT toute décision/merge */
   try{
     const noms=a=>Array.isArray(a)?a.map(x=>x&&(x.name||x.label||x.title)):a;
@@ -939,6 +967,7 @@ async function cloudPull(){
   }catch(_){}
   /* [TRACE-SOURCES] la variable EXACTE écrite juste après (DataLayer.write L867) */
   try{console.log('%c[TRACE-SOURCES] variable écrite → DataLayer.write(DB) · DB.clients='+((DB.clients||[]).length),'color:#7A3EB0;font-weight:bold',(DB.clients||[]).map(c=>({id:c.id,nom:c.name})))}catch(_){}
+  wlog('PULL-DONE',{info:'APRÈS merge · pending(push)='+pending,after:wnames(DB)}); /* [WLOG] */
   DataLayer.write(DB); // LocalStorage = cache du cloud
   st.baseIds={};
   Object.keys(CLOUD_TABLES).forEach(e=>st.baseIds[e]=remote[e].map(r=>r.id));
@@ -969,10 +998,12 @@ async function cloudPush(immediate){
       if(e3){e3.__ent='meta';e3.__op='upsert';throw e3}
       s.dirty=false;s.lastSync=new Date().toISOString();writeSyncState(s);
       try{console.log('%c[TRACE-PUSH] ✓ push réussi vers Supabase','color:#3E7C4F;font-weight:bold',pushed)}catch(_){}
+      wlog('PUSH-OK',{info:JSON.stringify(pushed),after:wnames(DB)}); /* [WLOG] */
       cloudStatus('ok');
     }catch(e){
       try{console.error('%c[TRACE-PUSH] ✗ ÉCHEC du push — VOICI POURQUOI Supabase ne reçoit rien:','color:#B04A3E;font-weight:bold',
         {table:e&&e.__ent,operation:e&&e.__op,code:e&&e.code,message:e&&e.message,details:e&&e.details,hint:e&&e.hint,erreur_complete:e})}catch(_){}
+      wlog('PUSH-ERR',{info:(e&&e.__ent||'')+' '+(e&&e.__op||'')+' '+(e&&e.code||'')+' '+String(e&&e.message||e).slice(0,140)}); /* [WLOG] */
       cloudStatus('pending');
     }
   };
@@ -1098,6 +1129,8 @@ const DataLayer={
   },
   write(db){ // persiste tout l etat; retourne false si echec (quota…)
     try{
+      /* [WLOG] journal persistant: avant/après + pile d'appel (QUI écrit) */
+      let __before=[];try{__before=wnames(JSON.parse(localStorage.getItem(KEY)||'null'))}catch(_){}
       /* [TRACE-AUDIT] instrumentation temporaire: identifier QUI réécrit la base */
       try{
         console.groupCollapsed('%c[TRACE-WRITE] crm_gestion_clients_v1 ← '+((db.clients||[]).length)+' client(s) · '+new Date().toISOString()+' · visibilité='+document.visibilityState,'color:#B04A3E;font-weight:bold');
@@ -1105,7 +1138,13 @@ const DataLayer={
         console.trace('pile d’appel (QUI écrit):');
         console.groupEnd();
       }catch(_){}
-      localStorage.setItem(KEY,JSON.stringify(db));return true
+      localStorage.setItem(KEY,JSON.stringify(db));
+      try{
+        const nn=Date.now()+'-'+window.__TAB_ID;localStorage.setItem(WNONCE,nn);__lastNonce=nn; // empreinte "écrit par code instrumenté"
+        const pile=(new Error().stack||'').split('\n').slice(2,6).map(s=>s.trim().replace(/^at /,'')).join(' ← ');
+        wlog('WRITE',{info:pile,before:__before,after:wnames(db)});
+      }catch(_){}
+      return true
     }catch(e){return false}
   },
   normalize(db){ // garanties de schema retro-compatibles
@@ -2252,8 +2291,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();close
 load();cloudBoot();renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();notifToastOnLoad();cloudInit();
 /* [TRACE-AUDIT] instrumentation temporaire — diagnostic "clients qui reviennent" */
 try{
-  window.__TAB_ID=Math.random().toString(36).slice(2,7);
-  window.__BUILD='v33'; // = version du SW (they-gestion-vXX) — tenir synchronisé à chaque release
+  /* __TAB_ID/__BUILD définis en tête de script (section WLOG) — v34 */
   console.log('%c[TRACE-BOOT] build='+window.__BUILD+' · onglet='+window.__TAB_ID+' · clients au boot: '+JSON.stringify((DB.clients||[]).map(c=>c.name)),'color:#3E7C4F;font-weight:bold',
     {seeded:localStorage.getItem('they_seeded_v1'),demo:localStorage.getItem('they_demo_v1'),
      sync:JSON.parse(localStorage.getItem('they_sync_v1')||'null'),
@@ -2264,6 +2302,22 @@ try{
       console.warn('%c[TRACE-AUTRE-ONGLET] ⚠️ crm_gestion_clients_v1 vient d’être RÉÉCRIT PAR UN AUTRE ONGLET/FENÊTRE !','color:#B04A3E;font-weight:bold',
         {clients:(v.clients||[]).map(c=>c.name),quand:new Date().toISOString()});}
     if(e.key==='they_sync_v1')console.warn('[TRACE-AUTRE-ONGLET] they_sync_v1 modifié par un autre onglet:',e.newValue);
+  });
+  /* [WLOG] journal du boot + détecteur d'écrivain fantôme (instance non instrumentée) */
+  wlog('BOOT',{info:'seeded='+localStorage.getItem('they_seeded_v1')+' · sync='+(localStorage.getItem('they_sync_v1')||'').slice(0,60),after:wnames(DB)});
+  console.log('%c[WLOG] journal persistant des écritures actif — tapez __WLOG() dans la console (depuis n’importe quel onglet)','color:#3E6B8F;font-weight:bold');
+  window.addEventListener('storage',e=>{
+    if(e.key===WNONCE)return;
+    if(e.key!==KEY||e.newValue==null)return;
+    const noms=wnames(JSON.parse(e.newValue||'{}'));
+    const seen=__lastNonce; // nonce connu AVANT cette écriture
+    setTimeout(()=>{ // laisse arriver l'éventuel bump de nonce du même écrivain
+      let cur=null;try{cur=localStorage.getItem(WNONCE)}catch(_){}
+      const instrumente=cur!==seen;
+      __lastNonce=cur;
+      wlog('ÉCRIT-PAR-AUTRE-INSTANCE',{info:instrumente?'instance instrumentée (chercher son WRITE, onglet='+String(cur).split('-')[1]+')':'⚠️⚠️ INSTANCE NON INSTRUMENTÉE (ancien build encore ouvert — fenêtre PWA ?)',after:noms});
+      console.warn('%c[WLOG] la base vient d’être écrite par UNE AUTRE INSTANCE — '+(instrumente?'instrumentée':'*** ANCIEN BUILD NON INSTRUMENTÉ ***'),'color:#B04A3E;font-weight:bold',noms);
+    },250);
   });
 }catch(_){}
 if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}

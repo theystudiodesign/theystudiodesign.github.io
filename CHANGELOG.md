@@ -1,5 +1,9 @@
 # CHANGELOG — THE'Y STUDIO DESIGN · Gestion
 
+## 2026-07-13 (22) — WLOG: instrumentation runtime (diagnostic production, zéro logique)
+- **Journal PERSISTANT des écritures** (`they_wlog`, ring-buffer 80 entrées, lisible depuis n'importe quel onglet même après refresh: console → `__WLOG()`): pour chaque écriture — horodatage, onglet, build, visibilité, **pile d'appel (QUI écrit)**, clients AVANT (disque) / APRÈS; + PULL-REMOTE (cloud avant merge), PULL-DONE, PUSH-OK (payload), PUSH-ERR, BOOT.
+- **Détecteur d'écrivain fantôme**: chaque écriture instrumentée bumpe une empreinte (`they_wnonce`); une écriture de la base SANS bump = **instance NON instrumentée (ancien build encore ouvert — fenêtre PWA)** → entrée `ÉCRIT-PAR-AUTRE-INSTANCE` + warn console. Zéro changement de logique. SW v34.
+
 ## 2026-07-13 (20) — Sprint 19: Accents sémantiques + THE'Y Icons (Phase 2)
 - **Accents sémantiques** (décision actée) : 4 tokens `--danger/--success/--warning/--info` (+ variantes dark) sur base monochrome. Appliqués aux ÉTATS uniquement : retards en rouge (badge « En retard », chips calendrier, pastille notifications, « fat le délai »), attente en orange (dots), « Livré » en vert (dot), sync cloud (OK/attente/erreur), priorités (dots rouge/orange/vert), hints (filet info). Aliases hérités (`--rouge`…) re-pointés vers les accents. Fix I-1: `--muted` inexistant → `--mut` (20 sites).
 - **THE'Y Icons** : famille SVG unique (25 symboles, stroke 1.7, currentColor, sprite inline) remplaçant ~100 emojis/glyphes/symboles unicode — navigation, actions de ligne, topbar, boutons, états vides, fermetures, chevrons, thème, diagnostic cloud. **Zéro emoji dans l'UI.** Les valeurs STOCKÉES héritées (priorité « 🔴 Urgent », statut « Salit ✅ ») restent intactes (rétro-compat + sync) — affichage mappé via `prioHTML/prioLabel/statutLabel`; les `<option>` gardent les anciennes valeurs en `value`.
