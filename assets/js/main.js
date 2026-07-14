@@ -419,6 +419,18 @@
       return $$('.chip[aria-pressed="true"]', group).map(function (c) { return c.textContent.trim(); });
     };
 
+    /* Prefill from /contact/?service=… (Services page "Discuss this →") */
+    var svcParam = new URLSearchParams(location.search).get("service");
+    if (svcParam) {
+      var svcMap = { brand: "Brand Identity", digital: "Digital", direction: "Art Direction" };
+      var wanted = svcMap[svcParam] || svcParam;
+      $$('[data-chip-group="services"] .chip', form).forEach(function (c) {
+        if (c.textContent.trim().toLowerCase().indexOf(wanted.toLowerCase()) === 0) {
+          c.setAttribute("aria-pressed", "true");
+        }
+      });
+    }
+
     var validateStep = function (i) {
       var ok = true;
       $$("[data-required]", steps[i]).forEach(function (field) {
