@@ -1,11 +1,13 @@
 {
   "name": "they-gestion-tests",
   "private": true,
-  "description": "Suite d'integration Sprint 12 — sync cloud Supabase (mock server local + Playwright)",
+  "description": "Suite d integration SyncEngine v2 (IndexedDB + queue + tombstones) — mock Supabase + Playwright",
   "scripts": {
     "build:vendor": "esbuild node_modules/@supabase/supabase-js/dist/index.mjs --bundle --format=esm --outfile=vendor/supabase-esm.js",
-    "test": "node sync-v2.js",
-    "test:acceptance": "node acceptance.js"
+    "test:sync": "node sync-v2.js",
+    "test:regression": "node app-regression.js",
+    "test:acceptance": "node acceptance.js",
+    "test": "node sync-v2.js && node app-regression.js"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.48.0",

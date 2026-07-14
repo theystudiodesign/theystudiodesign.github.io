@@ -142,6 +142,12 @@
     async setSyncState(k, v) { await IDB.put('sync_state', { k, v }); },
     onRemoteWrite(cb) { remoteCb = cb; },
 
+    /* purge PERMANENTE d'un tombstone — uniquement après confirmation serveur (SyncEngine) */
+    async purgeTombstone(ent, id) {
+      await IDB.del(ent, id);
+      KNOWN_DEAD[ent].delete(id);
+    },
+
     /* outillage tests / reset volontaire */
     async dump() { const out = {}; for (const ent of ENTS) out[ent] = (await IDB.getAll(ent)); return out; },
     async wipeData() { for (const ent of ENTS) await IDB.clear(ent); await IDB.clear('queue'); ENTS.forEach(e => { SNAP[e] = new Map(); KNOWN_DEAD[e] = new Set(); }); }

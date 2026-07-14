@@ -203,6 +203,45 @@ const cloudLive = (d, email, table) => cloudRows(d, email, table).filter(r => !r
     await ctx.close();
   }
 
+  console.log('\n[12] Purge permanente des tombstones — après confirmation serveur uniquement');
+  {
+    await fetch(MOCK + '/__reset');
+    const { ctx, page } = await newDevice(browser); page.on('dialog', d => d.accept());
+    await page.goto(APP, { waitUntil: 'networkidle' }); await sleep(500);
+    await login(page, 'purge@test.ma', true); await sleep(1500);
+    await addClient(page, 'ToPurge'); await sleep(1800);
+    await delByName(page, 'ToPurge'); await sleep(1800);
+    let t = await page.evaluate(async () => (await Storage.dump()).clients.find(c => c.name === 'ToPurge'));
+    ok(t && t.deletedAt, 'tombstone local présent après suppression synchronisée');
+    /* TTL court pour le test + resync → purge (le serveur confirme: il a le tombstone) */
+    await page.evaluate(() => { SyncEngine.TOMBSTONE_TTL_MS = 1; return SyncEngine.sync(); }); await sleep(1200);
+    t = await page.evaluate(async () => (await Storage.dump()).clients.find(c => c.name === 'ToPurge'));
+    ok(!t, 'tombstone purgé localement (confirmé serveur + TTL dépassé)');
+    const d = await dump();
+    ok(cloudRows(d, 'purge@test.ma', 'clients').some(r => r.name === 'ToPurge' && r.deleted_at), 'le serveur GARDE son tombstone (historique multi-appareils)');
+    ok(!(await names(page)).includes('ToPurge'), 'et le client ne réapparaît jamais');
+    await ctx.close();
+  }
+
+  console.log('\n[13] Résilience — erreur serveur: op conservée + retry; réparation → file vidée');
+  {
+    await fetch(MOCK + '/__reset');
+    const { ctx, page } = await newDevice(browser); page.on('dialog', d => d.accept());
+    await page.goto(APP, { waitUntil: 'networkidle' }); await sleep(500);
+    await login(page, 'retry@test.ma', true); await sleep(1500);
+    await fetch(MOCK + '/__schema?missing=1');            // le serveur casse (tables introuvables)
+    await addClient(page, 'RetryMe'); await sleep(2200);
+    ok(await page.evaluate(() => SyncEngine.status) === 'err', 'statut = erreur (visible, jamais silencieux)');
+    ok(await page.evaluate(() => Queue.count()) > 0, 'l’opération RESTE en file (aucune perte)');
+    ok((await names(page)).includes('RetryMe'), 'le local reste intact pendant la panne');
+    await fetch(MOCK + '/__schema?missing=0');            // réparation serveur
+    await page.evaluate(() => SyncEngine.sync()); await sleep(1500);
+    ok(cloudLive(await dump(), 'retry@test.ma', 'clients').includes('RetryMe'), 'après réparation: poussé au cloud');
+    ok(await page.evaluate(() => Queue.count()) === 0, 'file vidée');
+    ok(await page.evaluate(() => SyncEngine.status) === 'ok', 'statut redevenu OK');
+    await ctx.close();
+  }
+
   await browser.close(); app.close(); mock.close();
   console.log(`\n========== SyncEngine v2: ${passed} ✓ / ${failed} ✗ ==========`);
   process.exit(failed ? 1 : 0);

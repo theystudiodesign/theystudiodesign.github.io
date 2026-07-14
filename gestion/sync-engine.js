@@ -47,6 +47,7 @@
   const eff = r => { const u = r.updatedAt || '', d = r.deletedAt || ''; return u > d ? u : d; };
 
   const SyncEngine = {
+    TOMBSTONE_TTL_MS: 30 * 24 * 3600 * 1000, // 30 jours
     status: 'local', _running: null, _timer: null, _cbs: [],
     onStatus(cb) { this._cbs.push(cb); },
     _set(s, detail) { this.status = s; this.lastDetail = detail || ''; this._cbs.forEach(cb => { try { cb(s, detail); } catch (e) {} }); },
@@ -120,13 +121,27 @@
         });
         if (em) throw Object.assign(em, { __ent: 'meta', __op: 'upsert' });
         await Storage.setSyncState('lastSync', new Date().toISOString());
+        /* nettoyage permanent: tombstone local purgé UNIQUEMENT si (a) le serveur le
+           confirme (même suppression visible au pull) et (b) il a dépassé le TTL. */
+        const cutoff = new Date(Date.now() - SyncEngine.TOMBSTONE_TTL_MS).toISOString();
+        for (const ent of ENTS) {
+          const confirmed = new Map(remote[ent].filter(r => r.deletedAt).map(r => [r.id, r.deletedAt]));
+          for (const l of await Storage.rowsWithTombstones(ent)) {
+            if (l.deletedAt && l.deletedAt < cutoff && confirmed.has(l.id)) await Storage.purgeTombstone(ent, l.id);
+          }
+        }
         this._set((await Queue.count()) ? 'pending' : 'ok');
       } catch (e) {
         const missingCol = /deleted_at|version|device_id/.test(String(e && e.message)) && /column|schema/i.test(String(e && e.message));
         this._set('err', missingCol
           ? 'Migration SQL requise: exécuter supabase/migration-tombstones.sql dans Supabase (SQL Editor)'
           : ((e && e.__ent ? e.__ent + ' · ' : '') + String(e && e.message || e).slice(0, 160)));
+        /* retry automatique avec backoff borné (2s → 4s → 8s … max 60s) */
+        this._fails = (this._fails || 0) + 1;
+        this.schedule(Math.min(60000, 2000 * Math.pow(2, Math.min(this._fails, 5))));
+        return;
       }
+      this._fails = 0;
     },
 
     start() {
