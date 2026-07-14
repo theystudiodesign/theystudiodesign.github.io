@@ -2,10 +2,17 @@
    (buttons, modal, trash icons, confirm dialogs), with screenshots.
    Cloud = mock Supabase. Browser genuinely restarted via persistent context. */
 'use strict';
+/* REAL=1 → Supabase RÉEL (gestion/supabase-config.js), compte de test unique, purge à la fin. */
 const http = require('http'); const fs = require('fs'); const os = require('os'); const path = require('path');
 const { chromium } = require('playwright-core');
 const { createMockSupabase } = require('./mock-supabase');
-const ROOT = '/workspace/theystudiodesign.github.io';
+const REAL = process.env.REAL === '1';
+const ROOT = path.join(__dirname, '..');
+const CFG = (() => {
+  const t = fs.readFileSync(path.join(ROOT, 'gestion', 'supabase-config.js'), 'utf8');
+  return { url: (t.match(/url:\s*"([^"]+)"/) || [])[1], anonKey: (t.match(/anonKey:\s*"([^"]+)"/) || [])[1] };
+})();
+const EMAIL = REAL ? `they.manualqa.${Date.now()}@gmail.com` : 'manual@test.ma';
 const SHOTS = path.join(ROOT, 'docs/qa-gestion');
 const APP_PORT = 9081, MOCK_PORT = 9082;
 const APP = `http://localhost:${APP_PORT}/gestion/`;
@@ -30,7 +37,9 @@ async function launch(dir) {
   const ctx = await chromium.launchPersistentContext(dir, { executablePath: CHROME, headless: true, viewport: { width: 1280, height: 800 } });
   await ctx.addInitScript(() => sessionStorage.setItem('they_unlocked', '1'));
   await ctx.route('**/fonts.googleapis.com/**', r => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
-  await ctx.route('**/supabase-config.js*', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: `window.SUPABASE_CONFIG={url:"${MOCK}",anonKey:"mock-anon-key-0123456789abcdef"};` }));
+  await ctx.route('**/supabase-config.js*', r => r.fulfill({ status: 200, contentType: 'text/javascript',
+    body: REAL ? `window.SUPABASE_CONFIG={url:"${CFG.url}",anonKey:"${CFG.anonKey}"};`
+               : `window.SUPABASE_CONFIG={url:"${MOCK}",anonKey:"mock-anon-key-0123456789abcdef"};` }));
   await ctx.route('**/cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: fs.readFileSync(VENDOR, 'utf8') }));
   return ctx;
 }
@@ -54,7 +63,15 @@ async function uiDelete(page, name) {
 const refresh = async page => { await sleep(350); await page.reload({ waitUntil: 'networkidle' }); await sleep(1800); };
 
 (async () => {
-  const { server: mock } = createMockSupabase(); mock.listen(MOCK_PORT);
+  if (REAL) {
+    const r = await fetch(CFG.url + '/rest/v1/clients?select=deleted_at&limit=1',
+      { headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + CFG.anonKey } });
+    const b = await r.json().catch(() => ({}));
+    if (b && b.code === '42703') { console.error('⛔ migration-tombstones.sql pas exécutée sur ' + CFG.url); process.exit(3); }
+    console.log('pré-vol: schéma v2 présent ✓ · cible: ' + CFG.url);
+  }
+  let mock = null;
+  if (!REAL) { mock = createMockSupabase().server; mock.listen(MOCK_PORT); }
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'they-manual-'));
   let ctx = await launch(dir);
   let page = await open(ctx);
@@ -62,9 +79,14 @@ const refresh = async page => { await sleep(350); await page.reload({ waitUntil:
   console.log('— Connexion Cloud Sync (mock) —');
   await page.evaluate(() => { DB.clients.forEach(c => c.notes = 'réel'); save(); });
   await page.waitForSelector('#authGate');
-  await page.fill('#ag_email', 'manual@test.ma'); await page.fill('#ag_pass', 'secret123');
+  await page.fill('#ag_email', EMAIL); await page.fill('#ag_pass', 'secret123-QA');
   await page.click('text=Créer le compte');
-  await page.waitForSelector('#authGate', { state: 'detached' }); await sleep(1200);
+  try { await page.waitForSelector('#authGate', { state: 'detached', timeout: 15000 }); }
+  catch (e) {
+    const msg = await page.evaluate(() => (document.getElementById('ag_err') || {}).textContent || '');
+    throw new Error('SIGNUP BLOQUÉ (confirmation email exigée ?) — ' + msg);
+  }
+  await sleep(REAL ? 3000 : 1200);
   await shot(page, 'cloud-connecte');
 
   /* second tab open the whole time */
@@ -95,9 +117,20 @@ const refresh = async page => { await sleep(350); await page.reload({ waitUntil:
   const n = await names(page);
   check(!n.includes('MANUEL-CLIENT-1') && !n.includes('MANUEL-CLIENT-2'), 'redémarrage navigateur → rien ne ressuscite (état: [' + n.join(', ') + '])');
   await shot(page, 'apres-redemarrage');
+  if (REAL) {
+    const sess = await page.evaluate(() => {
+      for (const k of Object.keys(localStorage)) if (k.startsWith('sb-') && k.includes('auth-token')) {
+        try { const v = JSON.parse(localStorage.getItem(k)); return { token: v.access_token, uid: (v.user || {}).id }; } catch (e) {}
+      }
+      return null;
+    });
+    if (sess) for (const t of ['paiements', 'taches', 'events', 'projets', 'clients'])
+      await fetch(`${CFG.url}/rest/v1/${t}?user_id=eq.${sess.uid}`, { method: 'DELETE', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + sess.token } }).catch(() => {});
+    console.log('(nettoyage serveur: lignes du compte de test purgées)');
+  }
   await ctx.close();
   fs.rmSync(dir, { recursive: true, force: true });
-  await new Promise(r => srv.close(r)); await new Promise(r => mock.close(r));
+  await new Promise(r => srv.close(r)); if (mock) await new Promise(r => mock.close(r));
   console.log(`\nVÉRIFICATION MANUELLE (UI réelle): ${ok} ✓ / ${ko} ✗`);
   process.exit(ko ? 1 : 0);
 })().catch(e => { console.error('FATAL', e); process.exit(2); });

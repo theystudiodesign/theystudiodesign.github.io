@@ -41,7 +41,17 @@ const { createMockSupabase } = require('./mock-supabase');
 const ROOT = path.join(__dirname, '..');
 const OLD_ROOT = process.argv[2] ? path.resolve(process.argv[2]) : null;
 const APP_ROOT = OLD_ROOT || ROOT;
-const LABEL = OLD_ROOT ? 'ANCIEN moteur (' + OLD_ROOT + ')' : 'SyncEngine v2 (build actuel)';
+/* REAL=1 → Supabase RÉEL (gestion/supabase-config.js), pas de mock.
+   Chaque run crée un compte de test unique (RLS isole les données réelles);
+   les lignes du compte de test sont purgées à la fin. */
+const REAL = process.env.REAL === '1';
+const CFG = (() => {
+  const t = fs.readFileSync(path.join(ROOT, 'gestion', 'supabase-config.js'), 'utf8');
+  return { url: (t.match(/url:\s*"([^"]+)"/) || [])[1], anonKey: (t.match(/anonKey:\s*"([^"]+)"/) || [])[1] };
+})();
+const RUN = Date.now();
+const emailFor = tag => REAL ? `they.syncqa.${tag}.${RUN}@gmail.com` : tag + '@test.ma';
+const LABEL = (OLD_ROOT ? 'ANCIEN moteur (' + OLD_ROOT + ')' : 'SyncEngine v2 (build actuel)') + (REAL ? ' · SUPABASE RÉEL ' + CFG.url : ' · mock');
 const APP_PORT = 9071, MOCK_PORT = 9072;
 const APP = `http://localhost:${APP_PORT}/gestion/`;
 const MOCK = `http://localhost:${MOCK_PORT}`;
@@ -72,7 +82,10 @@ async function wireContext(ctx, cloud) {
   await ctx.route('**/fonts.googleapis.com/**', r => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
   await ctx.route('**/supabase-config.js*', r => r.fulfill({
     status: 200, contentType: 'text/javascript',
-    body: cloud ? `window.SUPABASE_CONFIG={url:"${MOCK}",anonKey:"mock-anon-key-0123456789abcdef"};` : 'window.SUPABASE_CONFIG={url:"",anonKey:""};'
+    body: cloud
+      ? (REAL ? `window.SUPABASE_CONFIG={url:"${CFG.url}",anonKey:"${CFG.anonKey}"};`
+              : `window.SUPABASE_CONFIG={url:"${MOCK}",anonKey:"mock-anon-key-0123456789abcdef"};`)
+      : 'window.SUPABASE_CONFIG={url:"",anonKey:""};'
   }));
   await ctx.route('**/cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: fs.readFileSync(VENDOR, 'utf8') }));
 }
@@ -110,10 +123,45 @@ async function login(page, email) {
   await page.evaluate(() => { DB.clients.forEach(c => c.notes = 'réel'); save(); });
   await page.waitForSelector('#authGate');
   await page.fill('#ag_email', email);
-  await page.fill('#ag_pass', 'secret123');
+  await page.fill('#ag_pass', 'secret123-QA');
   await page.click('text=Créer le compte');
-  await page.waitForSelector('#authGate', { state: 'detached' });
-  await sleep(1200);
+  try {
+    await page.waitForSelector('#authGate', { state: 'detached', timeout: 15000 });
+  } catch (e) {
+    const msg = await page.evaluate(() => (document.getElementById('ag_err') || {}).textContent || document.getElementById('authGate').textContent.slice(0, 300));
+    throw new Error('SIGNUP BLOQUÉ (confirmation email exigée par le projet ? désactiver « Confirm email » pour le run QA, ou fournir un compte de test) — message: ' + msg);
+  }
+  await sleep(REAL ? 3000 : 1200);
+}
+
+/* ===== outils Supabase RÉEL ===== */
+async function realToken(page) {
+  return page.evaluate(() => {
+    for (const k of Object.keys(localStorage)) {
+      if (k.startsWith('sb-') && k.includes('auth-token')) {
+        try { const v = JSON.parse(localStorage.getItem(k)); return { token: v.access_token, uid: (v.user || {}).id }; } catch (e) {}
+      }
+    }
+    return null;
+  });
+}
+async function realActiveClients(sess) {
+  const r = await fetch(CFG.url + '/rest/v1/clients?select=name,deleted_at', {
+    headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + sess.token }
+  });
+  const rows = await r.json();
+  if (!Array.isArray(rows)) throw new Error('REST clients: ' + JSON.stringify(rows).slice(0, 300));
+  return rows.filter(x => !x.deleted_at).map(x => x.name);
+}
+async function realCleanup(sess) {
+  for (const t of ['paiements', 'taches', 'events', 'projets', 'clients']) {
+    try {
+      await fetch(`${CFG.url}/rest/v1/${t}?user_id=eq.${sess.uid}`, {
+        method: 'DELETE', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + sess.token }
+      });
+    } catch (e) {}
+  }
+  console.log('    (nettoyage: lignes du compte de test purgées côté serveur)');
 }
 
 /* Le profil de stockage RÉEL de la production (PR #21/#23):
@@ -177,7 +225,7 @@ async function signInExisting(page, email) {
   await page.evaluate(() => { DB.clients.forEach(c => c.notes = 'réel'); save(); });
   await page.waitForSelector('#authGate');
   await page.fill('#ag_email', email);
-  await page.fill('#ag_pass', 'secret123');
+  await page.fill('#ag_pass', 'secret123-QA');
   await page.click('text=Se connecter');
   await page.waitForSelector('#authGate', { state: 'detached' });
   await sleep(2500); // laisser le pull initial se faire
@@ -192,8 +240,21 @@ async function assertAfterRestart(page, A, B, extraSettle) {
 
 (async () => {
   console.log('CIBLE: ' + LABEL);
+  if (REAL) {
+    /* pré-vol: le schéma v2 doit être en place sur le projet réel */
+    const r = await fetch(CFG.url + '/rest/v1/clients?select=deleted_at&limit=1',
+      { headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + CFG.anonKey } });
+    const b = await r.json().catch(() => ({}));
+    if (b && b.code === '42703') {
+      console.error('\n⛔ PRÉ-VOL ÉCHOUÉ: supabase/migration-tombstones.sql n\'a pas été exécutée sur ' + CFG.url);
+      console.error('   → Dashboard Supabase → SQL Editor → coller le fichier → Run — puis relancer REAL=1.');
+      process.exit(3);
+    }
+    console.log('pré-vol: schéma v2 présent (deleted_at) ✓');
+  }
   const srv = server();
-  const { server: mock } = createMockSupabase(); mock.listen(MOCK_PORT);
+  let mock = null;
+  if (!REAL) { mock = createMockSupabase().server; mock.listen(MOCK_PORT); }
 
   /* ============ [S1] LOCAL — une instance ============ */
   console.log('\n[S1] LOCAL — scénario exact, refresh immédiats, puis redémarrage navigateur');
@@ -214,11 +275,11 @@ async function assertAfterRestart(page, A, B, extraSettle) {
   /* ============ [S2] CLOUD SYNC activé ============ */
   console.log('\n[S2] CLOUD — même scénario, Cloud Sync activé (mock Supabase)');
   {
-    await fetch(MOCK + '/__reset');
+    if (!REAL) await fetch(MOCK + '/__reset');
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'they-s2-'));
     let ctx = await launchBrowser(dir, true);
     let page = await openApp(ctx);
-    await login(page, 'scenario@test.ma');
+    await login(page, emailFor('scenario'));
     await saturateStorage(page);               // profil de stockage réel
     const { A, B } = await userScenario('S2', page, ctx);
     await ctx.close();                          // ← redémarrage navigateur
@@ -227,12 +288,18 @@ async function assertAfterRestart(page, A, B, extraSettle) {
     /* laisser le pull cloud se faire — c'est LÀ que les fantômes revenaient */
     await assertAfterRestart(page, A, B, 2500);
     /* et le cloud lui-même doit converger: plus aucun des deux */
-    await sleep(2500);
-    const dump = await (await fetch(MOCK + '/__dump')).json();
-    const cloudNames = [];
-    for (const uid of Object.keys(dump.rows || {})) {
-      for (const r of (dump.rows[uid].clients || [])) {
-        if (!r.deleted_at) cloudNames.push(r.name);
+    await sleep(REAL ? 5000 : 2500);
+    let cloudNames = [];
+    let s2sess = null;
+    if (REAL) {
+      s2sess = await realToken(page);
+      cloudNames = await realActiveClients(s2sess);
+    } else {
+      const dump = await (await fetch(MOCK + '/__dump')).json();
+      for (const uid of Object.keys(dump.rows || {})) {
+        for (const r of (dump.rows[uid].clients || [])) {
+          if (!r.deleted_at) cloudNames.push(r.name);
+        }
       }
     }
     check(!cloudNames.includes(A) && !cloudNames.includes(B),
@@ -242,10 +309,11 @@ async function assertAfterRestart(page, A, B, extraSettle) {
     const dir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'they-s2b-'));
     ctx = await launchBrowser(dir2, true);
     page = await openApp(ctx);
-    await signInExisting(page, 'scenario@test.ma');
+    await signInExisting(page, emailFor('scenario'));
     const nd = await names(page);
     check(!nd.includes(A) && !nd.includes(B),
       `nouvel appareil (même compte) → aucun supprimé ne revient (état: [${nd.join(', ')}])`);
+    if (REAL) { const sess = await realToken(page); if (sess) await realCleanup(sess); }
     await ctx.close();
     fs.rmSync(dir, { recursive: true, force: true });
     fs.rmSync(dir2, { recursive: true, force: true });
@@ -254,11 +322,11 @@ async function assertAfterRestart(page, A, B, extraSettle) {
   /* ============ [S3] CLOUD + DEUX ONGLETS ============ */
   console.log('\n[S3] CLOUD + 2 ONGLETS — le 2e onglet reste ouvert et sauvegarde après CHAQUE étape');
   {
-    await fetch(MOCK + '/__reset');
+    if (!REAL) await fetch(MOCK + '/__reset');
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'they-s3-'));
     let ctx = await launchBrowser(dir, true);
     let page = await openApp(ctx);
-    await login(page, 'twotabs@test.ma');
+    await login(page, emailFor('twotabs'));
     await saturateStorage(page);               // profil de stockage réel
     const tab2 = await openApp(ctx);            // 2e onglet, même session, reste ouvert
     const secondTab = async (moment) => {
@@ -280,16 +348,17 @@ async function assertAfterRestart(page, A, B, extraSettle) {
     const dir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'they-s3b-'));
     ctx = await launchBrowser(dir2, true);
     page = await openApp(ctx);
-    await signInExisting(page, 'twotabs@test.ma');
+    await signInExisting(page, emailFor('twotabs'));
     const nd = await names(page);
     check(!nd.includes(A) && !nd.includes(B),
       `nouvel appareil (même compte) → aucun supprimé ne revient (état: [${nd.join(', ')}])`);
+    if (REAL) { const sess = await realToken(page); if (sess) await realCleanup(sess); }
     await ctx.close();
     fs.rmSync(dir, { recursive: true, force: true });
     fs.rmSync(dir2, { recursive: true, force: true });
   }
 
-  await new Promise(r => srv.close(r)); await new Promise(r => mock.close(r));
+  await new Promise(r => srv.close(r)); if (mock) await new Promise(r => mock.close(r));
   console.log(`\n========== SCÉNARIO UTILISATEUR [${LABEL}]: ${pass} ✓ / ${fail} ✗ ==========`);
   process.exit(fail ? 1 : 0);
 })().catch(e => { console.error('FATAL', e); process.exit(2); });
