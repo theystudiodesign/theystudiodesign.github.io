@@ -759,7 +759,7 @@ const KEY='crm_gestion_clients_v1';
    Empreinte anti-fantôme: chaque écriture instrumentée bumpe they_wnonce —
    une écriture de la clé DB SANS bump = instance NON instrumentée (ancien build encore ouvert). */
 window.__TAB_ID=window.__TAB_ID||Math.random().toString(36).slice(2,7);
-window.__BUILD='v34';
+window.__BUILD='v35';
 const WLOG_KEY='they_wlog',WNONCE='they_wnonce';
 let __lastNonce=null;try{__lastNonce=localStorage.getItem(WNONCE)}catch(e){}
 function wnames(db){try{return ((db&&db.clients)||[]).map(c=>c&&c.name)}catch(e){return['(illisible)']}}
@@ -890,6 +890,18 @@ document.addEventListener('visibilitychange',()=>{
   if(!document.hidden&&Cloud.client&&Cloud.user)cloudPull().catch(()=>cloudStatus('pending'));
 });
 /* ----- pull + merge LWW ----- */
+/* [TRACE-CLIENT] suivi d'un client précis à travers toute la chaîne de boot.
+   Par défaut: PARADISA. Modifiable en console: window.__TRACK=/autre nom/i */
+const TRACK_DEFAULT=/PARADISA/i;
+function trackStep(step){
+  try{
+    const re=window.__TRACK||TRACK_DEFAULT;
+    const inMem=(DB.clients||[]).some(c=>re.test(c.name||''));
+    const disk=(JSON.parse(localStorage.getItem(KEY)||'{}').clients||[]).some(c=>re.test(c.name||''));
+    console.log('%c[TRACE-CLIENT] '+step+' → mémoire: '+(inMem?'OUI ✓':'NON ✗')+' · disque: '+(disk?'OUI ✓':'NON ✗'),
+      'color:'+(inMem?'#3E7C4F':'#B04A3E')+';font-weight:bold');
+  }catch(_){}
+}
 async function cloudPull(){
   const c=Cloud.client;if(!c||!Cloud.user)return;
   const st=syncState();
@@ -902,6 +914,13 @@ async function cloudPull(){
     if(remote[ent].length)cloudEmpty=false;
   }
   const {data:meta}=await c.from('meta').select('*').maybeSingle();
+  /* [TRACE-CLIENT] étape 3: la réponse Supabase + IDENTITÉ de session (clé du mystère RLS) */
+  try{
+    const re=window.__TRACK||TRACK_DEFAULT;
+    console.log('%c[TRACE-CLIENT] 3. cloudPull (réponse Supabase) → présent dans remote: '+((remote.clients||[]).some(x=>re.test(x.name||''))?'OUI ✓':'NON ✗')
+      +' · session: '+(Cloud.user&&Cloud.user.email)+' · auth.uid()='+(Cloud.user&&Cloud.user.id),
+      'color:#7A3EB0;font-weight:bold');
+  }catch(_){}
   wlog('PULL-REMOTE',{info:'cloud AVANT merge · dirty='+st.dirty,after:(remote.clients||[]).map(r=>r.name)}); /* [WLOG] */
   /* [TRACE-SOURCES] — LES 6 SOURCES POSSIBLES, dumpées AVANT toute décision/merge */
   try{
@@ -947,7 +966,10 @@ async function cloudPull(){
       else merged.push(r);                                                 // cloud gagne (LWW)
     });
     localMap.forEach(l=>{
-      if(base.has(l.id))return;        // absent du cloud mais connu avant → supprimé ailleurs
+      if(base.has(l.id)){ // absent du cloud mais connu avant → supprimé ailleurs
+        try{if(ent==='clients')console.warn('%c[TRACE-MERGE] ✗ DROP local "'+(l.name||l.id)+'" (id='+l.id+'): présent dans baseIds mais ABSENT de la réponse Supabase → considéré "supprimé ailleurs"','color:#B04A3E;font-weight:bold')}catch(_){}
+        return;
+      }
       merged.push(l);pending=true;     // nouvelle ligne locale → sera poussée
     });
     DB[ent]=merged;
@@ -968,7 +990,9 @@ async function cloudPull(){
   /* [TRACE-SOURCES] la variable EXACTE écrite juste après (DataLayer.write L867) */
   try{console.log('%c[TRACE-SOURCES] variable écrite → DataLayer.write(DB) · DB.clients='+((DB.clients||[]).length),'color:#7A3EB0;font-weight:bold',(DB.clients||[]).map(c=>({id:c.id,nom:c.name})))}catch(_){}
   wlog('PULL-DONE',{info:'APRÈS merge · pending(push)='+pending,after:wnames(DB)}); /* [WLOG] */
+  trackStep('4. après merge (avant écriture)');
   DataLayer.write(DB); // LocalStorage = cache du cloud
+  trackStep('5. après DataLayer.write');
   st.baseIds={};
   Object.keys(CLOUD_TABLES).forEach(e=>st.baseIds[e]=remote[e].map(r=>r.id));
   st.dirty=pending;writeSyncState(st);
@@ -1403,6 +1427,7 @@ function markPaid(id){const p=DB.paiements.find(x=>x.id===id);if(p){p.statut='Pa
 /* ============ CLIENTS ============ */
 function setClientFilter(f,btn){clientFilter=f;btn.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));btn.classList.add('on');renderClients()}
 function renderClients(){
+  trackStep('6. renderClients()');
   const q=(document.getElementById('clientSearch').value||'').toLowerCase();
   let list=DB.clients.filter(c=>clientFilter==='all'||c.type===clientFilter);
   if(q)list=list.filter(c=>c.name.toLowerCase().includes(q));
@@ -2288,7 +2313,7 @@ document.addEventListener('keydown',e=>{
 });
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();closeFacture();document.getElementById('notifPanel').classList.remove('open');document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show'))}});
-load();cloudBoot();renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();notifToastOnLoad();cloudInit();
+load();trackStep('1. load()');cloudBoot();trackStep('2. cloudBoot()');renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();notifToastOnLoad();cloudInit();
 /* [TRACE-AUDIT] instrumentation temporaire — diagnostic "clients qui reviennent" */
 try{
   /* __TAB_ID/__BUILD définis en tête de script (section WLOG) — v34 */
