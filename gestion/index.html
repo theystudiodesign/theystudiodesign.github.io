@@ -798,7 +798,15 @@ function syncState(){
   try{const s=JSON.parse(localStorage.getItem(SYNC_KEY));if(s&&s.baseIds)return s}catch(e){}
   return {dirty:false,lastSync:null,baseIds:{clients:[],projets:[],taches:[],paiements:[],events:[]}};
 }
-function writeSyncState(s){try{localStorage.setItem(SYNC_KEY,JSON.stringify(s))}catch(e){}}
+function writeSyncState(s){
+  const v=JSON.stringify(s);
+  try{localStorage.setItem(SYNC_KEY,v)}catch(e){
+    // Quota: libère les snapshots (backups, non critiques pour le sync temps-réel) et réessaie
+    try{localStorage.removeItem('they_snap_2');localStorage.setItem(SYNC_KEY,v)}catch(e2){
+      try{localStorage.removeItem('they_snap_1');localStorage.setItem(SYNC_KEY,v)}catch(e3){}
+    }
+  }
+}
 /* ----- horodatage par ligne (LWW) ----- */
 function rowSig(o){const c={...o};delete c.updatedAt;return JSON.stringify(c)}
 function cloudRebuildSigs(){ // après load()/pull: signatures sans re-stamper
@@ -1112,7 +1120,12 @@ const DataLayer={
         console.groupEnd();
       }catch(_){}
       localStorage.setItem(KEY,JSON.stringify(db));return true
-    }catch(e){return false}
+    }catch(e){
+      // Quota dépassé: libère les snapshots (backups, non critiques) et réessaie
+      try{localStorage.removeItem('they_snap_2');localStorage.setItem(KEY,JSON.stringify(db));return true}catch(e2){
+        try{localStorage.removeItem('they_snap_1');localStorage.setItem(KEY,JSON.stringify(db));return true}catch(e3){return false}
+      }
+    }
   },
   normalize(db){ // garanties de schema retro-compatibles
     if(!db.taches)db.taches=[];
@@ -1176,7 +1189,7 @@ function save(){
   sweepOrphans(DB); // garantie: aucun orphelin ne peut être persisté ni poussé
   invalidateCaches();
   cloudStamp(); // horodate les lignes modifiées (LWW) — actif même en mode local
-  if(!DataLayer.write(DB))toast('Stockage 3amer — dir Export o msse7 les images kbar');
+  if(!DataLayer.write(DB)){toast('⚠️ Stockage plein — les données ne sont PAS sauvegardées! Dir Export daba o msse7 les images kbar.');console.error('[STORAGE] localStorage plein — data PERDUE si refresh!')}
   clearDemoFlag(); // toute sauvegarde utilisateur = la base n'est plus la démo intacte
   cloudOnSave(); // dirty + push debounce si connecté
 }
@@ -2259,7 +2272,7 @@ load();cloudBoot();renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();
 /* [TRACE-AUDIT] instrumentation temporaire — diagnostic "clients qui reviennent" */
 try{
   window.__TAB_ID=Math.random().toString(36).slice(2,7);
-  window.__BUILD='v34'; // = version du SW (they-gestion-vXX) — tenir synchronisé à chaque release
+  window.__BUILD='v35'; // = version du SW (they-gestion-vXX) — tenir synchronisé à chaque release
   console.log('%c[TRACE-BOOT] build='+window.__BUILD+' · onglet='+window.__TAB_ID+' · clients au boot: '+JSON.stringify((DB.clients||[]).map(c=>c.name)),'color:#3E7C4F;font-weight:bold',
     {seeded:localStorage.getItem('they_seeded_v1'),demo:localStorage.getItem('they_demo_v1'),
      sync:JSON.parse(localStorage.getItem('they_sync_v1')||'null'),
