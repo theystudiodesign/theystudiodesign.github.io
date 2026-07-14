@@ -663,6 +663,108 @@ const cloudRowsFor = (d, email, table) => {
   }
 
   /* ================================================================ */
+  console.log('\n[21] Multi-instance — onglets/PWA simultanés + offline→online (fix critique)');
+  {
+    /* 21.a — 2 onglets même navigateur (= PWA installée + onglet), mode LOCAL */
+    const { ctx, page: tabStale } = await newDevice(browser, { cloud: false });
+    await tabStale.goto(APP, { waitUntil: 'networkidle' }); await sleep(500);
+    const tabActive = await ctx.newPage();
+    await tabActive.goto(APP, { waitUntil: 'networkidle' }); await sleep(500);
+    tabActive.on('dialog', d => d.accept());
+    const victim = await tabActive.evaluate(() => DB.clients[1].name);
+    await addClient(tabActive, 'MT-Fresh');
+    await tabActive.evaluate(n => { const c = DB.clients.find(x => x.name === n); delClient(c.id); }, victim);
+    await sleep(300);
+    /* sync active: l'onglet "oublié" a déjà adopté les changements via l'event storage */
+    let staleView = await db(tabStale);
+    ok(staleView.clients.some(c => c.name === 'MT-Fresh') && !staleView.clients.some(c => c.name === victim),
+      'storage event → l’autre onglet adopte immédiatement (création visible, suppression appliquée)');
+    /* relire-avant-d'écrire: un save() de l'onglet 1 n'écrase plus rien */
+    await tabStale.evaluate(() => { DB.clients[0].notes = 'edit-tab1'; save(); });
+    await sleep(200);
+    const disk = await lsdb(tabActive);
+    ok(disk.clients.some(c => c.name === 'MT-Fresh'), 'la création de l’onglet actif SURVIT au save de l’autre onglet');
+    ok(!disk.clients.some(c => c.name === victim), 'la suppression reste appliquée (pas de résurrection locale)');
+    ok(disk.clients.some(c => c.notes === 'edit-tab1'), 'l’édition de l’onglet 1 est fusionnée (LWW), pas perdue');
+    await tabActive.reload({ waitUntil: 'networkidle' }); await sleep(400);
+    const seen = await db(tabActive);
+    ok(seen.clients.some(c => c.name === 'MT-Fresh') && !seen.clients.some(c => c.name === victim),
+      'après refresh: état cohérent (bug impossible à reproduire en local)');
+    await ctx.close();
+
+    /* 21.b — 2 onglets + CLOUD: le cloud reste intact */
+    await fetch(MOCK + '/__reset');
+    const C2 = await newDevice(browser);
+    await C2.page.goto(APP, { waitUntil: 'networkidle' }); await sleep(400);
+    await C2.page.evaluate(() => { DB.clients[0].notes = 'base réelle'; save(); });
+    await login(C2.page, 'mt@test.ma', 'secret123', true);
+    const tab2 = await C2.ctx.newPage();
+    await tab2.goto(APP, { waitUntil: 'networkidle' }); await sleep(1000);
+    tab2.on('dialog', d => d.accept());
+    const victim2 = await tab2.evaluate(() => DB.clients[1].name);
+    await addClient(tab2, 'MT-CloudFresh');
+    await tab2.evaluate(n => { const c = DB.clients.find(x => x.name === n); delClient(c.id); }, victim2);
+    await sleep(2300); // push debounce tab2
+    await C2.page.evaluate(() => { DB.clients[0].notes = 'edit-après'; save(); });
+    await sleep(2300); // push debounce tab1
+    let cn = cloudRowsFor(await dump(), 'mt@test.ma', 'clients').map(r => r.name);
+    ok(cn.includes('MT-CloudFresh'), 'CLOUD: la création n’est plus supprimée par le diff baseIds d’un onglet périmé');
+    ok(!cn.includes(victim2), 'CLOUD: le client supprimé n’est plus ressuscité par l’upsert d’un onglet périmé');
+    await C2.ctx.close();
+
+    /* 21.c — DEUX APPAREILS, offline→online: pas de résurrection (nécessité du pull-avant-push) */
+    await fetch(MOCK + '/__reset');
+    const X = await newDevice(browser);
+    await X.page.goto(APP, { waitUntil: 'networkidle' }); await sleep(400);
+    X.page.on('dialog', d => d.accept());
+    await X.page.evaluate(() => { DB.clients[0].notes = 'base'; save(); });
+    await login(X.page, 'resur@test.ma', 'secret123', true);
+    const Y = await newDevice(browser);
+    await Y.page.goto(APP, { waitUntil: 'networkidle' });
+    await login(Y.page, 'resur@test.ma', 'secret123');
+    const victimX = await X.page.evaluate(() => DB.clients[1].name);
+    await Y.ctx.setOffline(true);
+    await Y.page.evaluate(() => { DB.clients[0].notes = 'y-edit-offline'; save(); }); // Y devient dirty, mémoire périmée
+    await X.page.evaluate(n => { const c = DB.clients.find(x => x.name === n); delClient(c.id); }, victimX);
+    await sleep(2300); // suppression poussée au cloud par X
+    ok(!cloudRowsFor(await dump(), 'resur@test.ma', 'clients').map(r => r.name).includes(victimX), 'pré-condition: suppression de X au cloud');
+    await Y.ctx.setOffline(false);
+    await Y.page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await sleep(1200);
+    cn = cloudRowsFor(await dump(), 'resur@test.ma', 'clients').map(r => r.name);
+    ok(!cn.includes(victimX), 'online: le client supprimé ailleurs n’est PAS ressuscité par l’appareil qui revient');
+    const yState = await db(Y.page);
+    ok(!yState.clients.some(c => c.name === victimX), 'l’appareil qui revient converge (suppression adoptée)');
+    ok(cloudRowsFor(await dump(), 'resur@test.ma', 'clients').some(r => r.notes === 'y-edit-offline'),
+      'offline-first préservé: l’édition hors ligne de Y est bien poussée après le pull');
+    ok((await syncSt(Y.page)).dirty === false, 'dirty=false après le cycle pull→push');
+
+    /* 21.d — course online + visibilitychange simultanés: un seul pull (réentrance), état final cohérent */
+    await Y.ctx.setOffline(true);
+    await Y.page.evaluate(() => { DB.clients[0].notes = 'race-edit'; save(); });
+    await Y.ctx.setOffline(false);
+    await Y.page.evaluate(() => {
+      window.dispatchEvent(new Event('online'));
+      document.dispatchEvent(new Event('visibilitychange')); // co-déclenchement volontaire
+    });
+    await sleep(1200);
+    cn = cloudRowsFor(await dump(), 'resur@test.ma', 'clients');
+    ok(cn.filter(r => r.notes === 'race-edit').length === 1 && (await syncSt(Y.page)).dirty === false,
+      'co-déclenchement online+visibilitychange: pas de doublon, pas de corruption, dirty résolu');
+
+    /* 21.e — un save() PENDANT un pull en vol n'est pas perdu */
+    const kept = await Y.page.evaluate(async () => {
+      const pr = cloudPull(); // pull en vol
+      DB.clients.push({ id: uid(), name: 'MidPull SARL', type: 'projet', statut: 'Actif', devise: 'DH' }); save();
+      await pr; return DB.clients.some(c => c.name === 'MidPull SARL');
+    });
+    await sleep(2300);
+    ok(kept && cloudRowsFor(await dump(), 'resur@test.ma', 'clients').some(r => r.name === 'MidPull SARL'),
+      'création pendant un pull en vol: conservée localement ET poussée au cloud');
+    await X.ctx.close(); await Y.ctx.close();
+  }
+
+  /* ================================================================ */
   await deviceA.ctx.close(); await deviceB.ctx.close();
   await browser.close(); app.close(); mock.close();
   console.log(`\n========== RÉSULTAT: ${passed} ✓ / ${failed} ✗ ==========`);
