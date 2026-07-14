@@ -767,7 +767,7 @@ let editId=null;
    Mapping camelCase (app) <-> snake_case (SQL). */
 const SUPA_LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 const SYNC_KEY='they_sync_v1';
-const Cloud={client:null,user:null,pushTimer:null,sig:{},status:'local',
+const Cloud={client:null,user:null,pushTimer:null,sig:{},status:'local',pulling:false,
   enabled:()=>!!(window.SUPABASE_CONFIG&&window.SUPABASE_CONFIG.url&&window.SUPABASE_CONFIG.anonKey)};
 const CLOUD_TABLES={
   clients:  {cols:['id','name','type','statut','devise','salaire','email','phone','ice','societe','website','adresse','khedma','notes'],map:{updatedAt:'updated_at'}},
@@ -864,7 +864,11 @@ document.addEventListener('visibilitychange',()=>{
 });
 /* ----- pull + merge LWW ----- */
 async function cloudPull(){
+  if(Cloud.pulling)return; // guard: pas de pulls concurrents
   const c=Cloud.client;if(!c||!Cloud.user)return;
+  Cloud.pulling=true;
+  clearTimeout(Cloud.pushTimer);Cloud.pushTimer=null; // annule le push debounce pour éviter la race condition
+  try{
   const st=syncState();
   const remote={},rawRemote={};let cloudEmpty=true;
   for(const ent of Object.keys(CLOUD_TABLES)){
@@ -888,7 +892,7 @@ async function cloudPull(){
     console.log('6) DB.clients EN MÉMOIRE (chargé par load() au boot — c’est CETTE variable qui entre dans le merge puis est écrite à L~857):',noms(DB.clients||[]));
     console.groupEnd();
   }catch(_){}
-  if(cloudEmpty&&!meta){await cloudPush(true);return} // premier login: le cloud reçoit le local
+  if(cloudEmpty&&!meta){Cloud.pulling=false;await cloudPush(true);return} // premier login: le cloud reçoit le local
   if(demoPristine()){ // compte existant + démo locale intacte: on JETTE la démo (jamais fusionnée ni poussée)
     for(const ent of Object.keys(CLOUD_TABLES))DB[ent]=[];
     clearDemoFlag();
@@ -945,7 +949,9 @@ async function cloudPull(){
   st.dirty=pending;writeSyncState(st);
   cloudRebuildSigs();
   invalidateCaches();renderAll();
+  Cloud.pulling=false; // libère le guard avant le push (qui peut lui-même re-déclencher des pulls)
   if(pending)await cloudPush(true);else cloudStatus('ok');
+  }catch(e){Cloud.pulling=false;throw e}
 }
 /* ----- push (upserts + suppressions par diff baseIds) ----- */
 async function cloudPush(immediate){
@@ -2253,7 +2259,7 @@ load();cloudBoot();renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();
 /* [TRACE-AUDIT] instrumentation temporaire — diagnostic "clients qui reviennent" */
 try{
   window.__TAB_ID=Math.random().toString(36).slice(2,7);
-  window.__BUILD='v33'; // = version du SW (they-gestion-vXX) — tenir synchronisé à chaque release
+  window.__BUILD='v34'; // = version du SW (they-gestion-vXX) — tenir synchronisé à chaque release
   console.log('%c[TRACE-BOOT] build='+window.__BUILD+' · onglet='+window.__TAB_ID+' · clients au boot: '+JSON.stringify((DB.clients||[]).map(c=>c.name)),'color:#3E7C4F;font-weight:bold',
     {seeded:localStorage.getItem('they_seeded_v1'),demo:localStorage.getItem('they_demo_v1'),
      sync:JSON.parse(localStorage.getItem('they_sync_v1')||'null'),
