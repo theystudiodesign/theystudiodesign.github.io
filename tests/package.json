@@ -4,7 +4,8 @@
   "description": "Suite d'integration Sprint 12 — sync cloud Supabase (mock server local + Playwright)",
   "scripts": {
     "build:vendor": "esbuild node_modules/@supabase/supabase-js/dist/index.mjs --bundle --format=esm --outfile=vendor/supabase-esm.js",
-    "test": "node run.js"
+    "test": "node sync-v2.js",
+    "test:acceptance": "node acceptance.js"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.48.0",
