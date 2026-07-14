@@ -467,7 +467,7 @@ body.dark .search-box{background:#1B1B1A}
       <button onclick="exportData()">Export JSON</button>
       <button onclick="document.getElementById('importFile').click()">Import JSON</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-      <span class="foot-note">Les données kayt-sauvegardaw automatiquement f had le navigateur (localStorage).</span>
+      <span class="foot-note">Les données kayt-sauvegardaw automatiquement f had le navigateur (IndexedDB).</span>
     </div>
   </aside>
 
@@ -750,98 +750,43 @@ lockInit();
 
 /* ============ STATE ============ */
 const KEY='crm_gestion_clients_v1';
-/* ============ [WLOG] INSTRUMENTATION RUNTIME (diagnostic production) ============
-   Journal PERSISTANT (localStorage, ring-buffer 80 entrées) de TOUTES les écritures:
-   qui (onglet+build+pile d'appel), quand, visibilité, état avant/après (noms clients),
-   push/pull cloud. Lisible depuis N'IMPORTE QUEL onglet, même après refresh:
-   console → __WLOG()
-   Empreinte anti-fantôme: chaque écriture instrumentée bumpe they_wnonce —
-   une écriture de la clé DB SANS bump = instance NON instrumentée (ancien build encore ouvert). */
-window.__TAB_ID=window.__TAB_ID||Math.random().toString(36).slice(2,7);
-window.__BUILD='v37';
-const WLOG_KEY='they_wlog',WNONCE='they_wnonce';
-let __lastNonce=null;try{__lastNonce=localStorage.getItem(WNONCE)}catch(e){}
-function wnames(db){try{return ((db&&db.clients)||[]).map(c=>c&&c.name)}catch(e){return['(illisible)']}}
-function wlog(type,data){
-  try{
-    const l=JSON.parse(localStorage.getItem(WLOG_KEY)||'[]');
-    l.push(Object.assign({t:new Date().toISOString(),tab:window.__TAB_ID,build:window.__BUILD,vis:document.visibilityState,type},data));
-    while(l.length>80)l.shift();
-    localStorage.setItem(WLOG_KEY,JSON.stringify(l));
-  }catch(e){}
-}
-window.__WLOG=function(){
-  const l=JSON.parse(localStorage.getItem(WLOG_KEY)||'[]');
-  console.table(l.map(e=>({heure:(e.t||'').slice(11,23),onglet:e.tab,build:e.build,vis:e.vis,type:e.type,
-    info:(e.info||'').slice(0,110),avant:(e.before||[]).join(' | '),apres:(e.after||[]).join(' | ')})));
-  console.log('[WLOG] '+l.length+' entrées — copie complète:');console.log(JSON.stringify(l));
-  return l;
-};
+
 let DB={clients:[],projets:[],paiements:[],taches:[],devise:'DH'};
 let clientFilter='all', projetFilter='all', payFilter='all', tacheFilter='all';
 let editId=null;
 
 const ENTITIES=['clients','projets','taches','paiements','events'];
 
-/* ============ ÉCRITURE LOCALE FIABLE (fix production — quota) ============
-   Un setItem qui échoue en SILENCE = créations perdues + baseIds jamais persisté
-   (le pull ré-adopte alors TOUT le cloud → « les supprimés reviennent »).
-   safeSet: écrit → si échec, LIBÈRE les clés sacrifiables (journaux, snapshots,
-   secours) → réécrit → VÉRIFIE PAR RELECTURE. Échec final = bannière BLOQUANTE. */
-const EXPENDABLE=['they_wlog','they_snap_2','they_snap_1','they_rescue_orphans','they_trace_client'];
-function freeSpace(){let n=0;EXPENDABLE.forEach(k=>{try{if(localStorage.getItem(k)!=null){localStorage.removeItem(k);n++}}catch(e){}});return n}
-function storageAlert(on){
-  let b=document.getElementById('storageAlert');
-  if(!on){if(b)b.remove();return}
-  if(b)return;
-  b=document.createElement('div');b.id='storageAlert';
-  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#B04A3E;color:#fff;padding:12px 18px;font:600 13px Inter,sans-serif;text-align:center';
-  b.innerHTML='STOCKAGE PLEIN — les modifications ne sont PAS enregistrées. Fais un Export JSON, puis supprime les grosses images (logo/cachet de facture) et recharge. <button onclick="exportData()" style="margin-left:10px;padding:4px 12px;border:0;border-radius:6px;background:#fff;color:#B04A3E;font-weight:700;cursor:pointer">Export daba</button>';
-  document.body.appendChild(b);
-}
-function safeSet(key,val){
-  try{localStorage.setItem(key,val)}
-  catch(e){
-    freeSpace();
-    try{localStorage.setItem(key,val)}catch(e2){storageAlert(true);return false}
-  }
-  if(localStorage.getItem(key)!==val){storageAlert(true);return false} // vérification par relecture
-  storageAlert(false);
-  return true;
-}
-/* ============ DATA LAYER (Sprint 10) ============
-   Contrat de migration: pour passer a Supabase, remplacer UNIQUEMENT
-   les methodes de DataLayer par des appels reseau (elles peuvent devenir
-   async — load()/save() restent les seuls points d entree de l UI).
-   Entites -> tables: clients, projets, taches, paiements, events (+ meta compteurs). */
+/* ============ DATA LAYER — IndexedDB ============ */
 const DataLayer={
-  driver:'localstorage',
-  read(){ // -> objet DB valide ou null
-    const raw=localStorage.getItem(KEY);
-    if(!raw)return null;
-    try{const d=JSON.parse(raw);return (d&&d.clients)?d:null}catch(e){return null}
+  driver:'indexeddb',
+  _idb:null,_cache:null,
+  _open(){
+    if(this._idb)return Promise.resolve(this._idb);
+    return new Promise((res,rej)=>{
+      const r=indexedDB.open('they-gestion-v1',1);
+      r.onupgradeneeded=e=>e.target.result.createObjectStore('kv');
+      r.onsuccess=e=>{this._idb=e.target.result;res(this._idb)};
+      r.onerror=()=>rej(r.error);
+    });
   },
-  write(db){ // persiste tout l etat; retourne false si echec (quota…)
-    try{
-      /* [WLOG] journal persistant: avant/après + pile d'appel (QUI écrit) */
-      let __before=[];try{__before=wnames(JSON.parse(localStorage.getItem(KEY)||'null'))}catch(_){}
-      /* [TRACE-AUDIT] instrumentation temporaire: identifier QUI réécrit la base */
-      try{
-        console.groupCollapsed('%c[TRACE-WRITE] crm_gestion_clients_v1 ← '+((db.clients||[]).length)+' client(s) · '+new Date().toISOString()+' · visibilité='+document.visibilityState,'color:#B04A3E;font-weight:bold');
-        console.log('clients écrits:',(db.clients||[]).map(c=>c.name));
-        console.trace('pile d’appel (QUI écrit):');
-        console.groupEnd();
-      }catch(_){}
-      if(!safeSet(KEY,JSON.stringify(db)))return false; // écriture VÉRIFIÉE (auto-récupération quota + relecture)
-      try{
-        const nn=Date.now()+'-'+window.__TAB_ID;localStorage.setItem(WNONCE,nn);__lastNonce=nn; // empreinte "écrit par code instrumenté"
-        const pile=(new Error().stack||'').split('\n').slice(2,6).map(s=>s.trim().replace(/^at /,'')).join(' ← ');
-        wlog('WRITE',{info:pile,before:__before,after:wnames(db)});
-      }catch(_){}
-      return true
-    }catch(e){return false}
+  async read(){
+    const idb=await this._open();
+    return new Promise(res=>{
+      const req=idb.transaction('kv','readonly').objectStore('kv').get('data');
+      req.onsuccess=()=>{const d=req.result;this._cache=(d&&d.clients)?d:null;res(this._cache)};
+      req.onerror=()=>res(null);
+    });
   },
-  normalize(db){ // garanties de schema retro-compatibles
+  readSync(){return this._cache},
+  write(db){
+    this._cache=db;
+    this._open().then(idb=>{
+      try{idb.transaction('kv','readwrite').objectStore('kv').put(db,'data')}catch(e){}
+    }).catch(()=>{});
+    return true;
+  },
+  normalize(db){
     if(!db.taches)db.taches=[];
     if(!db.projets)db.projets=[];
     if(!db.events)db.events=[];
@@ -849,6 +794,21 @@ const DataLayer={
     return db;
   }
 };
+async function migrateFromLocalStorage(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(!raw)return;
+    const d=JSON.parse(raw);
+    if(!(d&&d.clients))return;
+    const idb=await DataLayer._open();
+    await new Promise((res,rej)=>{
+      const tx=idb.transaction('kv','readwrite');
+      tx.objectStore('kv').put(d,'data');
+      tx.oncomplete=res;tx.onerror=rej;
+    });
+    localStorage.removeItem(KEY);
+  }catch(e){}
+}
 /* Marqueur persistant anti-réinjection du seed (fix bug critique):
    les données de démonstration ne sont créées qu'UNE SEULE FOIS par navigateur.
    Si l'utilisateur supprime volontairement toutes ses données (reset),
@@ -884,73 +844,27 @@ function sweepOrphans(db){
   removed.total=removed.projets.length+removed.taches.length+removed.paiements.length+removed.events.length;
   return removed;
 }
-/* ============ MULTI-INSTANCE (fix critique — onglets/PWA simultanés) ============
-   DB est une copie MÉMOIRE par onglet; localStorage et they_sync_v1 sont PARTAGÉS.
-   Sans réconciliation, un onglet périmé écrase le storage (et le cloud via le diff
-   baseIds) avec sa photo passée: suppressions ressuscitées, créations effacées.
-   Fix minimal — relire-avant-d'écrire:
-   - DISK_KNOWN = ids présents SUR DISQUE au dernier point de synchro de CET onglet
-     (tombstones locaux: absent du disque + connu = supprimé AILLEURS → respecté;
-      absent du disque + inconnu = création locale → conservée).
-   - mergeFromDisk() = fusion LWW par ligne (updatedAt), même sémantique que le cloud.
-   Appelé par save() (avant toute écriture), cloudPull() (avant le merge distant)
-   et l'event 'storage' (adoption immédiate des écritures des autres instances). */
-let DISK_KNOWN={};
-function snapshotKnown(src){for(const ent of ENTITIES)DISK_KNOWN[ent]=new Set(((src&&src[ent])||[]).map(r=>r.id))}
-function mergeFromDisk(){
-  const disk=DataLayer.read();
-  if(!disk)return null;
-  DataLayer.normalize(disk);
-  for(const ent of ENTITIES){
-    const known=DISK_KNOWN[ent]||new Set();
-    const mem=new Map((DB[ent]||[]).map(r=>[r.id,r]));
-    const merged=[];
-    (disk[ent]||[]).forEach(d=>{
-      const m=mem.get(d.id);
-      if(!m){
-        if(known.has(d.id))return;             // je le connaissais et JE l'ai supprimé → reste supprimé
-        merged.push(d);return;
-      }
-      mem.delete(d.id);
-      if((m.updatedAt||'')>(d.updatedAt||''))merged.push(m);
-      else merged.push(d);
-    });
-    mem.forEach(m=>{
-      if(known.has(m.id))return;                // absent du disque mais connu = supprimé ailleurs → respecté
-      merged.push(m);                            // création locale pas encore écrite
-    });
-    DB[ent]=merged;
-  }
-  DB.factureCounter=Math.max(+DB.factureCounter||0,+disk.factureCounter||0);
-  DB.blCounter=Math.max(+DB.blCounter||0,+disk.blCounter||0);
-  return disk;
-}
-function load(){
-  const d=DataLayer.read();
-  if(d){DB=d;markSeeded()}            // base existante = démo plus jamais réinjectée
+
+async function load(){
+  await migrateFromLocalStorage();
+  const d=await DataLayer.read();
+  if(d){DB=d;markSeeded()}
   else if(!seedDone()){
-    seed();save();                    // premier lancement uniquement
-    try{localStorage.setItem(DEMO_KEY,'1')}catch(e){} // démo encore intacte
+    seed();
+    try{localStorage.setItem(DEMO_KEY,'1')}catch(e){}
   }
-  // else: reset volontaire → on repart sur une base vide, sans démo
   DataLayer.normalize(DB);
-  const orphans=sweepOrphans(DB); // migration: purge des orphelins hérités
+  const orphans=sweepOrphans(DB);
   if(orphans.total){
     try{localStorage.setItem('they_rescue_orphans',JSON.stringify({date:new Date().toISOString(),rows:orphans}))}catch(e){}
     DataLayer.write(DB);
   }
-  snapshotKnown(DB); // point de synchro initial: disque = mémoire
 }
 function save(){
-  mergeFromDisk(); // multi-instance: relire-avant-d'écrire (LWW + tombstones locaux)
-  sweepOrphans(DB); // garantie: aucun orphelin ne peut être persisté ni poussé
+  sweepOrphans(DB);
   invalidateCaches();
-  if(DataLayer.write(DB)){ // écriture VÉRIFIÉE → nouveau point de synchro
-    snapshotKnown(DB);
-    clearDemoFlag();
-  }else{
-    toast('STOCKAGE PLEIN — modification NON enregistrée');
-  }
+  DataLayer.write(DB);
+  clearDemoFlag();
 }
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
@@ -2027,22 +1941,8 @@ document.addEventListener('keydown',e=>{
 });
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();closeFacture();document.getElementById('notifPanel').classList.remove('open');document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show'))}});
-try{ // hygiène storage au boot: journaux bornés (le quota ne doit jamais tuer une écriture métier)
-  const wl=localStorage.getItem('they_wlog');if(wl&&wl.length>60000)localStorage.removeItem('they_wlog');
-}catch(e){}
-load();renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();notifToastOnLoad();
-/* Multi-instance: une écriture faite par un AUTRE onglet / fenêtre PWA est adoptée
-   immédiatement (LWW + tombstones locaux) au lieu d'attendre — et surtout au lieu
-   d'être écrasée au prochain save() de cet onglet. */
-window.addEventListener('storage',e=>{
-  if(e.key!==KEY||e.newValue==null)return;
-  try{
-    const disk=mergeFromDisk();
-    DataLayer.normalize(DB);
-    if(disk)snapshotKnown(disk); // point de synchro = ce que le DISQUE contient (pas la mémoire)
-    invalidateCaches();renderAll();
-  }catch(_){}
-});
+load().then(()=>{renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();notifToastOnLoad()});
+
 if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
 
