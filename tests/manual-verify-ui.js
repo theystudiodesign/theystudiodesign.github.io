@@ -12,7 +12,9 @@ const CFG = (() => {
   const t = fs.readFileSync(path.join(ROOT, 'gestion', 'supabase-config.js'), 'utf8');
   return { url: (t.match(/url:\s*"([^"]+)"/) || [])[1], anonKey: (t.match(/anonKey:\s*"([^"]+)"/) || [])[1] };
 })();
-const EMAIL = REAL ? `they.manualqa.${Date.now()}@gmail.com` : 'manual@test.ma';
+const QA = process.env.QA_EMAIL ? { email: process.env.QA_EMAIL, pass: process.env.QA_PASS || 'secret123-QA' } : null;
+const EMAIL = QA ? QA.email : (REAL ? `they.manualqa.${Date.now()}@gmail.com` : 'manual@test.ma');
+const PASS = QA ? QA.pass : 'secret123-QA';
 const SHOTS = path.join(ROOT, 'docs/qa-gestion');
 const APP_PORT = 9081, MOCK_PORT = 9082;
 const APP = `http://localhost:${APP_PORT}/gestion/`;
@@ -79,8 +81,8 @@ const refresh = async page => { await sleep(350); await page.reload({ waitUntil:
   console.log('— Connexion Cloud Sync (mock) —');
   await page.evaluate(() => { DB.clients.forEach(c => c.notes = 'réel'); save(); });
   await page.waitForSelector('#authGate');
-  await page.fill('#ag_email', EMAIL); await page.fill('#ag_pass', 'secret123-QA');
-  await page.click('text=Créer le compte');
+  await page.fill('#ag_email', EMAIL); await page.fill('#ag_pass', PASS);
+  await page.click(QA ? 'text=Se connecter' : 'text=Créer le compte');
   try { await page.waitForSelector('#authGate', { state: 'detached', timeout: 15000 }); }
   catch (e) {
     const msg = await page.evaluate(() => (document.getElementById('ag_err') || {}).textContent || '');

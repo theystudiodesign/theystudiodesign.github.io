@@ -50,7 +50,10 @@ const CFG = (() => {
   return { url: (t.match(/url:\s*"([^"]+)"/) || [])[1], anonKey: (t.match(/anonKey:\s*"([^"]+)"/) || [])[1] };
 })();
 const RUN = Date.now();
-const emailFor = tag => REAL ? `they.syncqa.${tag}.${RUN}@gmail.com` : tag + '@test.ma';
+/* Compte QA fourni (projet avec confirmation email active): QA_EMAIL/QA_PASS */
+const QA = process.env.QA_EMAIL ? { email: process.env.QA_EMAIL, pass: process.env.QA_PASS || 'secret123-QA' } : null;
+const emailFor = tag => QA ? QA.email : (REAL ? `they.syncqa.${tag}.${RUN}@gmail.com` : tag + '@test.ma');
+const PASS = QA ? QA.pass : 'secret123-QA';
 const LABEL = (OLD_ROOT ? 'ANCIEN moteur (' + OLD_ROOT + ')' : 'SyncEngine v2 (build actuel)') + (REAL ? ' · SUPABASE RÉEL ' + CFG.url : ' · mock');
 const APP_PORT = 9071, MOCK_PORT = 9072;
 const APP = `http://localhost:${APP_PORT}/gestion/`;
@@ -123,8 +126,8 @@ async function login(page, email) {
   await page.evaluate(() => { DB.clients.forEach(c => c.notes = 'réel'); save(); });
   await page.waitForSelector('#authGate');
   await page.fill('#ag_email', email);
-  await page.fill('#ag_pass', 'secret123-QA');
-  await page.click('text=Créer le compte');
+  await page.fill('#ag_pass', PASS);
+  await page.click(QA ? 'text=Se connecter' : 'text=Créer le compte');
   try {
     await page.waitForSelector('#authGate', { state: 'detached', timeout: 15000 });
   } catch (e) {
@@ -225,7 +228,7 @@ async function signInExisting(page, email) {
   await page.evaluate(() => { DB.clients.forEach(c => c.notes = 'réel'); save(); });
   await page.waitForSelector('#authGate');
   await page.fill('#ag_email', email);
-  await page.fill('#ag_pass', 'secret123-QA');
+  await page.fill('#ag_pass', PASS);
   await page.click('text=Se connecter');
   await page.waitForSelector('#authGate', { state: 'detached' });
   await sleep(2500); // laisser le pull initial se faire
@@ -280,6 +283,7 @@ async function assertAfterRestart(page, A, B, extraSettle) {
     let ctx = await launchBrowser(dir, true);
     let page = await openApp(ctx);
     await login(page, emailFor('scenario'));
+    if (REAL) { const s0 = await realToken(page); if (s0) { await realCleanup(s0); await page.reload({ waitUntil: 'networkidle' }); await sleep(SETTLE); } }
     await saturateStorage(page);               // profil de stockage réel
     const { A, B } = await userScenario('S2', page, ctx);
     await ctx.close();                          // ← redémarrage navigateur
@@ -327,6 +331,7 @@ async function assertAfterRestart(page, A, B, extraSettle) {
     let ctx = await launchBrowser(dir, true);
     let page = await openApp(ctx);
     await login(page, emailFor('twotabs'));
+    if (REAL) { const s0 = await realToken(page); if (s0) { await realCleanup(s0); await page.reload({ waitUntil: 'networkidle' }); await sleep(SETTLE); } }
     await saturateStorage(page);               // profil de stockage réel
     const tab2 = await openApp(ctx);            // 2e onglet, même session, reste ouvert
     const secondTab = async (moment) => {
