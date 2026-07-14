@@ -4,14 +4,16 @@
 - **Journal PERSISTANT des écritures** (`they_wlog`, ring-buffer 80 entrées, lisible depuis n'importe quel onglet même après refresh: console → `__WLOG()`): pour chaque écriture — horodatage, onglet, build, visibilité, **pile d'appel (QUI écrit)**, clients AVANT (disque) / APRÈS; + PULL-REMOTE (cloud avant merge), PULL-DONE, PUSH-OK (payload), PUSH-ERR, BOOT.
 - **Détecteur d'écrivain fantôme**: chaque écriture instrumentée bumpe une empreinte (`they_wnonce`); une écriture de la base SANS bump = **instance NON instrumentée (ancien build encore ouvert — fenêtre PWA)** → entrée `ÉCRIT-PAR-AUTRE-INSTANCE` + warn console. Zéro changement de logique. SW v34.
 
-## 2026-07-13 (21) — Fix critique: persistance multi-instance (onglets/PWA simultanés)
-- **Bug corrigé** (audité puis reproduit AVANT le fix — docs/AUDIT_MULTITAB_PERSISTENCE.md): un onglet/fenêtre PWA « oublié » écrasait le storage partagé avec sa mémoire périmée au premier save() → clients supprimés qui reviennent, créations qui disparaissent; amplification cloud (l'upsert ressuscitait les suppressions, le diff baseIds partagé − mémoire périmée SUPPRIMAIT les créations du cloud). Pré-existant (reproduit à l'identique sur v29) — pas une régression des sprints récents.
-- **Fix minimal (3 pièces, zéro redesign du sync)** :
-  1. **Relire-avant-d'écrire** — `mergeFromDisk()` dans `save()` (après `cloudStamp`) et `cloudPull()` : fusion LWW par ligne avec l'état du disque + tombstones locaux `DISK_KNOWN` (ids vus sur disque au dernier point de synchro de CET onglet : absent+connu = supprimé ailleurs → respecté; absent+inconnu = création locale → conservée).
-  2. **Sync storage active** — l'event `storage` adopte immédiatement les écritures des autres instances (merge + re-render) au lieu du simple warn TRACE.
-  3. **`online`: pull avant push** — nécessité DÉMONTRÉE par test (avec l'ancien handler, le test 2-appareils échouait: résurrection); `cloudPull` se termine par un push si dirty → offline-first préservé. + garde de réentrance sur `cloudPull` (online+visibilitychange co-déclenchés = un seul pull).
-- **Préservé (exigences)** : LWW, baseIds, tombstones, cloud sync, offline-first — la suite existante passe inchangée.
-- **Tests** : scénario [21] — 14 assertions (2 onglets local + cloud, PWA+onglet équivalent, 2 appareils offline→online, course online/visibilitychange, save pendant pull en vol). Reproduction d'audit `tests/repro-persistence.js`: 6/6 « non reproduit » après fix. 112 au total. SW v34.
+## 2026-07-14 (24) — FIX PRODUCTION: persistance stable (critères d'acceptation 3×3 ✓)
+- **Root cause (prouvée par traces)** : `DB` est une copie mémoire PAR INSTANCE; toute instance encore ouverte (2e onglet, fenêtre PWA, fenêtre restaurée par le navigateur) écrase storage + cloud avec sa photo périmée au premier `save()` → suppressions ressuscitées, créations effacées (localement ET dans Supabase via upsert + diff `baseIds − mémoire`).
+- **Fix (persistance uniquement, zéro redesign)** :
+  1. **Relire-avant-d'écrire** — `mergeFromDisk()` (LWW par ligne + tombstones locaux `DISK_KNOWN`) dans `save()` et `cloudPull()`;
+  2. **Sync storage active** — l'écriture d'une autre instance équipée est adoptée immédiatement;
+  3. **Défense anti-ZOMBIE** — jeton de génération `they_gen` bumpé à chaque écriture équipée; une écriture SANS bump = instance d'un ancien build → mode réparation (mémoire autoritaire, réécriture immédiate + re-push: la corruption disque ET cloud est annulée);
+  4. **`online`: pull → push** (nécessité démontrée par test) + garde de réentrance `cloudPull`;
+  5. **SW v36 purge les zombies** — à l'activation d'une nouvelle version, TOUTES les fenêtres ouvertes rechargent sur le nouveau build.
+- **Préservé** : LWW, baseIds, tombstones, cloud sync, offline-first — suite existante inchangée.
+- **Tests** : suite 112 ✓ + `tests/acceptance.js` (critères production EXACTS: create→refresh→existe, delete→refresh→supprimé, ×3 consécutifs) dans 3 environnements — local, cloud, et HOSTILE (fenêtre zombie du build de production actuel exécutant un save() périmé après chaque étape): **18 ✓ / 0 ✗**. SW v36.
 
 ## 2026-07-13 (20) — Sprint 19: Accents sémantiques + THE'Y Icons (Phase 2)
 - **Accents sémantiques** (décision actée) : 4 tokens `--danger/--success/--warning/--info` (+ variantes dark) sur base monochrome. Appliqués aux ÉTATS uniquement : retards en rouge (badge « En retard », chips calendrier, pastille notifications, « fat le délai »), attente en orange (dots), « Livré » en vert (dot), sync cloud (OK/attente/erreur), priorités (dots rouge/orange/vert), hints (filet info). Aliases hérités (`--rouge`…) re-pointés vers les accents. Fix I-1: `--muted` inexistant → `--mut` (20 sites).

@@ -759,7 +759,7 @@ const KEY='crm_gestion_clients_v1';
    Empreinte anti-fantôme: chaque écriture instrumentée bumpe they_wnonce —
    une écriture de la clé DB SANS bump = instance NON instrumentée (ancien build encore ouvert). */
 window.__TAB_ID=window.__TAB_ID||Math.random().toString(36).slice(2,7);
-window.__BUILD='v35';
+window.__BUILD='v36';
 const WLOG_KEY='they_wlog',WNONCE='they_wnonce';
 let __lastNonce=null;try{__lastNonce=localStorage.getItem(WNONCE)}catch(e){}
 function wnames(db){try{return ((db&&db.clients)||[]).map(c=>c&&c.name)}catch(e){return['(illisible)']}}
@@ -1176,6 +1176,7 @@ const DataLayer={
       localStorage.setItem(KEY,JSON.stringify(db));
       try{
         const nn=Date.now()+'-'+window.__TAB_ID;localStorage.setItem(WNONCE,nn);__lastNonce=nn; // empreinte "écrit par code instrumenté"
+        bumpGen(); // jeton de génération (défense anti-ancien-build)
         const pile=(new Error().stack||'').split('\n').slice(2,6).map(s=>s.trim().replace(/^at /,'')).join(' ← ');
         wlog('WRITE',{info:pile,before:__before,after:wnames(db)});
       }catch(_){}
@@ -1237,11 +1238,30 @@ function sweepOrphans(db){
    Appelé par save() (avant toute écriture), cloudPull() (avant le merge distant)
    et l'event 'storage' (adoption immédiate des écritures des autres instances). */
 let DISK_KNOWN={};
+/* Jeton de génération: chaque écriture d'un build ÉQUIPÉ bumpe they_gen.
+   Une écriture de la base SANS bump = instance d'un ANCIEN build (zombie) →
+   mode réparation: la mémoire fait autorité (aucune adoption/suppression du disque),
+   et l'état sain est immédiatement réécrit + repoussé au cloud. */
+const GEN_KEY='they_gen';
+window.__myGenRev=null;
+function genRev(){try{return (JSON.parse(localStorage.getItem(GEN_KEY)||'null')||{}).rev||0}catch(e){return 0}}
+function bumpGen(){try{const g=genRev()+1;localStorage.setItem(GEN_KEY,JSON.stringify({rev:g,b:window.__BUILD}));window.__myGenRev=g}catch(e){}}
 function snapshotKnown(src){for(const ent of Object.keys(CLOUD_TABLES))DISK_KNOWN[ent]=new Set(((src&&src[ent])||[]).map(r=>r.id))}
+function diskDiffersFromKnown(disk){
+  for(const ent of Object.keys(CLOUD_TABLES)){
+    const ids=new Set(((disk&&disk[ent])||[]).map(r=>r.id)),known=DISK_KNOWN[ent]||new Set();
+    if(ids.size!==known.size)return true;
+    for(const id of ids)if(!known.has(id))return true;
+  }
+  return false;
+}
 function mergeFromDisk(){
   const disk=DataLayer.read();
   if(!disk)return null;
   DataLayer.normalize(disk);
+  /* écrivain fantôme ? gen n'a pas bougé depuis notre dernier point de synchro,
+     mais le contenu du disque ne correspond plus à ce que nous y avons vu/écrit */
+  const ghost=(window.__myGenRev!=null&&genRev()===window.__myGenRev&&diskDiffersFromKnown(disk));
   for(const ent of Object.keys(CLOUD_TABLES)){
     const known=DISK_KNOWN[ent]||new Set();
     const mem=new Map((DB[ent]||[]).map(r=>[r.id,r]));
@@ -1249,24 +1269,25 @@ function mergeFromDisk(){
     (disk[ent]||[]).forEach(d=>{
       const m=mem.get(d.id);
       if(!m){
-        if(known.has(d.id))return;            // je le connaissais et JE l'ai supprimé → reste supprimé
-        merged.push(d);                        // ligne écrite par une autre instance → adoptée
+        if(ghost)return;                       // zombie: jamais d'adoption (résurrections)
+        if(known.has(d.id))return;             // je le connaissais et JE l'ai supprimé → reste supprimé
+        merged.push(d);                         // ligne écrite par une autre instance ÉQUIPÉE → adoptée
         if(Cloud.sig[ent])Cloud.sig[ent][d.id]=rowSig(d); // pas de re-stamp updatedAt à l'adoption
         return;
       }
       mem.delete(d.id);
-      if((m.updatedAt||'')>(d.updatedAt||''))merged.push(m); // ma version est plus récente (LWW)
+      if(ghost||(m.updatedAt||'')>(d.updatedAt||''))merged.push(m); // LWW (zombie: la mémoire fait autorité)
       else{merged.push(d);if(Cloud.sig[ent])Cloud.sig[ent][d.id]=rowSig(d)}
     });
     mem.forEach(m=>{
-      if(known.has(m.id))return;               // absent du disque mais connu = supprimé ailleurs → respecté
-      merged.push(m);                           // création locale pas encore écrite
+      if(!ghost&&known.has(m.id))return;        // absent du disque mais connu = supprimé ailleurs → respecté
+      merged.push(m);                            // création locale (ou ligne effacée par un zombie) → conservée
     });
     DB[ent]=merged;
   }
   DB.factureCounter=Math.max(+DB.factureCounter||0,+disk.factureCounter||0);
   DB.blCounter=Math.max(+DB.blCounter||0,+disk.blCounter||0);
-  return disk;
+  return {disk,ghost};
 }
 function load(){
   const d=DataLayer.read();
@@ -1283,6 +1304,7 @@ function load(){
     DataLayer.write(DB);
   }
   snapshotKnown(DB); // point de synchro initial: disque = mémoire
+  window.__myGenRev=genRev(); // baseline du jeton de génération
 }
 function save(){
   cloudStamp(); // horodate d'ABORD les lignes modifiées (LWW) — sinon une édition fraîche perdrait le merge disque
@@ -2377,9 +2399,17 @@ load();trackStep('1. load()');cloudBoot();trackStep('2. cloudBoot()');renderAll(
 window.addEventListener('storage',e=>{
   if(e.key!==KEY||e.newValue==null)return;
   try{
-    const disk=mergeFromDisk();
+    const r=mergeFromDisk();
     DataLayer.normalize(DB);
-    if(disk)snapshotKnown(disk); // point de synchro = ce que le DISQUE contient (pas la mémoire)
+    if(r&&r.ghost){
+      /* écrivain ZOMBIE (ancien build encore ouvert): l'état sain est réécrit
+         immédiatement et repoussé au cloud (annule sa corruption disque + cloud) */
+      wlog('RÉPARATION-ZOMBIE',{info:'écriture d’un ancien build annulée',after:wnames(DB)});
+      save();
+    }else if(r){
+      snapshotKnown(r.disk); // point de synchro = ce que le DISQUE contient (pas la mémoire)
+      window.__myGenRev=genRev();
+    }
     invalidateCaches();renderAll();
   }catch(_){}
 });
