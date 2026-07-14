@@ -1,5 +1,6 @@
 # ARCHITECTURE
 
+- **Persistance (SyncEngine v2)** : la base LOCALE (IndexedDB `THEY_STUDIO_DB`, via `storage.js`) est l'UNIQUE source de vérité. Écriture: UI→IDB→render→queue→sync arrière-plan→Supabase. Le cloud n'écrase jamais le local. Modules: `idb.js`/`storage.js`/`queue.js`/`sync-engine.js`/`auth-sync.js`. Soft-delete (`deletedAt`) + `version`/`deviceId`; conflits: deletedAt puis updatedAt (LWW). `load()`/`save()` restent les seuls points d'entrée UI.
 - **Type** : SPA offline-first, un seul fichier `gestion/index.html` (~1 200 lignes), zéro dépendance.
 - **Données** : LocalStorage, clé unique `crm_gestion_clients_v1` → `DB = {clients, projets, taches, paiements, factureCounter, blCounter}`.
   Images facture (logos/cachet) : clés séparées `they_fact_ae`, `they_fact_logo`, `they_fact_stamp` (base64).

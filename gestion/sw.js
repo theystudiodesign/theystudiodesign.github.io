@@ -1,5 +1,5 @@
-const CACHE = 'they-gestion-v37';
-const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE = 'they-gestion-v38';
+const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './idb.js', './queue.js', './storage.js', './sync-engine.js', './auth-sync.js'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));

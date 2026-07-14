@@ -1,57 +1,51 @@
-# Tests d'intégration — Cloud Sync (Sprint 12)
+# Tests — SyncEngine v2 (IndexedDB + queue + tombstones)
 
 Suite de bout en bout : l'app réelle tourne dans Chromium (Playwright) avec le **vrai
-client supabase-js**, connecté à un **mock Supabase local** (`mock-supabase.js`) qui émule
-Auth (GoTrue) + REST (PostgREST) + l'isolation RLS par utilisateur — zéro dépendance réseau.
+client supabase-js**, connecté à un **mock Supabase local** (`mock-supabase.js`) — zéro dépendance réseau.
 
 ## Lancer
 
 ```bash
 cd tests
 npm install
-npm run build:vendor   # bundle ESM local de supabase-js (remplace le CDN pendant les tests)
-npm test
+npm run build:vendor      # bundle ESM local de supabase-js (remplace le CDN pendant les tests)
+npm test                  # sync-v2 + app-regression
+npm run test:sync         # SyncEngine v2 (cloud) — 38 assertions
+npm run test:regression   # régressions applicatives non-cloud — 17 assertions
+npm run test:acceptance   # critères production create/refresh/delete/refresh ×3 (4 environnements)
 ```
 
-Si Chromium Playwright n'est pas au chemin par défaut : `CHROME_PATH=/chemin/vers/chrome npm test`.
+`CHROME_PATH=/chemin/vers/chrome` si Chromium Playwright n'est pas au chemin par défaut.
 
-## Captures d'écran (Sprint 18)
-
+## Captures d'écran (non-régression visuelle)
 ```bash
-node screenshots.js diff  /tmp/avant    # 14 PNG déterministes (hash-comparables) — non-régression visuelle
-node screenshots.js audit ../docs/design-audit   # 65 JPEG — set complet (3 viewports × 2 thèmes + overlays)
+node screenshots.js diff  /tmp/avant     # 14 PNG déterministes (hash-comparables)
+node screenshots.js audit ../docs/design-audit   # set complet
 ```
 
-Rendu déterministe : horloge figée (13/07/2026, Casablanca), polices bloquées, animations désactivées,
-fixtures stables. Workflow de non-régression : `diff` avant → modification → `diff` après → comparer les sha256.
+## Scénarios — `sync-v2.js` (38 assertions)
+1. Config vide = 100 % local (IndexedDB), zéro réseau
+2. Inscription → le local est POUSSÉ (jamais écrasé), colonnes version/deviceId
+3. Login sur compte existant → merge (pas d'écrasement)
+4. 2 appareils — création propagée (write→queue→sync→pull)
+5. **Soft delete** → tombstone → l'autre appareil ne ressuscite jamais
+6. Offline-first — création hors ligne, queue persistée, resync online sans perte
+7. Conflit `updatedAt` — la modification la plus récente gagne (LWW)
+8. Conflit delete vs edit — `deletedAt` (plus récent) gagne
+9. Anti-résurrection — adoption d'une ligne d'un autre appareil ; création locale jamais perdue
+10. Reprise de session au reload
+11. « Continuer sans cloud » — jamais bloqué
+12. **Purge permanente des tombstones** — uniquement après confirmation serveur + TTL
+13. **Résilience** — erreur serveur : op conservée + retry backoff ; réparation → file vidée
 
-## Scénarios couverts (112 assertions)
+## Scénarios — `app-regression.js` (17 assertions, non-cloud)
+- R1 Timezone (`isoLocal`, Casablanca + garde UTC)
+- R2 Intégrité référentielle (`sweepOrphans` : cascade + purge au boot)
+- R3 Seed anti-réinjection (reset = base vide)
+- R4 Snapshots & Restore (données réelles, persistées en IDB)
+- R5 Multi-onglets (BroadcastChannel : convergence, zéro écrasement)
 
-1. Régression — config vide = 100 % local, indicateur ☁ caché, seed intact
-2. Inscription + premier push local → cloud (user_id/RLS posé)
-3. Login refusé → message d'erreur traduit, gate conservé
-4. Deuxième appareil — persistance des données entre appareils, LocalStorage = cache
-5. Sync automatique (debounce save → push → pull autre appareil)
-6. Offline-first — dirty persistant, resync auto sur event `online`
-7. Conflits — last-write-wins par ligne, convergence des deux appareils
-8. Suppressions sûres — tombstones baseIds, jamais d'effacement des lignes des autres
-9. Round-trip complet des champs (taches.projet_id / details)
-10. Isolation par utilisateur (RLS)
-11. Compteurs facture/BL fusionnés par max()
-12. Reprise de session au reload
-13. « Continuer sans cloud » — l'app n'est jamais bloquée
-14. Diagnostic — schema.sql non exécuté détecté avec fix exact
-15. Diagnostic — config vide / URL invalide expliquées
-16. Seed anti-réinjection — la démo ne revient jamais après un reset
-17. Restore — ne rend jamais la démo (snapshots réels uniquement, purge, backup vide/corrompu)
-18. Restore cloud — démo locale intacte jamais fusionnée ni poussée
-19. Timezone (Sprint 17) — dates locales via `isoLocal()` : grille mois/semaine, pastille today,
-    événements sur la bonne case, chart revenus, isOverdue, KPI "Aujourd'hui" — testés avec
-    `timezoneId` Africa/Casablanca (UTC+1, midi + 00h30 locale) et garde de régression UTC
-20. Intégrité référentielle (fix critique) — cascade delete complète (events inclus), events
-    personnels préservés, orphelins hérités purgés au boot (+ filet they_rescue_orphans),
-    import/restore assainis, propagation cloud de la cascade, non-adoption des orphelins du cloud
-21. Multi-instance (fix critique) — 2 onglets/PWA simultanés (relire-avant-d'écrire, sync storage
-    active, cloud intact), 2 appareils offline→online (pull avant push, pas de résurrection),
-    course online+visibilitychange (réentrance), save pendant pull en vol
-    (+ `repro-persistence.js` : reproduction d'audit exécutable, 6/6 « non reproduit » après fix)
+## Migration Supabase
+Avant la première utilisation cloud du moteur v2 : exécuter `supabase/schema.sql` puis
+`supabase/migration-tombstones.sql` (colonnes `deleted_at` / `version` / `device_id`).
+Le diagnostic ☁ détecte et explique si la migration manque.
