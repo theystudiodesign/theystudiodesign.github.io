@@ -399,7 +399,6 @@ body.dark .search-box{background:#1B1B1A}
 }
 @media(max-width:820px){.facture{padding:28px 18px}.f-titlerow{margin-top:0}.f-adresse{width:100%}}
 </style>
-<script src="supabase-config.js?v=22"></script>
 </head>
 <body>
 
@@ -474,7 +473,7 @@ body.dark .search-box{background:#1B1B1A}
 
   <!-- MAIN -->
   <main class="main">
-    <div class="topbar"><span><b>THE’Y STUDIO DESIGN</b> · Espace de gestion</span><button id="cloudStatus" onclick="openCloudDiag()" title="État de la synchronisation cloud — clic = diagnostic" style="display:none;background:none;border:none;cursor:pointer;font:inherit;font-size:12px;font-weight:600"></button><button id="notifBtn" onclick="toggleNotifs()" title="Notifications"><svg class="i" aria-hidden="true"><use href="#i-bell"/></svg><span id="notifBadge"></span></button><button id="searchBtn" onclick="openSearch()"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg> Recherche &nbsp;<b>Ctrl K</b></button><span id="topDate"></span></div>
+    <div class="topbar"><span><b>THE’Y STUDIO DESIGN</b> · Espace de gestion</span><button id="notifBtn" onclick="toggleNotifs()" title="Notifications"><svg class="i" aria-hidden="true"><use href="#i-bell"/></svg><span id="notifBadge"></span></button><button id="searchBtn" onclick="openSearch()"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg> Recherche &nbsp;<b>Ctrl K</b></button><span id="topDate"></span></div>
     <div id="backupBanner"><span><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg> <b>Backup:</b> <span id="backupBannerTxt"></span></span><button onclick="exportData()">Export daba</button><button class="bb-x" onclick="dismissBackup()"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></div>
 
     <!-- ====== DASHBOARD ====== -->
@@ -782,49 +781,8 @@ let DB={clients:[],projets:[],paiements:[],taches:[],devise:'DH'};
 let clientFilter='all', projetFilter='all', payFilter='all', tacheFilter='all';
 let editId=null;
 
-/* ============ CLOUD SYNC v2 — Supabase (Sprint 12) ============
-   Actif UNIQUEMENT si supabase-config.js est rempli — sinon 100% local.
-   Offline-first: boot depuis LocalStorage (cache), puis pull cloud MERGÉ
-   (last-write-wins par ligne via updatedAt), puis push des changements.
-   Suppressions: diff contre les ids connus du cloud au dernier sync
-   (baseIds) — on ne supprime jamais les lignes créées par un autre appareil.
-   Flag "dirty" persistant: un push raté est rejoué au retour du réseau
-   (event online), au retour sur l'onglet (visibilitychange) et au boot.
-   Limite documentée: suppression locale > édition distante (delete gagne).
-   Mapping camelCase (app) <-> snake_case (SQL). */
-const SUPA_LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-const SYNC_KEY='they_sync_v1';
-const Cloud={client:null,user:null,pushTimer:null,sig:{},status:'local',
-  enabled:()=>!!(window.SUPABASE_CONFIG&&window.SUPABASE_CONFIG.url&&window.SUPABASE_CONFIG.anonKey)};
-const CLOUD_TABLES={
-  clients:  {cols:['id','name','type','statut','devise','salaire','email','phone','ice','societe','website','adresse','khedma','notes'],map:{updatedAt:'updated_at'}},
-  projets:  {cols:['id','name','type','statut','prix','deadline','notes'],map:{clientId:'client_id',updatedAt:'updated_at'}},
-  taches:   {cols:['id','label','statut','priorite','deadline','details'],map:{clientId:'client_id',projetId:'projet_id',updatedAt:'updated_at'}},
-  paiements:{cols:['id','label','type','montant','devise','statut','date','methode','notes'],map:{clientId:'client_id',projetId:'projet_id',factureNum:'facture_num',blNum:'bl_num',updatedAt:'updated_at'}},
-  events:   {cols:['id','title','type','date','notes'],map:{clientId:'client_id',updatedAt:'updated_at'}}
-};
-function toRow(ent,obj){ // app -> SQL
-  const t=CLOUD_TABLES[ent],row={};
-  t.cols.forEach(c=>{if(obj[c]!==undefined)row[c]=obj[c]===''?null:obj[c]});
-  Object.entries(t.map).forEach(([a,b])=>{row[b]=obj[a]===''?null:(obj[a]??null)});
-  ['deadline','date'].forEach(k=>{if(row[k]==='')row[k]=null});
-  if(!row.updated_at)row.updated_at=new Date().toISOString(); // colonne NOT NULL
-  return row;
-}
-function fromRow(ent,row){ // SQL -> app
-  const t=CLOUD_TABLES[ent],obj={};
-  t.cols.forEach(c=>{if(row[c]!=null)obj[c]=row[c]});
-  Object.entries(t.map).forEach(([a,b])=>{if(row[b]!=null)obj[a]=row[b]});
-  if(obj.montant!=null)obj.montant=+obj.montant;
-  if(obj.prix!=null)obj.prix=+obj.prix;
-  if(obj.salaire!=null)obj.salaire=+obj.salaire;
-  return obj;
-}
-/* ----- état de sync persistant (LocalStorage) ----- */
-function syncState(){
-  try{const s=JSON.parse(localStorage.getItem(SYNC_KEY));if(s&&s.baseIds)return s}catch(e){}
-  return {dirty:false,lastSync:null,baseIds:{clients:[],projets:[],taches:[],paiements:[],events:[]}};
-}
+const ENTITIES=['clients','projets','taches','paiements','events'];
+
 /* ============ ÉCRITURE LOCALE FIABLE (fix production — quota) ============
    Un setItem qui échoue en SILENCE = créations perdues + baseIds jamais persisté
    (le pull ré-adopte alors TOUT le cloud → « les supprimés reviennent »).
@@ -851,332 +809,6 @@ function safeSet(key,val){
   storageAlert(false);
   return true;
 }
-function writeSyncState(s){return safeSet(SYNC_KEY,JSON.stringify(s))}
-/* ----- horodatage par ligne (LWW) ----- */
-function rowSig(o){const c={...o};delete c.updatedAt;return JSON.stringify(c)}
-function cloudRebuildSigs(){ // après load()/pull: signatures sans re-stamper
-  for(const ent of Object.keys(CLOUD_TABLES)){
-    Cloud.sig[ent]={};
-    (DB[ent]||[]).forEach(r=>{Cloud.sig[ent][r.id]=rowSig(r)});
-  }
-}
-function cloudBoot(){ // après load(): migration — updatedAt manquant = maintenant
-  let touched=false;const now=new Date().toISOString();
-  for(const ent of Object.keys(CLOUD_TABLES))
-    (DB[ent]||[]).forEach(r=>{if(!r.updatedAt){r.updatedAt=now;touched=true}});
-  if(touched)DataLayer.write(DB);
-  cloudRebuildSigs();
-}
-function cloudStamp(){ // hook save(): stamp updatedAt sur les lignes modifiées
-  const now=new Date().toISOString();
-  for(const ent of Object.keys(CLOUD_TABLES)){
-    const prev=Cloud.sig[ent]||{},next={};
-    (DB[ent]||[]).forEach(r=>{const s=rowSig(r);if(prev[r.id]!==s)r.updatedAt=now;next[r.id]=s});
-    Cloud.sig[ent]=next;
-  }
-}
-function cloudOnSave(){ // hook save(): marque dirty + push debounce si connecté
-  if(!Cloud.enabled())return;
-  const st=syncState();st.dirty=true;writeSyncState(st);
-  if(Cloud.client&&Cloud.user)cloudPush();
-  else if(Cloud.status!=='local')cloudStatus('pending');
-}
-/* ----- indicateur d'état (topbar) ----- */
-function cloudStatus(s){
-  Cloud.status=s;
-  const el=document.getElementById('cloudStatus');if(!el)return;
-  const M={local:['',''],off:['déconnecté','var(--mut2)'],ok:['sync OK','var(--success)'],
-           pending:['en attente…','var(--warning)'],err:['erreur — diagnostic','var(--danger)']};
-  const v=M[s]||['',''];
-  el.innerHTML=v[0]?icon('cloud')+' '+v[0]:'';el.style.color=v[1];el.style.display=v[0]?'':'none';
-}
-/* ----- init ----- */
-async function cloudInit(){
-  if(!Cloud.enabled()){cloudStatus('local');return}
-  try{
-    const {createClient}=await import(SUPA_LIB);
-    Cloud.client=createClient(window.SUPABASE_CONFIG.url,window.SUPABASE_CONFIG.anonKey);
-    Cloud.client.auth.onAuthStateChange((ev)=>{if(ev==='SIGNED_OUT'){Cloud.user=null;cloudStatus('off')}});
-    const {data:{session}}=await Cloud.client.auth.getSession();
-    if(!session){cloudStatus('off');showAuthGate();return}
-    Cloud.user=session.user;
-    await cloudPull();
-    toast('Sync cloud activée');
-  }catch(e){
-    console.warn('Cloud off:',e);cloudStatus('err');
-    cloudDiagChecks().then(r=>console.table(r)).catch(()=>{});
-    toast('Cloud non joignable — mode local (clic sur l’indicateur cloud pour le diagnostic)');
-  }
-}
-/* ----- resync automatique ----- */
-window.addEventListener('online',()=>{
-  /* pull AVANT push (nécessité démontrée par test [21.c]: un push direct upsertait la mémoire
-     périmée et ressuscitait les lignes supprimées ailleurs). cloudPull se termine par un
-     cloudPush si dirty → le travail hors ligne est toujours poussé (offline-first préservé). */
-  if(Cloud.client&&Cloud.user&&syncState().dirty)cloudPull().catch(()=>cloudStatus('pending'));
-});
-document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden&&Cloud.client&&Cloud.user)cloudPull().catch(()=>cloudStatus('pending'));
-});
-/* ----- pull + merge LWW ----- */
-/* [TRACE-CLIENT] suivi d'un client précis à travers toute la chaîne de boot.
-   Par défaut: PARADISA. Modifiable en console: window.__TRACK=/autre nom/i */
-const TRACK_DEFAULT=/PARADISA/i;
-function trackStep(step){
-  try{
-    const re=window.__TRACK||TRACK_DEFAULT;
-    const inMem=(DB.clients||[]).some(c=>re.test(c.name||''));
-    const disk=(JSON.parse(localStorage.getItem(KEY)||'{}').clients||[]).some(c=>re.test(c.name||''));
-    console.log('%c[TRACE-CLIENT] '+step+' → mémoire: '+(inMem?'OUI ✓':'NON ✗')+' · disque: '+(disk?'OUI ✓':'NON ✗'),
-      'color:'+(inMem?'#3E7C4F':'#B04A3E')+';font-weight:bold');
-  }catch(_){}
-}
-async function cloudPull(){
-  /* réentrance: online + visibilitychange peuvent co-déclencher — un seul pull à la fois */
-  if(Cloud.pulling)return Cloud.pulling;
-  Cloud.pulling=cloudPullInner().finally(()=>{Cloud.pulling=null});
-  return Cloud.pulling;
-}
-async function cloudPullInner(){
-  const c=Cloud.client;if(!c||!Cloud.user)return;
-  mergeFromDisk(); // multi-instance: partir de l'état disque le plus frais avant le merge distant
-  const st=syncState();
-  const remote={},rawRemote={};let cloudEmpty=true;
-  for(const ent of Object.keys(CLOUD_TABLES)){
-    const {data,error}=await c.from(ent).select('*');
-    if(error)throw error;
-    rawRemote[ent]=data; /* [TRACE-SOURCES] réponse Supabase BRUTE, avant tout mapping */
-    remote[ent]=(data||[]).map(r=>fromRow(ent,r));
-    if(remote[ent].length)cloudEmpty=false;
-  }
-  const {data:meta}=await c.from('meta').select('*').maybeSingle();
-  /* [TRACE-CLIENT] étape 3: la réponse Supabase + IDENTITÉ de session (clé du mystère RLS) */
-  try{
-    const re=window.__TRACK||TRACK_DEFAULT;
-    console.log('%c[TRACE-CLIENT] 3. cloudPull (réponse Supabase) → présent dans remote: '+((remote.clients||[]).some(x=>re.test(x.name||''))?'OUI ✓':'NON ✗')
-      +' · session: '+(Cloud.user&&Cloud.user.email)+' · auth.uid()='+(Cloud.user&&Cloud.user.id),
-      'color:#7A3EB0;font-weight:bold');
-  }catch(_){}
-  wlog('PULL-REMOTE',{info:'cloud AVANT merge · dirty='+st.dirty,after:(remote.clients||[]).map(r=>r.name)}); /* [WLOG] */
-  /* [TRACE-SOURCES] — LES 6 SOURCES POSSIBLES, dumpées AVANT toute décision/merge */
-  try{
-    const noms=a=>Array.isArray(a)?a.map(x=>x&&(x.name||x.label||x.title)):a;
-    const sn1=JSON.parse(localStorage.getItem('they_snap_1')||'null'),sn2=JSON.parse(localStorage.getItem('they_snap_2')||'null');
-    console.group('%c[TRACE-SOURCES] AVANT merge — qui contient les clients ?','color:#7A3EB0;font-weight:bold');
-    console.log('1) SUPABASE brut (réponse fetch, table clients):',rawRemote.clients&&rawRemote.clients.length,rawRemote.clients);
-    console.log('2) crm_gestion_clients_v1 (LOCALSTORAGE, tel quel sur disque):',noms(JSON.parse(localStorage.getItem(KEY)||'{}').clients||[]));
-    console.log('3) they_snap_1:',sn1?{date:sn1.date,clients:noms(sn1.db.clients)}:'(absent)');
-    console.log('4) they_snap_2:',sn2?{date:sn2.date,clients:noms(sn2.db.clients)}:'(absent)');
-    console.log('5) they_sync_v1 (baseIds/dirty):',localStorage.getItem(SYNC_KEY));
-    console.log('6) DB.clients EN MÉMOIRE (chargé par load() au boot — c’est CETTE variable qui entre dans le merge puis est écrite à L~857):',noms(DB.clients||[]));
-    console.groupEnd();
-  }catch(_){}
-  if(cloudEmpty&&!meta){await cloudPush(true);return} // premier login: le cloud reçoit le local
-  if(demoPristine()){ // compte existant + démo locale intacte: on JETTE la démo (jamais fusionnée ni poussée)
-    for(const ent of Object.keys(CLOUD_TABLES))DB[ent]=[];
-    clearDemoFlag();
-  }
-  let pending=st.dirty;
-  /* [TRACE-PULL] instrumentation temporaire — payload exact AVANT merge */
-  try{
-    console.groupCollapsed('%c[TRACE-PULL] AVANT merge · '+new Date().toISOString(),'color:#2A6CB0;font-weight:bold');
-    console.log('syncState (baseIds/dirty/lastSync):',JSON.parse(JSON.stringify(st)));
-    for(const ent of Object.keys(CLOUD_TABLES))
-      console.log('remote.'+ent+' ('+remote[ent].length+'):',remote[ent].map(r=>({id:r.id,nom:r.name||r.label||r.title,updatedAt:r.updatedAt})));
-    console.log('meta reçu du cloud:',meta);
-    console.log('local.clients EN MÉMOIRE ('+((DB.clients||[]).length)+'):',(DB.clients||[]).map(c=>({id:c.id,nom:c.name,updatedAt:c.updatedAt,dansBaseIds:(st.baseIds.clients||[]).includes(c.id)})));
-    console.groupEnd();
-  }catch(_){}
-  for(const ent of Object.keys(CLOUD_TABLES)){
-    const base=new Set(st.baseIds[ent]||[]);
-    const localMap=new Map((DB[ent]||[]).map(r=>[r.id,r]));
-    const merged=[];
-    remote[ent].forEach(r=>{
-      const l=localMap.get(r.id);
-      if(!l){
-        if(base.has(r.id)){pending=true;return} // supprimé localement → sera supprimé au push
-        merged.push(r);return                    // nouveau depuis un autre appareil
-      }
-      localMap.delete(r.id);
-      if((l.updatedAt||'')>(r.updatedAt||'')){merged.push(l);pending=true} // local plus récent
-      else merged.push(r);                                                 // cloud gagne (LWW)
-    });
-    localMap.forEach(l=>{
-      if(base.has(l.id)){ // absent du cloud mais connu avant → supprimé ailleurs
-        try{if(ent==='clients')console.warn('%c[TRACE-MERGE] ✗ DROP local "'+(l.name||l.id)+'" (id='+l.id+'): présent dans baseIds mais ABSENT de la réponse Supabase → considéré "supprimé ailleurs"','color:#B04A3E;font-weight:bold')}catch(_){}
-        return;
-      }
-      merged.push(l);pending=true;     // nouvelle ligne locale → sera poussée
-    });
-    DB[ent]=merged;
-  }
-  if(meta){
-    DB.factureCounter=Math.max(+DB.factureCounter||0,+meta.facture_counter||0);
-    DB.blCounter=Math.max(+DB.blCounter||0,+meta.bl_counter||0);
-  }
-  DataLayer.normalize(DB);
-  if(sweepOrphans(DB).total)pending=true; // jamais adopter un orphelin du cloud; le push suivant purge le cloud (baseIds − local)
-  /* [TRACE-PULL] résultat du merge + raison ligne par ligne */
-  try{
-    const remIds=new Set(remote.clients.map(r=>r.id)),baseC=new Set(st.baseIds.clients||[]);
-    console.log('%c[TRACE-PULL] APRÈS merge → clients='+((DB.clients||[]).length)+' · pending(push)='+pending,'color:#2A6CB0;font-weight:bold',
-      (DB.clients||[]).map(c=>({nom:c.name,id:c.id,
-        origine:remIds.has(c.id)?'REÇU DU CLOUD':(baseC.has(c.id)?'LOCAL (connu du cloud)':'LOCAL HORS baseIds → gardé + sera POUSSÉ')})));
-  }catch(_){}
-  /* [TRACE-SOURCES] la variable EXACTE écrite juste après (DataLayer.write L867) */
-  try{console.log('%c[TRACE-SOURCES] variable écrite → DataLayer.write(DB) · DB.clients='+((DB.clients||[]).length),'color:#7A3EB0;font-weight:bold',(DB.clients||[]).map(c=>({id:c.id,nom:c.name})))}catch(_){}
-  wlog('PULL-DONE',{info:'APRÈS merge · pending(push)='+pending,after:wnames(DB)}); /* [WLOG] */
-  trackStep('4. après merge (avant écriture)');
-  DataLayer.write(DB); // LocalStorage = cache du cloud
-  trackStep('5. après DataLayer.write');
-  snapshotKnown(DB); // nouveau point de synchro disque/mémoire
-  st.baseIds={};
-  Object.keys(CLOUD_TABLES).forEach(e=>st.baseIds[e]=remote[e].map(r=>r.id));
-  st.dirty=pending;writeSyncState(st);
-  cloudRebuildSigs();
-  invalidateCaches();renderAll();
-  if(pending)await cloudPush(true);else cloudStatus('ok');
-}
-/* ----- push (upserts + suppressions par diff baseIds) ----- */
-async function cloudPush(immediate){
-  if(!Cloud.client||!Cloud.user)return;
-  {const st=syncState();st.dirty=true;writeSyncState(st)}
-  cloudStatus('pending');
-  const doPush=async()=>{
-    const s=syncState();
-    try{
-      const pushed={}; /* [TRACE-PUSH] */
-      for(const ent of Object.keys(CLOUD_TABLES)){
-        const rows=(DB[ent]||[]).map(o=>toRow(ent,o));
-        if(rows.length){const {error}=await Cloud.client.from(ent).upsert(rows);if(error){error.__ent=ent;error.__op='upsert';throw error}}
-        const localIds=new Set(rows.map(r=>r.id));
-        const dead=(s.baseIds[ent]||[]).filter(id=>!localIds.has(id));
-        if(dead.length){const {error:e2}=await Cloud.client.from(ent).delete().in('id',dead);if(e2){e2.__ent=ent;e2.__op='delete';throw e2}}
-        s.baseIds[ent]=[...localIds];
-        pushed[ent]={upserts:rows.length,deletes:dead.length};
-      }
-      const {error:e3}=await Cloud.client.from('meta').upsert({user_id:Cloud.user.id,facture_counter:DB.factureCounter||0,bl_counter:DB.blCounter||0});
-      if(e3){e3.__ent='meta';e3.__op='upsert';throw e3}
-      s.dirty=false;s.lastSync=new Date().toISOString();writeSyncState(s);
-      try{console.log('%c[TRACE-PUSH] ✓ push réussi vers Supabase','color:#3E7C4F;font-weight:bold',pushed)}catch(_){}
-      wlog('PUSH-OK',{info:JSON.stringify(pushed),after:wnames(DB)}); /* [WLOG] */
-      cloudStatus('ok');
-    }catch(e){
-      try{console.error('%c[TRACE-PUSH] ✗ ÉCHEC du push — VOICI POURQUOI Supabase ne reçoit rien:','color:#B04A3E;font-weight:bold',
-        {table:e&&e.__ent,operation:e&&e.__op,code:e&&e.code,message:e&&e.message,details:e&&e.details,hint:e&&e.hint,erreur_complete:e})}catch(_){}
-      wlog('PUSH-ERR',{info:(e&&e.__ent||'')+' '+(e&&e.__op||'')+' '+(e&&e.code||'')+' '+String(e&&e.message||e).slice(0,140)}); /* [WLOG] */
-      s.dirty=true;writeSyncState(s); // persiste la progression EXACTE (les tables déjà poussées) — cloud et baseIds ne divergent plus
-      cloudStatus('pending');
-    }
-  };
-  clearTimeout(Cloud.pushTimer);
-  if(immediate)return doPush();
-  Cloud.pushTimer=setTimeout(doPush,1500); // debounce
-}
-/* ----- écran de connexion cloud ----- */
-function showAuthGate(){
-  if(document.getElementById('authGate'))return;
-  const d=document.createElement('div');d.id='authGate';
-  d.style.cssText='position:fixed;inset:0;z-index:500;background:var(--bg,#F7F7F4);display:flex;align-items:center;justify-content:center';
-  d.innerHTML=`<div style="width:min(340px,90vw);text-align:center;font-family:'Inter',sans-serif">
-    <div style="font-weight:800;font-size:20px;letter-spacing:-.02em;color:var(--ink)">THE’Y <span style="font-weight:300">CLOUD</span></div>
-    <p class="t-sub" style="margin:8px 0 16px">Connexion au compte cloud</p>
-    <input id="ag_email" type="email" placeholder="Email" style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--card,#fff);color:var(--ink)">
-    <input id="ag_pass" type="password" placeholder="Mot de passe" style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:12px;background:var(--card,#fff);color:var(--ink)">
-    <button class="btn btn-primary" style="width:100%" onclick="authGo(false)">Se connecter</button>
-    <button class="btn btn-ghost" style="width:100%;margin-top:6px" onclick="authGo(true)">Créer le compte</button>
-    <button class="btn btn-ghost" style="width:100%;margin-top:6px" onclick="skipCloud()">Continuer sans cloud (local)</button>
-    <div id="ag_msg" class="t-sub" style="margin-top:10px;min-height:18px"></div>
-    <a href="#" onclick="openCloudDiag();return false" class="t-sub" style="display:inline-block;margin-top:8px;color:var(--ink);text-decoration:underline">Diagnostic de la connexion</a></div>`;
-  document.body.appendChild(d);
-  document.getElementById('ag_pass').addEventListener('keydown',e=>{if(e.key==='Enter')authGo(false)});
-}
-function skipCloud(){
-  const g=document.getElementById('authGate');if(g)g.remove();
-  cloudStatus('off');toast('Mode local — clic sur l’indicateur cloud pour reconnecter');
-}
-const AUTH_ERR_MAP=[
-  [/invalid login credentials/i,'Email wla mot de passe ghalat'],
-  [/email not confirmed/i,'Confirme l’email li wslek 3ad 3awd dkhol'],
-  [/already registered|user_already_exists/i,'Compte déjà créé — utilise "Se connecter"'],
-  [/rate limit/i,'Bzzaf de tentatives — tsenna chwiya o 3awd'],
-  [/failed to fetch|network/i,'Serveur injoignable — chouf le Diagnostic']
-];
-function authErrMsg(m){for(const [re,fr] of AUTH_ERR_MAP)if(re.test(m||''))return fr;return m||'Erreur inconnue'}
-async function authGo(signup){
-  const email=document.getElementById('ag_email').value.trim(),pass=document.getElementById('ag_pass').value;
-  const msg=document.getElementById('ag_msg');
-  if(!email||pass.length<6){msg.textContent='Email + mot de passe (6 caractères min)';return}
-  msg.textContent='…';
-  try{
-    const fn=signup?Cloud.client.auth.signUp:Cloud.client.auth.signInWithPassword;
-    const {data,error}=await fn.call(Cloud.client.auth,{email,password:pass});
-    if(error){msg.textContent=authErrMsg(error.message);return}
-    if(signup&&!data.session){msg.textContent='Compte créé — confirme l’email puis reconnecte-toi';return}
-    Cloud.user=data.session.user;
-    document.getElementById('authGate').remove();
-    await cloudPull();toast('Cloud connecté');
-  }catch(e){msg.textContent=authErrMsg(String(e&&e.message||e))}
-}
-/* ----- diagnostic automatique ----- */
-async function cloudDiagChecks(){
-  const cfg=window.SUPABASE_CONFIG||{};const out=[];
-  const add=(ok,label,fix)=>out.push({ok,label,fix:fix||''});
-  if(!cfg.url&&!cfg.anonKey){
-    add(false,'Configuration vide (mode local volontaire)','Remplir gestion/supabase-config.js — voir SUPABASE_SETUP.md (étapes 1 à 4): créer le projet supabase.com, exécuter supabase/schema.sql, copier Project URL + clé anon');
-    return out;
-  }
-  const url=(cfg.url||'').replace(/\/+$/,'');
-  const urlOk=/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url)||/^https?:\/\//.test(url);
-  add(!!urlOk,'Format de l’URL: '+(url||'(vide)'),urlOk?'':'L’URL doit ressembler à https://xxxx.supabase.co (Dashboard → Settings → API → Project URL)');
-  let keyOk=false,role='';
-  try{const p=JSON.parse(atob((cfg.anonKey||'').split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));role=p.role||'';keyOk=role==='anon'&&(!p.exp||p.exp*1000>Date.now())}catch(e){}
-  if(!keyOk&&/^sb_publishable_/.test(cfg.anonKey||''))keyOk=true; // nouveau format de clé
-  if(!keyOk&&(cfg.anonKey||'').length>20&&!role)keyOk=true;       // clé opaque (mock/tests)
-  add(keyOk,'Clé anon',keyOk?'':(role&&role!=='anon'
-    ?'La clé a le rôle "'+role+'" — il faut la clé "anon public" (JAMAIS service_role dans le navigateur)'
-    :'Clé invalide — copier la clé "anon public" depuis Settings → API'));
-  if(!urlOk||!keyOk)return out;
-  const H={apikey:cfg.anonKey,Authorization:'Bearer '+cfg.anonKey};
-  try{
-    const r=await fetch(url+'/auth/v1/health',{headers:H});
-    add(r.status!==401&&r.status!==403,'Serveur Auth joignable (HTTP '+r.status+')',
-      (r.status===401||r.status===403)?'Le serveur refuse la clé — revérifier la clé anon':'');
-  }catch(e){
-    add(false,'Serveur injoignable','Vérifier: 1) l’URL exacte, 2) le projet n’est pas en pause (dashboard Supabase → Restore), 3) la connexion internet');
-    return out;
-  }
-  try{
-    const r=await fetch(url+'/rest/v1/clients?select=id&limit=1',{headers:H});
-    if(r.ok)add(true,'Schéma SQL (table clients trouvée)','');
-    else{
-      const b=await r.json().catch(()=>({}));
-      add(false,'Tables introuvables (HTTP '+r.status+(b.code?' · '+b.code:'')+')',
-        'Exécuter supabase/schema.sql: Dashboard → SQL Editor → New query → coller tout le fichier → Run'+(b.message?' — détail: '+b.message:''));
-    }
-  }catch(e){add(false,'API REST injoignable',String(e))}
-  const st=syncState();
-  add(true,'Session: '+(Cloud.user?Cloud.user.email:'non connecté')+' · Push en attente: '+(st.dirty?'oui':'non')+(st.lastSync?' · Dernier sync: '+st.lastSync.slice(0,19).replace('T',' '):''),'');
-  return out;
-}
-async function openCloudDiag(){
-  let d=document.getElementById('cloudDiag');if(d)d.remove();
-  d=document.createElement('div');d.id='cloudDiag';
-  d.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center';
-  d.innerHTML='<div style="width:min(460px,92vw);max-height:80vh;overflow:auto;background:var(--card,#fff);color:var(--ink,#111);border-radius:14px;padding:20px;font-family:\'Inter\',sans-serif"><b>Diagnostic cloud</b><div id="cd_body" style="margin-top:10px;font-size:13px">Vérification…</div><div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">'+(Cloud.user?'<button class="btn btn-ghost" onclick="cloudLogout()">Se déconnecter</button>':(Cloud.enabled()?'<button class="btn btn-ghost" onclick="document.getElementById(&quot;cloudDiag&quot;).remove();showAuthGate()">Se connecter</button>':''))+'<button class="btn btn-primary" onclick="document.getElementById(\'cloudDiag\').remove()">Fermer</button></div></div>';
-  d.addEventListener('click',e=>{if(e.target===d)d.remove()});
-  document.body.appendChild(d);
-  const checks=await cloudDiagChecks();
-  document.getElementById('cd_body').innerHTML=checks.map(c=>
-    '<div style="padding:8px 0;border-bottom:1px solid var(--line,#eee)"><span style="color:'+(c.ok?'var(--success)':'var(--danger)')+'">'+icon(c.ok?'check':'x')+'</span> '+esc(c.label)+
-    (c.fix?'<div style="margin-top:4px;color:var(--danger)">→ '+esc(c.fix)+'</div>':'')+'</div>').join('')||'RAS';
-}
-async function cloudLogout(){
-  try{if(Cloud.client)await Cloud.client.auth.signOut()}catch(e){}
-  Cloud.user=null;const d=document.getElementById('cloudDiag');if(d)d.remove();
-  cloudStatus('off');toast('Déconnecté du cloud — données locales intactes');
-}
-
 /* ============ DATA LAYER (Sprint 10) ============
    Contrat de migration: pour passer a Supabase, remplacer UNIQUEMENT
    les methodes de DataLayer par des appels reseau (elles peuvent devenir
@@ -1264,12 +896,12 @@ function sweepOrphans(db){
    Appelé par save() (avant toute écriture), cloudPull() (avant le merge distant)
    et l'event 'storage' (adoption immédiate des écritures des autres instances). */
 let DISK_KNOWN={};
-function snapshotKnown(src){for(const ent of Object.keys(CLOUD_TABLES))DISK_KNOWN[ent]=new Set(((src&&src[ent])||[]).map(r=>r.id))}
+function snapshotKnown(src){for(const ent of ENTITIES)DISK_KNOWN[ent]=new Set(((src&&src[ent])||[]).map(r=>r.id))}
 function mergeFromDisk(){
   const disk=DataLayer.read();
   if(!disk)return null;
   DataLayer.normalize(disk);
-  for(const ent of Object.keys(CLOUD_TABLES)){
+  for(const ent of ENTITIES){
     const known=DISK_KNOWN[ent]||new Set();
     const mem=new Map((DB[ent]||[]).map(r=>[r.id,r]));
     const merged=[];
@@ -1277,13 +909,11 @@ function mergeFromDisk(){
       const m=mem.get(d.id);
       if(!m){
         if(known.has(d.id))return;             // je le connaissais et JE l'ai supprimé → reste supprimé
-        merged.push(d);                         // ligne écrite par une autre instance → adoptée
-        if(Cloud.sig[ent])Cloud.sig[ent][d.id]=rowSig(d);
-        return;
+        merged.push(d);return;
       }
       mem.delete(d.id);
-      if((m.updatedAt||'')>(d.updatedAt||''))merged.push(m); // LWW
-      else{merged.push(d);if(Cloud.sig[ent])Cloud.sig[ent][d.id]=rowSig(d)}
+      if((m.updatedAt||'')>(d.updatedAt||''))merged.push(m);
+      else merged.push(d);
     });
     mem.forEach(m=>{
       if(known.has(m.id))return;                // absent du disque mais connu = supprimé ailleurs → respecté
@@ -1312,17 +942,13 @@ function load(){
   snapshotKnown(DB); // point de synchro initial: disque = mémoire
 }
 function save(){
-  cloudStamp(); // horodate d'ABORD les lignes modifiées (LWW) — sinon une édition fraîche perdrait le merge disque
   mergeFromDisk(); // multi-instance: relire-avant-d'écrire (LWW + tombstones locaux)
   sweepOrphans(DB); // garantie: aucun orphelin ne peut être persisté ni poussé
   invalidateCaches();
   if(DataLayer.write(DB)){ // écriture VÉRIFIÉE → nouveau point de synchro
     snapshotKnown(DB);
     clearDemoFlag();
-    cloudOnSave(); // dirty + push debounce si connecté
   }else{
-    /* écriture locale IMPOSSIBLE: on ne pousse RIEN au cloud (sinon divergence
-       local/cloud = suppressions qui reviennent / créations fantômes) */
     toast('STOCKAGE PLEIN — modification NON enregistrée');
   }
 }
@@ -1516,7 +1142,6 @@ function markPaid(id){const p=DB.paiements.find(x=>x.id===id);if(p){p.statut='Pa
 /* ============ CLIENTS ============ */
 function setClientFilter(f,btn){clientFilter=f;btn.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));btn.classList.add('on');renderClients()}
 function renderClients(){
-  trackStep('6. renderClients()');
   const q=(document.getElementById('clientSearch').value||'').toLowerCase();
   let list=DB.clients.filter(c=>clientFilter==='all'||c.type===clientFilter);
   if(q)list=list.filter(c=>c.name.toLowerCase().includes(q));
@@ -2405,7 +2030,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();close
 try{ // hygiène storage au boot: journaux bornés (le quota ne doit jamais tuer une écriture métier)
   const wl=localStorage.getItem('they_wlog');if(wl&&wl.length>60000)localStorage.removeItem('they_wlog');
 }catch(e){}
-load();trackStep('1. load()');cloudBoot();trackStep('2. cloudBoot()');renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();notifToastOnLoad();cloudInit();
+load();renderAll();purgeDemoSnapshots();takeSnapshot();autoBackup();notifToastOnLoad();
 /* Multi-instance: une écriture faite par un AUTRE onglet / fenêtre PWA est adoptée
    immédiatement (LWW + tombstones locaux) au lieu d'attendre — et surtout au lieu
    d'être écrasée au prochain save() de cet onglet. */
@@ -2418,37 +2043,6 @@ window.addEventListener('storage',e=>{
     invalidateCaches();renderAll();
   }catch(_){}
 });
-/* [TRACE-AUDIT] instrumentation temporaire — diagnostic "clients qui reviennent" */
-try{
-  /* __TAB_ID/__BUILD définis en tête de script (section WLOG) */
-  console.log('%c[TRACE-BOOT] build='+window.__BUILD+' · onglet='+window.__TAB_ID+' · clients au boot: '+JSON.stringify((DB.clients||[]).map(c=>c.name)),'color:#3E7C4F;font-weight:bold',
-    {seeded:localStorage.getItem('they_seeded_v1'),demo:localStorage.getItem('they_demo_v1'),
-     sync:JSON.parse(localStorage.getItem('they_sync_v1')||'null'),
-     snap1_clients:(JSON.parse(localStorage.getItem('they_snap_1')||'null')||{db:{}}).db.clients?.map(c=>c.name),
-     snap2_clients:(JSON.parse(localStorage.getItem('they_snap_2')||'null')||{db:{}}).db.clients?.map(c=>c.name)});
-  window.addEventListener('storage',e=>{
-    if(e.key===KEY){const v=JSON.parse(e.newValue||'{}');
-      console.warn('%c[TRACE-AUTRE-ONGLET] ⚠️ crm_gestion_clients_v1 vient d’être RÉÉCRIT PAR UN AUTRE ONGLET/FENÊTRE !','color:#B04A3E;font-weight:bold',
-        {clients:(v.clients||[]).map(c=>c.name),quand:new Date().toISOString()});}
-    if(e.key==='they_sync_v1')console.warn('[TRACE-AUTRE-ONGLET] they_sync_v1 modifié par un autre onglet:',e.newValue);
-  });
-  /* [WLOG] journal du boot + détecteur d'écrivain fantôme (instance non instrumentée) */
-  wlog('BOOT',{info:'seeded='+localStorage.getItem('they_seeded_v1')+' · sync='+(localStorage.getItem('they_sync_v1')||'').slice(0,60),after:wnames(DB)});
-  console.log('%c[WLOG] journal persistant des écritures actif — tapez __WLOG() dans la console (depuis n’importe quel onglet)','color:#3E6B8F;font-weight:bold');
-  window.addEventListener('storage',e=>{
-    if(e.key===WNONCE)return;
-    if(e.key!==KEY||e.newValue==null)return;
-    const noms=wnames(JSON.parse(e.newValue||'{}'));
-    const seen=__lastNonce; // nonce connu AVANT cette écriture
-    setTimeout(()=>{ // laisse arriver l'éventuel bump de nonce du même écrivain
-      let cur=null;try{cur=localStorage.getItem(WNONCE)}catch(_){}
-      const instrumente=cur!==seen;
-      __lastNonce=cur;
-      wlog('ÉCRIT-PAR-AUTRE-INSTANCE',{info:instrumente?'instance instrumentée (chercher son WRITE, onglet='+String(cur).split('-')[1]+')':'⚠️⚠️ INSTANCE NON INSTRUMENTÉE (ancien build encore ouvert — fenêtre PWA ?)',after:noms});
-      console.warn('%c[WLOG] la base vient d’être écrite par UNE AUTRE INSTANCE — '+(instrumente?'instrumentée':'*** ANCIEN BUILD NON INSTRUMENTÉ ***'),'color:#B04A3E;font-weight:bold',noms);
-    },250);
-  });
-}catch(_){}
 if('serviceWorker' in navigator && location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
 
