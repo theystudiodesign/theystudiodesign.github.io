@@ -46,9 +46,9 @@
   /* -- Motion -- */
   --t-fast:.13s; --t-base:.16s; --t-med:.22s;
   /* -- Z-index (échelle documentée: sidebar 20 · overlay 50 · toast 99 ·
-        facture 300 · day-panel 350 · notif 360 · search 400 · auth 500 · diag 600 · lock 9999) -- */
+        facture 300 · day-panel 350 · notif 360 · search 400) -- */
   --z-side:20; --z-overlay:50; --z-toast:99; --z-doc:300; --z-panel:350;
-  --z-notif:360; --z-search:400; --z-auth:500; --z-diag:600; --z-lock:9999;
+  --z-notif:360; --z-search:400;
   /* -- Aliases hérités → re-pointés vers les accents sémantiques (Sprint 19).
         NE PAS utiliser dans du nouveau code (préférer --danger/--success/--warning/--info). -- */
   --nuit:var(--ink); --bleu:var(--info); --cyan:var(--mut2); --orange:var(--warning);
@@ -413,7 +413,6 @@ body.dark .search-box{background:#1B1B1A}
   <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5.4" width="16" height="14.6" rx="2"/><path d="M4 10.2h16M8.6 3.2v4.2M15.4 3.2v4.2"/></symbol>
   <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6.2 15.5v-4.7a5.8 5.8 0 0 1 11.6 0v4.7l1.6 2.7H4.6zM9.9 20.7a2.4 2.4 0 0 0 4.2 0"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.4"/><path d="M15.8 15.8l4.6 4.6"/></symbol>
-  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7.2 18.3a4.4 4.4 0 0 1-.5-8.8 6 6 0 0 1 11.6 1.4 3.7 3.7 0 0 1-.9 7.4z"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4 8.2 8.2 0 1 0 20 14.2z"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.8"/><path d="M12 3.2v2.2M12 18.6v2.2M3.2 12h2.2M18.6 12h2.2M5.8 5.8l1.6 1.6M16.6 16.6l1.6 1.6M18.2 5.8l-1.6 1.6M7.4 16.6l-1.6 1.6"/></symbol>
   <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.8 12S6.4 5.8 12 5.8 21.2 12 21.2 12 17.6 18.2 12 18.2 2.8 12 2.8 12z"/><circle cx="12" cy="12" r="2.9"/></symbol>
@@ -432,15 +431,6 @@ body.dark .search-box{background:#1B1B1A}
   <symbol id="i-printer" viewBox="0 0 24 24"><path d="M7 8V3.8h10V8M7 17H4.2V10a2 2 0 0 1 2-2h11.6a2 2 0 0 1 2 2v7H17M7 14.6h10v5.6H7z"/></symbol>
 </svg>
 
-<!-- ===== ÉCRAN DE VERROUILLAGE (PIN) ===== -->
-<div id="lockScreen" style="position:fixed;inset:0;background:#0F0F0E;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;font-family:'Inter',sans-serif">
-  <div style="font-weight:300;font-size:34px;letter-spacing:8px;color:#fff;display:flex;align-items:flex-end">THE’<b style="font-weight:800;font-size:48px;letter-spacing:0;margin-left:2px;line-height:.85">Y</b></div>
-  <div style="font-size:10px;letter-spacing:5px;color:#9A9A96;font-weight:500;margin-top:8px">STUDIO DESIGN</div>
-  <div id="lockTitle" style="color:#C4C4C0;font-size:13px;margin-top:34px;letter-spacing:.3px">Dkhel le code PIN</div>
-  <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" placeholder="••••" style="margin-top:14px;width:190px;padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.22);background:transparent;color:#fff;font-size:20px;text-align:center;letter-spacing:8px;outline:none;font-family:'Inter',sans-serif">
-  <button onclick="submitPin()" style="margin-top:14px;padding:11px 34px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.5px;font-family:'Inter',sans-serif;transition:.2s" onmouseover="this.style.background='#fff';this.style.color='#0F0F0E'" onmouseout="this.style.background='transparent';this.style.color='#fff'">Dkhol</button>
-  <div id="lockMsg" style="color:#E88;font-size:12px;margin-top:12px;min-height:16px"></div>
-</div>
 
 <div class="app">
 
@@ -714,39 +704,6 @@ body.dark .search-box{background:#1B1B1A}
 <div class="toast" id="toast"></div>
 
 <script>
-/* ============ VERROUILLAGE PIN (code fixe) ============ */
-const PIN_HASH='5d0d99f093be28aac802de6e74cb6a246431e9c0ca546a240dff04d3f9554c47';
-async function hashPin(s){
-  if(crypto&&crypto.subtle){
-    const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('theY:'+s));
-    return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
-  }
-  return btoa('theY:'+s);
-}
-function lockInit(){
-  if(sessionStorage.getItem('they_unlocked')==='1'){document.getElementById('lockScreen').style.display='none';return}
-  document.getElementById('lockTitle').textContent='Dkhel le code PIN';
-  document.getElementById('pinInput').focus();
-}
-async function submitPin(){
-  const inp=document.getElementById('pinInput');
-  const v=inp.value.trim();
-  const msg=document.getElementById('lockMsg');
-  if(v.length<4){msg.textContent='Le code khass ikoun 4 chiffres wla ktar';return}
-  const h=await hashPin(v);
-  if(h===PIN_HASH){
-    unlockApp();
-  }else{
-    msg.textContent='Code ghalat — 3awd jerreb';
-    inp.value='';inp.focus();
-  }
-}
-function unlockApp(){
-  sessionStorage.setItem('they_unlocked','1');
-  document.getElementById('lockScreen').style.display='none';
-}
-document.getElementById('pinInput').addEventListener('keydown',e=>{if(e.key==='Enter')submitPin()});
-lockInit();
 
 /* ============ STATE ============ */
 const KEY='crm_gestion_clients_v1';
@@ -818,7 +775,7 @@ const seedDone=()=>{try{return localStorage.getItem(SEED_KEY)==='1'}catch(e){ret
 const markSeeded=()=>{try{localStorage.setItem(SEED_KEY,'1')}catch(e){}};
 /* Drapeau "démo intacte": posé juste après le seed, retiré à la PREMIÈRE
    modification réelle (save). Tant qu'il est présent: pas de snapshot,
-   et la démo est jetée (jamais poussée/fusionnée) si le cloud a des données. */
+   et la démo est jetée si la base contient déjà des données réelles. */
 const DEMO_KEY='they_demo_v1';
 const demoPristine=()=>{try{return localStorage.getItem(DEMO_KEY)==='1'}catch(e){return false}};
 const clearDemoFlag=()=>{try{localStorage.removeItem(DEMO_KEY)}catch(e){}};
@@ -829,8 +786,7 @@ const clearDemoFlag=()=>{try{localStorage.removeItem(DEMO_KEY)}catch(e){}};
    sweepOrphans: retire les orphelins (clientId non vide ET inconnu — les
    lignes SANS client, ex. events personnels, restent valides) et nettoie
    les projetId pendants. Appelé par save() (aucun orphelin ne peut être
-   persisté/poussé), load() (migration boot + filet they_rescue_orphans)
-   et cloudPull() (jamais adopter un orphelin du cloud). */
+   persisté/poussé) et load() (migration boot + filet they_rescue_orphans). */
 function sweepOrphans(db){
   const cids=new Set((db.clients||[]).map(c=>c.id));
   const removed={projets:[],taches:[],paiements:[],events:[],total:0};
@@ -1655,7 +1611,7 @@ const SNAP_KEYS=['they_snap_1','they_snap_2']; // rotation: 1 = plus recent
    par l'ancien bug: snapshot pris au boot juste après le seed). */
 const DEMO_NAMES=['Mouhamed K. — DATA FUNNEL PRO','Client Exemple — Retainer'];
 /* Détecte une base qui ne contient QUE la démo — y compris DUPLIQUÉE (×2, ×3…),
-   artefact des fusions cloud de l'ère v21/v22 (2 seeds mergés = 4 clients).
+   artefact de fusions passées (2 seeds mergés = 4 clients).
    L'ancienne empreinte exigeait exactement 2 clients et laissait passer les doublons. */
 function isDemoDB(db){
   if(!db||!Array.isArray(db.clients)||!db.clients.length)return false;

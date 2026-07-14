@@ -1,4 +1,4 @@
-const CACHE = 'they-gestion-v37';
+const CACHE = 'they-gestion-v38';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -11,9 +11,7 @@ self.addEventListener('activate', e => {
     const keys = await caches.keys();
     await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));
     await self.clients.claim();
-    // Purge des instances ZOMBIES: à chaque nouvelle version, TOUTES les fenêtres
-    // ouvertes (onglets + PWA installée) rechargent sur le nouveau build —
-    // plus aucune instance à l'ancien code ne peut écraser le storage/cloud.
+    // Force all open windows/PWA to reload on the new build
     const cs = await self.clients.matchAll({ type: 'window' });
     cs.forEach(c => { try { c.navigate(c.url) } catch (err) {} });
   })());
