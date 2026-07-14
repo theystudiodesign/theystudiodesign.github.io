@@ -105,9 +105,9 @@ async function acceptance(page, iter, hostileHit) {
     await ctx.close();
   }
 
-  /* ===== [E3] HOSTILE — cloud + zombie (build de production ACTUEL) ===== */
-  if (ZOMBIE) {
-    console.log('\n[E3] HOSTILE — cloud + fenêtre ZOMBIE (build prod actuel, save() périmé après CHAQUE étape)');
+  /* ===== [E3] HOSTILE — cloud + 2e instance ÉQUIPÉE ouverte (onglet/PWA, save() périmé après CHAQUE étape) ===== */
+  {
+    console.log('\n[E3] HOSTILE — cloud + 2e instance ouverte en parallèle (save() périmé après CHAQUE étape)');
     await fetch(MOCK + '/__reset');
     const ctx = await newCtx(browser, true);
     const page = await ctx.newPage(); page.on('dialog', d => d.accept());
@@ -115,14 +115,36 @@ async function acceptance(page, iter, hostileHit) {
     await page.evaluate(() => { DB.clients[0].notes = 'réel'; save(); });
     await page.waitForSelector('#authGate'); await page.fill('#ag_email', 'hostile@test.ma'); await page.fill('#ag_pass', 'secret123');
     await page.click('text=Créer le compte'); await page.waitForSelector('#authGate', { state: 'detached' }); await sleep(800);
-    const zombie = await ctx.newPage();
-    await zombie.goto(OLDAPP, { waitUntil: 'networkidle' }); await sleep(1200); // mémoire figée MAINTENANT
+    const other = await ctx.newPage();
+    await other.goto(APP, { waitUntil: 'networkidle' }); await sleep(1200); // 2e instance, même build
     const hostileHit = async (moment) => {
-      await zombie.evaluate(() => { try { DB.clients[0].notes = 'zombie-' + Date.now(); save(); } catch (e) {} });
-      console.log(`    (zombie: save() périmé ${moment})`);
-      await sleep(700); // laisse la réparation se déclencher
+      await other.evaluate(() => { try { DB.clients[0].notes = 'other-' + Date.now(); save(); } catch (e) {} });
+      console.log(`    (2e instance: save() ${moment})`);
+      await sleep(700);
     };
     for (let i = 1; i <= 3; i++) await acceptance(page, i, hostileHit);
+    await ctx.close();
+  }
+
+  /* ===== [E4] QUOTA-HOSTILE — storage saturé (images/snapshots/journaux accumulés) ===== */
+  console.log('\n[E4] QUOTA-HOSTILE — localStorage saturé AVANT chaque action');
+  {
+    const ctx = await newCtx(browser, false);
+    const page = await ctx.newPage(); page.on('dialog', d => d.accept());
+    await page.goto(APP, { waitUntil: 'networkidle' }); await sleep(500);
+    await page.evaluate(() => {
+      // profil réel: gros snapshots + gros journal + assets — puis saturation totale
+      const MB = n => 'X'.repeat(n * 1024 * 1024);
+      try { localStorage.setItem('they_snap_1', MB(1)); } catch (e) {}
+      try { localStorage.setItem('they_snap_2', MB(1)); } catch (e) {}
+      try { localStorage.setItem('they_wlog', MB(1)); } catch (e) {}
+      try { localStorage.setItem('they_rescue_orphans', MB(1)); } catch (e) {}
+      let i = 0; const C = 'X'.repeat(256 * 1024);
+      try { for (; i < 80; i++) localStorage.setItem('__img' + i, C); } catch (e) {} // jusqu'à saturation
+    });
+    for (let i = 1; i <= 3; i++) await acceptance(page, i, null);
+    const alertShown = await page.evaluate(() => !!document.getElementById('storageAlert'));
+    check(!alertShown, 'auto-récupération: pas de bannière STOCKAGE PLEIN (l’espace sacrifiable a suffi)');
     await ctx.close();
   }
 
