@@ -7,7 +7,8 @@
     "test:sync": "node sync-v2.js",
     "test:regression": "node app-regression.js",
     "test:acceptance": "node acceptance.js",
-    "test": "node sync-v2.js && node app-regression.js"
+    "test": "node sync-v2.js && node app-regression.js",
+    "test:user-scenario": "node acceptance-user-scenario.js"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.48.0",
