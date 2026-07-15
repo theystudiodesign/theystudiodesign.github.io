@@ -1,0 +1,19 @@
+{
+  "name": "they-gestion-tests",
+  "private": true,
+  "description": "Suite d integration SyncEngine v2 (IndexedDB + queue + tombstones) — mock Supabase + Playwright",
+  "scripts": {
+    "build:vendor": "esbuild node_modules/@supabase/supabase-js/dist/index.mjs --bundle --format=esm --outfile=vendor/supabase-esm.js",
+    "test:sync": "node sync-v2.js",
+    "test:regression": "node app-regression.js",
+    "test:acceptance": "node acceptance.js",
+    "test": "node sync-v2.js && node app-regression.js",
+    "test:user-scenario": "node acceptance-user-scenario.js",
+    "verify:manual-ui": "node manual-verify-ui.js"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.48.0",
+    "esbuild": "^0.24.0",
+    "playwright-core": "^1.49.0"
+  }
+}
