@@ -382,6 +382,7 @@ strong, b { font-weight: 700; }
   position: relative;
   padding-top: 120px;
   padding-bottom: 120px;
+  overflow: clip; /* the ambient glow drifts ±3% — never let it create scroll overflow (RTL) */
 }
 .hero::before {
   content: ""; position: absolute; inset: 0; pointer-events: none;
