@@ -346,9 +346,10 @@ strong, b { font-weight: 700; }
   animation: reveal-rise var(--t-reveal) var(--ease-out) both;
   animation-delay: calc(var(--i, 0) * 90ms);
 }
+/* transform-only: painted from the first frame → no LCP penalty */
 @keyframes reveal-rise {
-  from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: none; }
+  from { transform: translateY(26px); }
+  to   { transform: none; }
 }
 
 .reveal-line { display: block; overflow: hidden; }
