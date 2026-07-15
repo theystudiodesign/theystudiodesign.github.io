@@ -216,16 +216,19 @@ strong, b { font-weight: 700; }
   display: flex; align-items: center; justify-content: space-between; gap: var(--sp-5);
 }
 .wordmark {
-  font-size: 19px; font-weight: 300; letter-spacing: .32em; line-height: 1;
-  white-space: nowrap;
+  font-size: 35px; font-weight: 300; letter-spacing: .32em; line-height: 1;
+  white-space: nowrap; position: relative;
 }
+/* Wide header shows the text tier: pull the enlarged wordmark's baseline
+   up onto the nav/lang baseline. On mobile (icons only) it stays centered. */
+@media (min-width: 901px) { .wordmark { top: -4.75px; } }
 .wordmark b { font-weight: 800; letter-spacing: 0; }
 .main-nav { display: flex; align-items: center; gap: clamp(24px, 3vw, 44px); }
 .main-nav a {
   font-size: 13.5px; letter-spacing: .12em; text-transform: uppercase;
   color: var(--text-2); position: relative;
   transition: color var(--t-micro) var(--ease-out);
-  padding-block: 6px;
+  padding-block: 8px 4px;
 }
 .main-nav a:hover { color: var(--text-1); }
 .main-nav a[aria-current="page"] { color: var(--text-1); }
@@ -234,7 +237,13 @@ strong, b { font-weight: 700; }
   width: 4px; height: 4px; border-radius: 50%;
   background: var(--accent); transform: translateX(-50%);
 }
-.header-cta { padding: 12px 22px; font-size: 13.5px; }
+/* Header CTA reads as a quiet outline pill so the wordmark stays the primary
+   anchor; the accent-filled primary remains for in-page CTAs. Fills on hover. */
+.header-cta {
+  padding: 10px 19px; font-size: 13px; font-weight: 400;
+  background: transparent; border: 1px solid var(--line); color: var(--text-1);
+}
+.header-cta:hover { background: var(--text-1); color: var(--surface); border-color: var(--text-1); }
 
 .menu-toggle {
   display: none; width: 44px; height: 44px;
@@ -352,10 +361,13 @@ strong, b { font-weight: 700; }
   to   { transform: none; }
 }
 
-.reveal-line { display: block; overflow: hidden; }
+/* The mask bleeds .2em vertically (negative margins cancel it in layout) so
+   ascenders, descenders and Arabic diacritics never clip — one shared rule
+   for every script. The hidden word starts deeper to stay behind the mask. */
+.reveal-line { display: block; overflow: hidden; padding-block: .2em; margin-block: -.2em; }
 .reveal-word {
   display: inline-block;
-  transform: translateY(110%);
+  transform: translateY(150%);
   transition: transform 900ms var(--ease-out);
 }
 .words-in .reveal-word { transform: translateY(0); }
@@ -406,10 +418,10 @@ strong, b { font-weight: 700; }
   content: ""; width: 40px; height: 1px; background: var(--line);
 }
 
-/* ---------- 9b. Home — Hero v2 (full redesign, EN homepage only) ----------
+/* ---------- 9b. Home — Hero v2 (full redesign, all locales) ----------
    Everything below is scoped under .hero-v2 (a modifier class added only
-   to /index.html's hero). The base .hero rules above are untouched and
-   keep serving /fr/ and /ar/, whose hero markup was not changed. */
+   to the homepage hero). One shared component serves /, /fr/ and /ar/;
+   only the translated text differs. */
 .hero.hero-v2 {
   display: flex;
   flex-direction: column;
@@ -932,6 +944,10 @@ strong, b { font-weight: 700; }
 }
 .lang-nav a:hover { color: var(--text-1); }
 .lang-nav a[aria-current="true"] { color: var(--text-1); border-bottom-color: var(--accent); }
+/* Header instance: group separation from the primary nav (collapses at tight widths)
+   + asymmetric padding drops the mono baseline to sit on the nav/wordmark baseline. */
+.site-header .lang-nav { margin-inline-start: clamp(0px, 8vw - 72px, 40px); }
+.site-header .lang-nav a { padding: 10px 7px 2px; }
 @media (max-width: 900px) { .site-header .lang-nav { display: none; } }
 .mobile-menu .lang-nav, .footer-baseline .lang-nav { display: flex; }
 
@@ -942,7 +958,7 @@ html[lang="ar"] {
   --font-serif: "Amiri", serif;
 }
 html[lang="ar"] body { letter-spacing: 0; }
-html[lang="ar"] .display-xl { letter-spacing: 0; line-height: 1.12; font-size: clamp(44px, 8.4vw, 124px); }
+html[lang="ar"] .display-xl { letter-spacing: 0; }
 html[lang="ar"] .display { letter-spacing: 0; line-height: 1.18; }
 html[lang="ar"] .h1, html[lang="ar"] .h2, html[lang="ar"] .h3 { letter-spacing: 0; line-height: 1.3; }
 html[lang="ar"] .serif-accent, html[lang="ar"] .ethos .manifesto,
@@ -1001,6 +1017,9 @@ html[data-theme="light"] {
   --line: rgba(255, 255, 255, .16);
   color: var(--text-1);
 }
+/* Light-ink header: hovered CTA fills white, so ink must go dark
+   (--surface stays Paper here and would fail contrast). */
+.surface-paper .site-header:not(.is-scrolled) .header-cta:hover { color: #0F0F0E; }
 
 /* Theme toggle — small icon disclosure beside the language selector */
 .theme-toggle {
