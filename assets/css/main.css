@@ -216,7 +216,7 @@ strong, b { font-weight: 700; }
   display: flex; align-items: center; justify-content: space-between; gap: var(--sp-5);
 }
 .wordmark {
-  font-size: 19px; font-weight: 300; letter-spacing: .32em; line-height: 1;
+  font-size: 20px; font-weight: 300; letter-spacing: .32em; line-height: 1;
   white-space: nowrap;
 }
 .wordmark b { font-weight: 800; letter-spacing: 0; }
@@ -234,7 +234,7 @@ strong, b { font-weight: 700; }
   width: 4px; height: 4px; border-radius: 50%;
   background: var(--accent); transform: translateX(-50%);
 }
-.header-cta { padding: 12px 22px; font-size: 13.5px; }
+.header-cta { padding: 11px 20px; font-size: 13px; font-weight: 400; }
 
 .menu-toggle {
   display: none; width: 44px; height: 44px;
@@ -932,6 +932,10 @@ strong, b { font-weight: 700; }
 }
 .lang-nav a:hover { color: var(--text-1); }
 .lang-nav a[aria-current="true"] { color: var(--text-1); border-bottom-color: var(--accent); }
+/* Header instance: group separation from the primary nav (collapses at tight widths)
+   + asymmetric padding drops the mono baseline 2px to sit on the nav/wordmark baseline. */
+.site-header .lang-nav { margin-inline-start: clamp(0px, 8vw - 72px, 40px); }
+.site-header .lang-nav a { padding: 8px 7px 4px; }
 @media (max-width: 900px) { .site-header .lang-nav { display: none; } }
 .mobile-menu .lang-nav, .footer-baseline .lang-nav { display: flex; }
 
