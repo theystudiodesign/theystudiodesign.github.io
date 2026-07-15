@@ -459,7 +459,8 @@ strong, b { font-weight: 700; }
   font-size: clamp(52px, 8.6vw, 138px);
   letter-spacing: -0.03em;
 }
-/* Punchline lands in the one accent color in the hero — same lime as the CTA (§9.1) */
+/* Punchline lands in the one accent color in the hero — same lime as the CTA (§9.1).
+   Dark mode only: on light surfaces the hero speaks in pure ink (see §26). */
 .hero-v2 .hero-statement .reveal-line:last-of-type .reveal-word { color: var(--accent); }
 
 .hero-body {
@@ -1032,6 +1033,17 @@ html[data-theme="light"] {
   --accent-ink: #F6FFCF;       /* 6:1 on the dark accent — CTA text stays legible */
   --focus: #5A6600;
   --hero-glow: rgba(17, 17, 16, .045);
+}
+/* Light mode, hero typography: pure ink, no accent word — the accent retreats
+   to interaction (CTA, active-language dot, availability dot, hovers, small UI).
+   A slightly heavier cut keeps the editorial impact on the light surface.
+   Dark mode composition is untouched. */
+html[data-theme="light"] .hero-v2 .hero-statement {
+  color: #111111;
+  font-weight: 400;
+}
+html[data-theme="light"] .hero-v2 .hero-statement .reveal-line:last-of-type .reveal-word {
+  color: inherit;
 }
 /* Case studies keep their art-directed Paper surface in both themes
    (.surface-paper re-declares tokens on <body>, closer than <html>). */

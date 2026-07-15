@@ -64,6 +64,15 @@ html[data-theme="light"] {
 .surface-paper { --accent: #5A6600; --accent-ink: #F6FFCF; }  /* Paper is light in both themes */
 ```
 
+**Refinement (second design pass):** in Light Mode the accent is banished from hero *typography* entirely — the headline is 100% ink (`#111111`) at a slightly heavier cut (`font-weight: 400` vs 300) for impact, and the accent lives only in interaction: primary CTA, active-language dot, availability dot, hovers and small UI details. Dark Mode keeps the lime punchline word unchanged.
+
+```css
+html[data-theme="light"] .hero-v2 .hero-statement { color: #111111; font-weight: 400; }
+html[data-theme="light"] .hero-v2 .hero-statement .reveal-line:last-of-type .reveal-word { color: inherit; }
+```
+
+The weight bump was verified not to change composition: still exactly 2 lines with zero overflow at 1440/1280/1024 in all three languages (weight 400 exists in both type stacks — General Sans via CDN and the self-hosted IBM Plex Sans Arabic).
+
 ### 4 · Always-filled primary CTA (`main.css` §6)
 
 The outline override is deleted; `.header-cta` keeps its `btn-primary` accent fill in both themes and only adjusts size:
