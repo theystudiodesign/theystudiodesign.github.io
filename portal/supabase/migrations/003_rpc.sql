@@ -15,30 +15,28 @@ create or replace function portal_summary() returns jsonb
                       and starts_at >= now() and is_member(b.client_id))
   ) $$;
 
--- ---------- signed downloads ----------
-create or replace function sign_download(asset_id uuid) returns jsonb
+-- ---------- downloads ----------
+-- Signed URLs are minted by the Storage API (client → createSignedUrl), which is itself
+-- authorized by the storage.objects RLS policies in 004_storage.sql. This RPC only
+-- verifies entitlement server-side and writes the audit trail before the client signs.
+create or replace function log_download(p_entity text, p_id uuid) returns jsonb
   language plpgsql security definer set search_path = public as $$
-declare a record; signed text;
 begin
-  select * into a from assets where id = asset_id;
-  if a is null then raise exception 'not_available' using errcode='P0002'; end if;
-  if not is_member(project_client(a.portal_project_id)) then raise exception 'not_a_member' using errcode='P0001'; end if;
-  if a.status = 'draft' then raise exception 'not_available' using errcode='P0002'; end if;
-  select token into signed from storage.create_signed_url('assets', a.file_path, 300); -- 5 min
-  perform log_audit('download', 'asset', asset_id, '{}');
-  return jsonb_build_object('url', signed, 'expires_at', now() + interval '5 minutes');
-end $$;
-
-create or replace function sign_invoice(invoice_id uuid) returns jsonb
-  language plpgsql security definer set search_path = public as $$
-declare i record; signed text;
-begin
-  select * into i from invoices where id = invoice_id;
-  if i is null or i.pdf_path is null then raise exception 'not_available' using errcode='P0002'; end if;
-  if not is_member(i.client_id) then raise exception 'not_a_member' using errcode='P0001'; end if;
-  select token into signed from storage.create_signed_url('invoices', i.pdf_path, 300);
-  perform log_audit('download', 'invoice', invoice_id, '{}');
-  return jsonb_build_object('url', signed, 'expires_at', now() + interval '5 minutes');
+  if p_entity = 'asset' then
+    if not exists (select 1 from assets a where a.id = p_id and a.status <> 'draft' and a.deleted_at is null
+                     and is_member(project_client(a.portal_project_id))) then
+      raise exception 'not_available' using errcode='P0002';
+    end if;
+  elsif p_entity = 'invoice' then
+    if not exists (select 1 from invoices i where i.id = p_id and i.status <> 'draft' and i.deleted_at is null
+                     and is_member(i.client_id)) then
+      raise exception 'not_available' using errcode='P0002';
+    end if;
+  else
+    raise exception 'not_available' using errcode='P0002';
+  end if;
+  perform log_audit('download', p_entity, p_id, '{}');
+  return jsonb_build_object('ok', true);
 end $$;
 
 -- ---------- native booking: compute open slots ----------

@@ -1,5 +1,6 @@
 // Module 6 — Meetings: NATIVE booking (provider-agnostic). list_slots → book_slot (atomic).
 import { api } from "../api.js";
+import { t } from "../i18n.js";
 import { el, esc, fmtDay, fmtTime, toast } from "../ui.js";
 
 export async function render(outlet) {
@@ -16,7 +17,7 @@ export async function render(outlet) {
   const cols = el('<div class="grid rise" style="grid-template-columns:1.4fr 1fr;gap:32px"></div>');
 
   // booking picker
-  const picker = el('<div><span class="label section-label">Book a check-in · 30 min · GMT+1</span><div id="slotpick"></div></div>');
+  const picker = el('<div><span class="label section-label">${t("Book a check-in · 30 min · GMT+1")}</span><div id="slotpick"></div></div>');
   const pick = picker.querySelector("#slotpick");
   if (!slots.length) {
     pick.appendChild(el('<p class="muted">No open slots in the next six weeks. Reach us at hello@theystudiodesign.com and we\u2019ll make room.</p>'));
@@ -40,35 +41,35 @@ export async function render(outlet) {
       grid.appendChild(dayEl);
     });
     pick.appendChild(grid);
-    const confirmBtn = el('<button class="btn btn-primary" style="margin-top:20px" disabled>Select a time</button>');
+    const confirmBtn = el('<button class="btn btn-primary" style="margin-top:20px" disabled>${t("Select a time")}</button>');
     pick.appendChild(confirmBtn);
     confirmBtn.addEventListener("click", async () => {
       if (!selected) return;
       confirmBtn.disabled = true;
       try {
         await api.book(selected.starts_at);
-        toast("Meeting confirmed — a calendar invite is on its way.");
+        toast(t("Meeting confirmed — a calendar invite is on its way."));
         render(outlet); // refresh slots + upcoming
       } catch (err) {
         const code = (err && err.message) || "";
-        toast(code.includes("slot_taken") || code.includes("P0003") ? "That time was just taken — pick another." : "Couldn\u2019t book. " + code, "err");
+        toast(code.includes("slot_taken") || code.includes("P0003") ? t("That time was just taken — pick another.") : "Couldn\u2019t book. " + code, "err");
         render(outlet);
       }
     });
   }
 
   // upcoming + past
-  const side = el('<div><span class="label section-label">Upcoming</span><div id="up"></div><span class="label section-label" style="margin-top:24px">Past</span><div id="past"></div></div>');
+  const side = el('<div><span class="label section-label">${t("Upcoming")}</span><div id="up"></div><span class="label section-label" style="margin-top:24px">${t("Past")}</span><div id="past"></div></div>');
   const now = Date.now();
   const up = bookings.filter((b) => b.status === "confirmed" && new Date(b.starts_at) >= now);
   const past = bookings.filter((b) => b.status !== "confirmed" || new Date(b.starts_at) < now);
   const upBox = side.querySelector("#up"), pastBox = side.querySelector("#past");
-  if (!up.length) upBox.appendChild(el('<p class="muted" style="font-size:14px">Nothing scheduled.</p>'));
+  if (!up.length) upBox.appendChild(el('<p class="muted" style="font-size:14px">${t("Nothing scheduled.")}</p>'));
   else up.forEach((b) => {
-    const card = el(`<div class="card" style="margin-bottom:12px;padding:16px"><div class="title">${esc(fmtDay(b.starts_at))} · ${esc(fmtTime(b.starts_at))}</div><div class="mono" style="margin:6px 0 10px">${esc(b.title)}</div><button class="btn btn-ghost btn-sm" data-id="${b.id}">Cancel</button></div>`);
+    const card = el(`<div class="card" style="margin-bottom:12px;padding:16px"><div class="title">${esc(fmtDay(b.starts_at))} · ${esc(fmtTime(b.starts_at))}</div><div class="mono" style="margin:6px 0 10px">${esc(b.title)}</div><button class="btn btn-ghost btn-sm" data-id="${b.id}">${t("Cancel")}</button></div>`);
     card.querySelector("button").addEventListener("click", async (e) => {
       e.target.disabled = true;
-      try { await api.cancelBooking(b.id); toast("Meeting canceled."); render(outlet); }
+      try { await api.cancelBooking(b.id); toast(t("Meeting canceled.")); render(outlet); }
       catch (err) { toast("Cancel within 24h isn\u2019t possible online — email us.", "err"); e.target.disabled = false; }
     });
     upBox.appendChild(card);

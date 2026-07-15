@@ -45,7 +45,7 @@ export function mdInline(src) {
 let toastWrap;
 export function toast(msg, kind) {
   if (!toastWrap) { toastWrap = el('<div class="toast-wrap"></div>'); document.body.appendChild(toastWrap); }
-  const t = el(`<div class="toast ${kind === "err" ? "err" : ""}">${esc(msg)}</div>`);
+  const t = el(`<div class="toast ${kind === "err" ? "err" : ""}" role="status" aria-live="polite">${esc(msg)}</div>`);
   toastWrap.appendChild(t);
   setTimeout(() => t.remove(), 3600);
 }

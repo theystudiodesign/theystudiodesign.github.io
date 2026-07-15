@@ -1,13 +1,14 @@
 // Module 10 — Profile: identity, theme, notification preferences, sign out.
 import { el, esc, toast } from "../ui.js";
+import { t, lang, setLang } from "../i18n.js";
 import { user, member, role, signOut } from "../auth.js";
 import { api } from "../api.js";
 
 const TYPES = [
-  ["note_published", "New notes"],
-  ["deliverable_shared", "Deliverables to review"],
-  ["invoice_sent", "New invoices"],
-  ["booking_confirmed", "Meeting confirmations"],
+  ["note_published", t("New notes")],
+  ["deliverable_shared", t("Deliverables to review")],
+  ["invoice_sent", t("New invoices")],
+  ["booking_confirmed", t("Meeting confirmations")],
 ];
 
 export async function render(outlet) {
@@ -18,7 +19,7 @@ export async function render(outlet) {
 
   wrap.appendChild(el(`
     <div class="rise">
-      <span class="label section-label">Profile</span>
+      <span class="label section-label">${t("Profile")}</span>
       <div class="card">
         <div class="h3">${esc(u.email)}</div>
         <p class="mono" style="margin-top:6px">${esc(role() || "member")} access</p>
@@ -28,11 +29,11 @@ export async function render(outlet) {
   // theme
   const themeCard = el(`
     <div class="card rise" style="--i:1;margin-top:20px">
-      <span class="label section-label">Appearance</span>
+      <span class="label section-label">${t("Appearance")}</span>
       <div style="display:flex;gap:10px">
-        <button class="btn btn-ghost btn-sm" data-theme="dark">Dark</button>
-        <button class="btn btn-ghost btn-sm" data-theme="light">Light</button>
-        <button class="btn btn-ghost btn-sm" data-theme="system">System</button>
+        <button class="btn btn-ghost btn-sm" data-theme="dark">${t("Dark")}</button>
+        <button class="btn btn-ghost btn-sm" data-theme="light">${t("Light")}</button>
+        <button class="btn btn-ghost btn-sm" data-theme="system">${t("System")}</button>
       </div>
     </div>`);
   themeCard.querySelectorAll("[data-theme]").forEach((b) => b.addEventListener("click", () => {
@@ -41,12 +42,25 @@ export async function render(outlet) {
       if (v === "system") { localStorage.removeItem("they_theme"); const light = matchMedia("(prefers-color-scheme: light)").matches; light ? document.documentElement.setAttribute("data-theme", "light") : document.documentElement.removeAttribute("data-theme"); }
       else { localStorage.setItem("they_theme", v); v === "light" ? document.documentElement.setAttribute("data-theme", "light") : document.documentElement.removeAttribute("data-theme"); }
     } catch (e) {}
-    toast("Appearance updated.");
+    toast(t("Appearance updated."));
   }));
   wrap.appendChild(themeCard);
 
+  // language (EN/FR at launch; AR structurally ready, content deferred)
+  const langCard = el(`
+    <div class="card rise" style="--i:1;margin-top:20px">
+      <span class="label section-label">${t("Language")}</span>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost btn-sm" data-lang="en" aria-pressed="${lang()==="en"}">English</button>
+        <button class="btn btn-ghost btn-sm" data-lang="fr" aria-pressed="${lang()==="fr"}">Français</button>
+        <button class="btn btn-ghost btn-sm" disabled title="قريبًا">العربية</button>
+      </div>
+    </div>`);
+  langCard.querySelectorAll("[data-lang]").forEach((b) => b.addEventListener("click", () => setLang(b.getAttribute("data-lang"))));
+  wrap.appendChild(langCard);
+
   // notification preferences
-  const notif = el('<div class="card rise" style="--i:2;margin-top:20px"><span class="label section-label">Email notifications</span><div class="list"></div><button class="btn btn-primary btn-sm" id="save" style="margin-top:16px">Save preferences</button></div>');
+  const notif = el('<div class="card rise" style="--i:2;margin-top:20px"><span class="label section-label">${t("Email notifications")}</span><div class="list"></div><button class="btn btn-primary btn-sm" id="save" style="margin-top:16px">${t("Save preferences")}</button></div>');
   const list = notif.querySelector(".list");
   const state = {};
   TYPES.forEach(([key, label]) => {
@@ -61,13 +75,13 @@ export async function render(outlet) {
   });
   notif.querySelector("#save").addEventListener("click", async (e) => {
     e.target.disabled = true;
-    try { await api.updatePrefs(m.id, state); toast("Preferences saved."); }
+    try { await api.updatePrefs(m.id, state); toast(t("Preferences saved.")); }
     catch (err) { toast("Couldn\u2019t save. " + err.message, "err"); }
     e.target.disabled = false;
   });
   wrap.appendChild(notif);
 
-  const out = el('<div class="rise" style="--i:3;margin-top:28px"><button class="btn btn-ghost" id="signout">Sign out</button></div>');
-  out.querySelector("#signout").addEventListener("click", async () => { await signOut(); location.href = "/login"; });
+  const out = el('<div class="rise" style="--i:3;margin-top:28px"><button class="btn btn-ghost" id="signout">${t("Sign out")}</button></div>');
+  out.querySelector("#signout").addEventListener("click", async () => { await signOut(); location.href = "/login/"; });
   wrap.appendChild(out);
 }

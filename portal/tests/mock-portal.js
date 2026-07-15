@@ -30,6 +30,7 @@ function createMockPortal() {
     if (p === "/auth/v1/logout") return send(res, 204);
 
     // ---- REST ----
+    if (p.startsWith("/storage/v1/object/sign/")) return send(res, 200, { signedURL: "/storage/v1/object/sign/mock?token=x", signedUrl: "http://localhost:0/signed.pdf" });
     if (p.startsWith("/rest/v1/rpc/")) return rpc(res, p.split("/").pop(), await read(req));
     if (p.startsWith("/rest/v1/")) return rest(req, res, p.slice("/rest/v1/".length), u, await read(req));
     send(res, 404, { error: "not_found" });
@@ -74,7 +75,7 @@ function createMockPortal() {
 
   function rpc(res, fn, body) {
     if (fn === "portal_summary") return send(res, 200, { projects: db.projects.length, unread: db.notifications.filter((n) => !n.read_at).length, invoices_due: db.invoices.filter((i) => i.status === "sent").length, next_meeting: null });
-    if (fn === "sign_download" || fn === "sign_invoice") return send(res, 200, { url: "http://localhost:0/signed.pdf", expires_at: new Date(Date.now() + 3e5).toISOString() });
+    if (fn === "log_download") return send(res, 200, { ok: true });
     if (fn === "list_slots") return send(res, 200, db.slots);
     if (fn === "book_slot") {
       const taken = db.bookings.some((b) => b.status === "confirmed" && b.starts_at === body.p_starts_at);

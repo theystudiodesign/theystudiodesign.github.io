@@ -1,5 +1,6 @@
 // Modules 2+3+8 — Project detail: progress, TIMELINE (milestones), NOTES, deliverables strip.
 import { api } from "../api.js";
+import { t } from "../i18n.js";
 import { el, esc, fmtDate, relTime, statusDot, mdInline } from "../ui.js";
 import { navigate } from "../router.js";
 
@@ -30,16 +31,16 @@ export async function render(outlet, { id }) {
   const cols = el('<div class="grid g-2 rise" style="--i:1"></div>');
 
   // Timeline
-  const tl = el('<div><span class="label section-label">Timeline</span><div class="timeline"></div></div>');
+  const tl = el('<div><span class="label section-label">${t("Timeline")}</span><div class="timeline"></div></div>');
   const tlBox = tl.querySelector(".timeline");
   if (!milestones.length) tlBox.appendChild(el('<p class="muted">Milestones appear as the project takes shape.</p>'));
   else milestones.forEach((m) => tlBox.appendChild(el(
     `<div class="tl-item ${m.status}"><div class="title">${esc(m.title)}</div><span class="mono when">${m.status === "done" ? "done" : m.status === "doing" ? "in progress" : "planned"}${m.due_at ? " · " + esc(fmtDate(m.due_at)) : ""}</span></div>`)));
 
   // Notes
-  const nt = el('<div><span class="label section-label">Notes</span><div id="notes"></div></div>');
+  const nt = el('<div><span class="label section-label">${t("Notes")}</span><div id="notes"></div></div>');
   const nb = nt.querySelector("#notes");
-  if (!notes.length) nb.appendChild(el('<p class="muted">No notes yet.</p>'));
+  if (!notes.length) nb.appendChild(el('<p class="muted">${t("No notes yet.")}</p>'));
   else notes.forEach((n) => {
     const card = el(`<div class="card" style="margin-bottom:14px"><div class="title" style="margin-bottom:4px">${esc(n.title)}</div><div class="mono" style="margin-bottom:10px">${relTime(n.published_at)}</div><div class="note-body"></div></div>`);
     card.querySelector(".note-body").innerHTML = mdInline(n.body_md);
@@ -50,9 +51,9 @@ export async function render(outlet, { id }) {
   wrap.appendChild(cols);
 
   // Deliverables strip
-  const del = el('<div class="rise" style="--i:2;margin-top:36px"><span class="label section-label">Deliverables</span><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))"></div></div>');
+  const del = el('<div class="rise" style="--i:2;margin-top:36px"><span class="label section-label">${t("Deliverables")}</span><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))"></div></div>');
   const dg = del.querySelector(".grid");
-  if (!deliverables.length) dg.appendChild(el('<p class="muted">Nothing shared yet.</p>'));
+  if (!deliverables.length) dg.appendChild(el('<p class="muted">${t("Nothing shared yet.")}</p>'));
   else deliverables.forEach((d) => {
     const c = el(`<div class="file-card" role="link" tabindex="0"><div class="file-frame">${d.preview_path ? "" : "◆"}</div><div class="file-body"><div><div class="title">${esc(d.title)}</div><div class="mono">${esc(d.version)}</div></div><span class="pill"><span class="dot ${statusDot(d.status)}"></span>${esc(d.status.replace("_", " "))}</span></div></div>`);
     const go = () => navigate(`/deliverables/${d.id}`);

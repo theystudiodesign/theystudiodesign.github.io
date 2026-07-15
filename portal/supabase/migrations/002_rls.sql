@@ -32,29 +32,43 @@ begin foreach t in array array['portal_members','portal_projects','milestones','
 end loop; end $$;
 
 -- members
+drop policy if exists m_studio on portal_members;
 create policy m_studio on portal_members for all using (is_studio()) with check (is_studio());
+drop policy if exists m_self on portal_members;
 create policy m_self on portal_members for select using (user_id = auth.uid());
+drop policy if exists m_owner_manage on portal_members;
 create policy m_owner_manage on portal_members for insert
   with check (is_owner(client_id) and role = 'client_member');
 
 -- projects
+drop policy if exists p_studio on portal_projects;
 create policy p_studio on portal_projects for all using (is_studio()) with check (is_studio());
+drop policy if exists p_read on portal_projects;
 create policy p_read on portal_projects for select using (published and deleted_at is null and is_member(client_id));
 
 -- milestones / notes / assets read via project membership
+drop policy if exists ms_studio on milestones;
 create policy ms_studio on milestones for all using (is_studio()) with check (is_studio());
+drop policy if exists ms_read on milestones;
 create policy ms_read on milestones for select using (deleted_at is null and is_member(project_client(portal_project_id)));
 
+drop policy if exists nt_studio on notes;
 create policy nt_studio on notes for all using (is_studio()) with check (is_studio());
+drop policy if exists nt_read on notes;
 create policy nt_read on notes for select using (published_at is not null and deleted_at is null and is_member(project_client(portal_project_id)));
 
+drop policy if exists as_studio on assets;
 create policy as_studio on assets for all using (is_studio()) with check (is_studio());
+drop policy if exists as_read on assets;
 create policy as_read on assets for select using (deleted_at is null and status <> 'draft' and is_member(project_client(portal_project_id)));
 
 -- approvals: append-only; client_owner may insert for shared deliverables of their client
+drop policy if exists ap_studio on approvals;
 create policy ap_studio on approvals for all using (is_studio()) with check (is_studio());
+drop policy if exists ap_read on approvals;
 create policy ap_read on approvals for select using (
   exists (select 1 from assets a where a.id = asset_id and is_member(project_client(a.portal_project_id))));
+drop policy if exists ap_insert on approvals;
 create policy ap_insert on approvals for insert with check (
   decided_by = auth.uid()
   and exists (select 1 from assets a where a.id = asset_id
@@ -63,24 +77,35 @@ create policy ap_insert on approvals for insert with check (
 -- no update/delete policies → approvals are immutable
 
 -- invoices
+drop policy if exists in_studio on invoices;
 create policy in_studio on invoices for all using (is_studio()) with check (is_studio());
+drop policy if exists in_read on invoices;
 create policy in_read on invoices for select using (status <> 'draft' and deleted_at is null and is_member(client_id));
 
 -- availability readable by any active member (needed to render picker); writable studio-only
+drop policy if exists av_studio on availability_rules;
 create policy av_studio on availability_rules for all using (is_studio()) with check (is_studio());
+drop policy if exists av_read on availability_rules;
 create policy av_read on availability_rules for select using (active and auth.uid() is not null);
+drop policy if exists ao_studio on availability_overrides;
 create policy ao_studio on availability_overrides for all using (is_studio()) with check (is_studio());
+drop policy if exists ao_read on availability_overrides;
 create policy ao_read on availability_overrides for select using (auth.uid() is not null);
 
 -- bookings: read own client; INSERT denied (RPC only); cancel own via RPC
+drop policy if exists bk_studio on bookings;
 create policy bk_studio on bookings for all using (is_studio()) with check (is_studio());
+drop policy if exists bk_read on bookings;
 create policy bk_read on bookings for select using (is_member(client_id));
 
 -- notifications: system writes; user reads/updates own
+drop policy if exists nf_read on notifications;
 create policy nf_read on notifications for select using (user_id = auth.uid());
+drop policy if exists nf_update on notifications;
 create policy nf_update on notifications for update using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- audit: studio read only
+drop policy if exists al_studio on audit_log;
 create policy al_studio on audit_log for select using (is_studio());
 
 -- ---------- client-safe views (security_invoker → RLS applies) ----------
@@ -93,7 +118,7 @@ create or replace view v_client_notes with (security_invoker = true) as
   from notes where published_at is not null and deleted_at is null;
 
 create or replace view v_client_deliverables with (security_invoker = true) as
-  select id, portal_project_id, title, version, status, preview_path, size_bytes, mime, shared_at, created_at
+  select id, portal_project_id, title, version, status, file_path, preview_path, size_bytes, mime, shared_at, created_at
   from assets where kind = 'deliverable' and status <> 'draft' and deleted_at is null;
 
 create or replace view v_client_files with (security_invoker = true) as

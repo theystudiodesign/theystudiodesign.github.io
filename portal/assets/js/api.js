@@ -40,12 +40,24 @@ export const api = {
     sb.from("approvals").insert({ asset_id: assetId, decision, note: note || null }).then(one),
 
   invoices: () =>
-    sb.from("invoices").select("id,number,issued_at,due_at,amount_cents,currency,status")
+    sb.from("invoices").select("id,number,issued_at,due_at,amount_cents,currency,status,pdf_path")
       .order("issued_at", { ascending: false }).then(rows),
 
-  // signed downloads (RPC re-checks membership; TTL server-side)
-  signDownload: (assetId) => sb.rpc("sign_download", { asset_id: assetId }).then(one),
-  signInvoice: (invoiceId) => sb.rpc("sign_invoice", { invoice_id: invoiceId }).then(one),
+  // downloads: server-side entitlement check + audit (RPC), then Storage-API signed URL
+  // (storage.objects RLS authorizes the signing — see migration 004).
+  signDownload: async (asset) => {
+    await sb.rpc("log_download", { p_entity: "asset", p_id: asset.id }).then(one);
+    const bucket = asset.kind === "file" || asset.file_path ? "assets" : "assets";
+    const { data, error } = await sb.storage.from(bucket).createSignedUrl(asset.file_path, 300);
+    if (error) throw error;
+    return { url: data.signedUrl };
+  },
+  signInvoice: async (invoice) => {
+    await sb.rpc("log_download", { p_entity: "invoice", p_id: invoice.id }).then(one);
+    const { data, error } = await sb.storage.from("invoices").createSignedUrl(invoice.pdf_path, 300);
+    if (error) throw error;
+    return { url: data.signedUrl };
+  },
 
   // native booking
   slots: (from, to) => sb.rpc("list_slots", { p_from: from, p_to: to }).then(rows),

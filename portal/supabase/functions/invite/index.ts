@@ -22,12 +22,16 @@ Deno.serve(async (req) => {
   if (!studio && !(ownerHere && role === "client_member")) return json(403, { error: "role_not_allowed" });
 
   const admin = createClient(url, svc);
-  // idempotency: already a member?
-  const { data: existing } = await admin.from("portal_members").select("id").eq("client_id", client_id);
-  // invite (magic link email); if the user already exists this is a no-op auth-side
+  // invite (magic-link email). If the user already exists, resolve their id via
+  // generateLink (no email sent by us; they sign in normally with a magic link).
+  let userId: string | undefined;
   const { data: invited, error: invErr } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo: (Deno.env.get("PORTAL_URL") || "") + "/" });
-  const userId = invited?.user?.id;
-  if (invErr && !userId) return json(400, { error: invErr.message });
+  userId = invited?.user?.id;
+  if (!userId && invErr) {
+    const { data: linkData } = await admin.auth.admin.generateLink({ type: "magiclink", email });
+    userId = linkData?.user?.id;
+    if (!userId) return json(400, { error: invErr.message });
+  }
 
   const { data: member, error: mErr } = await admin.from("portal_members")
     .upsert({ user_id: userId, client_id, role, status: "invited", invited_by: u.user.id }, { onConflict: "user_id,client_id" })

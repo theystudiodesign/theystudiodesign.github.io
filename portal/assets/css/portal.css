@@ -60,7 +60,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .icon-btn { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; color: var(--text-2); position: relative; transition: color var(--t-micro); }
 .icon-btn:hover { color: var(--text-1); }
 .icon-btn svg { width: 18px; height: 18px; }
-.bell-dot { position: absolute; top: 8px; right: 9px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 999px;
+.bell-dot { position: absolute; top: 8px; inset-inline-end: 9px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 999px;
   background: var(--accent); color: var(--accent-ink); font-size: 9px; font-weight: 700; display: grid; place-items: center; }
 .content { padding: var(--sp-7) var(--margin) var(--sp-9); max-width: 1100px; width: 100%; }
 

@@ -1,5 +1,6 @@
 // Module 1 — Dashboard: progress, attention items, latest notes. One calm morning mirror.
 import { api } from "../api.js";
+import { t } from "../i18n.js";
 import { el, esc, fmtDate, relTime, statusDot, mdInline } from "../ui.js";
 import { isOwner } from "../auth.js";
 
@@ -21,7 +22,7 @@ export async function render(outlet) {
   }
 
   if (!projects.length) {
-    wrap.innerHTML = `<div class="empty rise"><p class="h3">Nothing published yet.</p><p>Your first project appears here the day we press publish.</p></div>`;
+    wrap.innerHTML = `<div class="empty rise"><p class="h3">${t("Nothing published yet.")}</p><p>${t("Your first project appears here the day we press publish.")}</p></div>`;
     return;
   }
 
@@ -38,14 +39,14 @@ export async function render(outlet) {
         <p class="mono" style="margin-top:14px">${hero.due_at ? "due " + esc(fmtDate(hero.due_at)) : ""} ${notes[0] ? "· latest note " + relTime(notes[0].published_at) : ""}</p>
       </a>
       <div class="card">
-        <span class="label section-label">Needs your attention</span>
+        <span class="label section-label">${t("Needs your attention")}</span>
         <div class="list" id="attention"></div>
       </div>
     </div>`));
 
   const attention = wrap.querySelector("#attention");
   if (!pendingApprovals.length && !dueInvoices.length) {
-    attention.appendChild(el('<p class="muted" style="padding-top:12px">You\u2019re all caught up.</p>'));
+    attention.appendChild(el('<p class="muted" style="padding-top:12px">${t("You’re all caught up.")}</p>'));
   } else {
     pendingApprovals.forEach((d) =>
       attention.appendChild(el(`<div class="list-row"><span class="dot accent"></span><a class="grow title" data-link href="/deliverables/${d.id}">${esc(d.title)} — ${isOwner() ? "approve" : "review"}</a><span class="mono">${esc(d.version)}</span></div>`)));
@@ -63,9 +64,9 @@ export async function render(outlet) {
   }
 
   // latest notes
-  const notesCard = el('<div class="card rise" style="--i:2;margin-top:24px"><span class="label section-label">Latest notes</span><div id="notes"></div></div>');
+  const notesCard = el('<div class="card rise" style="--i:2;margin-top:24px"><span class="label section-label">${t("Latest notes")}</span><div id="notes"></div></div>');
   const nc = notesCard.querySelector("#notes");
-  if (!notes.length) nc.appendChild(el('<p class="muted">No notes yet.</p>'));
-  else notes.slice(0, 3).forEach((n) => nc.appendChild(el(`<div class="list-row"><div class="grow"><div class="title">${esc(n.title)}</div><div class="mono">${relTime(n.published_at)}</div></div><a class="btn btn-ghost btn-sm" data-link href="/projects/${n.portal_project_id}">Read</a></div>`)));
+  if (!notes.length) nc.appendChild(el('<p class="muted">${t("No notes yet.")}</p>'));
+  else notes.slice(0, 3).forEach((n) => nc.appendChild(el(`<div class="list-row"><div class="grow"><div class="title">${esc(n.title)}</div><div class="mono">${relTime(n.published_at)}</div></div><a class="btn btn-ghost btn-sm" data-link href="/projects/${n.portal_project_id}">${t("Read")}</a></div>`)));
   wrap.appendChild(notesCard);
 }

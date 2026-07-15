@@ -1,24 +1,26 @@
 // App bootstrap: theme guard already ran inline; here we gate on auth, build the shell, mount the router.
 import { ICON, $, el, esc } from "./ui.js";
+import { t } from "./i18n.js";
 import { loadSession, loadMembership, user, role, signOut, onAuthChange } from "./auth.js";
 import { initRouter, navigate } from "./router.js";
+import { applyLangAttrs } from "./i18n.js";
 import { api } from "./api.js";
 
 const NAV = [
-  { href: "/", label: "Overview", icon: "grid", match: (p) => p === "/" },
-  { href: "/projects", label: "Projects", icon: "layers", match: (p) => p.startsWith("/projects") },
-  { href: "/deliverables", label: "Deliverables", icon: "layers", match: (p) => p.startsWith("/deliverables") },
-  { href: "/files", label: "Files", icon: "file", match: (p) => p === "/files" },
-  { href: "/notes", label: "Notes", icon: "note", match: (p) => p === "/notes" },
-  { href: "/invoices", label: "Invoices", icon: "invoice", match: (p) => p === "/invoices" },
-  { href: "/meetings", label: "Meetings", icon: "calendar", match: (p) => p === "/meetings" },
+  { href: "/", label: t("Overview"), icon: "grid", match: (p) => p === "/" },
+  { href: "/projects", label: t("Projects"), icon: "layers", match: (p) => p.startsWith("/projects") },
+  { href: "/deliverables", label: t("Deliverables"), icon: "layers", match: (p) => p.startsWith("/deliverables") },
+  { href: "/files", label: t("Files"), icon: "file", match: (p) => p === "/files" },
+  { href: "/notes", label: t("Notes"), icon: "note", match: (p) => p === "/notes" },
+  { href: "/invoices", label: t("Invoices"), icon: "invoice", match: (p) => p === "/invoices" },
+  { href: "/meetings", label: t("Meetings"), icon: "calendar", match: (p) => p === "/meetings" },
 ];
 const TABBAR = [
-  { href: "/", label: "Home", icon: "grid", match: (p) => p === "/" },
-  { href: "/files", label: "Files", icon: "file", match: (p) => p === "/files" },
-  { href: "/meetings", label: "Meet", icon: "calendar", match: (p) => p === "/meetings" },
-  { href: "/invoices", label: "Invoices", icon: "invoice", match: (p) => p === "/invoices" },
-  { href: "/profile", label: "You", icon: "user", match: (p) => p === "/profile" },
+  { href: "/", label: t("Home"), icon: "grid", match: (p) => p === "/" },
+  { href: "/files", label: t("Files"), icon: "file", match: (p) => p === "/files" },
+  { href: "/meetings", label: t("Meet"), icon: "calendar", match: (p) => p === "/meetings" },
+  { href: "/invoices", label: t("Invoices"), icon: "invoice", match: (p) => p === "/invoices" },
+  { href: "/profile", label: t("You"), icon: "user", match: (p) => p === "/profile" },
 ];
 
 function themeToggleEl() {
@@ -46,8 +48,8 @@ function shell(u) {
         ${navLinks}
         <div class="nav-spacer"></div>
         <div class="nav-sep"></div>
-        <a class="nav-link" data-link href="/profile">${ICON.user}<span>Profile</span></a>
-        <button class="nav-link" id="signout" style="width:100%">${ICON.user}<span>Sign out</span></button>
+        <a class="nav-link" data-link href="/profile">${ICON.user}<span>${t("Profile")}</span></a>
+        <button class="nav-link" id="signout" style="width:100%">${ICON.user}<span>${t("Sign out")}</span></button>
       </aside>
       <div class="main">
         <header class="topbar">
@@ -65,7 +67,7 @@ function shell(u) {
       <nav class="mobile-tabbar" aria-label="Primary">${tabs}</nav>
     </div>`);
   $(".topbar-actions", root).insertBefore(themeToggleEl(), $("#theme-slot", root));
-  $("#signout", root).addEventListener("click", async () => { await signOut(); location.href = "/login"; });
+  $("#signout", root).addEventListener("click", async () => { await signOut(); location.href = "/login/"; });
   $(".menu-btn", root).addEventListener("click", () => document.body.classList.toggle("nav-open"));
   root.addEventListener("click", (e) => { if (e.target.closest("a[data-link]")) document.body.classList.remove("nav-open"); });
   return root;
@@ -89,8 +91,9 @@ async function refreshBell() {
 }
 
 async function boot() {
+  applyLangAttrs();
   await loadSession();
-  if (!user()) { location.href = "/login"; return; }
+  if (!user()) { location.href = "/login/"; return; }
   const member = await loadMembership();
   const app = document.getElementById("app");
   if (!member) {
@@ -101,9 +104,15 @@ async function boot() {
   app.appendChild(shell(user()));
   document.getElementById("bell").addEventListener("click", () => import("./notifications-panel.js").then((m) => m.openPanel(refreshBell)));
   initRouter(document.getElementById("outlet"), (path) => { highlightNav(path); refreshBell(); });
-  onAuthChange((s) => { if (!s) location.href = "/login"; });
+  onAuthChange((s) => { if (!s) location.href = "/login/"; });
   refreshBell();
   setInterval(refreshBell, 60000);
+
+  /* offline: calm banner, retry on focus (server-state-first — nothing to reconcile) */
+  const offBanner = el('<div role="status" style="position:fixed;top:0;inset-inline:0;z-index:200;background:var(--surface-card);border-bottom:1px solid var(--line);text-align:center;padding:8px;font-size:13px" hidden>${t("You’re offline — reconnecting…")}</div>');
+  document.body.appendChild(offBanner);
+  window.addEventListener("offline", () => (offBanner.hidden = false));
+  window.addEventListener("online", () => { offBanner.hidden = true; refreshBell(); });
 }
 
 boot();

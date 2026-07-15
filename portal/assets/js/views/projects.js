@@ -1,5 +1,6 @@
 // Module 2 — Projects list (progress across all published projects).
 import { api } from "../api.js";
+import { t } from "../i18n.js";
 import { el, esc, fmtDate, statusDot } from "../ui.js";
 
 export async function render(outlet) {
@@ -9,9 +10,9 @@ export async function render(outlet) {
   try { projects = await api.projects(); }
   catch (e) { wrap.innerHTML = `<div class="empty"><p class="h3">Couldn\u2019t load projects.</p><p>${esc(e.message)}</p></div>`; return; }
 
-  if (!projects.length) { wrap.innerHTML = '<div class="empty rise"><p class="h3">No projects yet.</p><p>They appear here once published.</p></div>'; return; }
+  if (!projects.length) { wrap.innerHTML = '<div class="empty rise"><p class="h3">${t("No projects yet.")}</p><p>They appear here once published.</p></div>'; return; }
 
-  const head = el('<div class="rise"><span class="label section-label">Your projects</span></div>');
+  const head = el('<div class="rise"><span class="label section-label">${t("Your projects")}</span></div>');
   wrap.appendChild(head);
   const grid = el('<div class="grid rise" style="--i:1;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))"></div>');
   projects.forEach((p) => {
