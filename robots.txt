@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /portal
+Disallow: /book
+
+Sitemap: https://theystudiodesign.com/sitemap.xml
