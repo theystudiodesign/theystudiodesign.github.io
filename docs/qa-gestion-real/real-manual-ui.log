@@ -1,0 +1,12 @@
+pré-vol: schéma v2 présent ✓ · cible: https://tychqyohodvjwafzfycg.supabase.co
+— Connexion Cloud Sync (mock) —
+— Scénario exact, via la vraie UI —
+  ✓ créer client 1 → refresh → il existe
+  ✓ créer client 2 → refresh → il existe
+  ✓ supprimer client 1 → refresh → toujours supprimé
+  ✓ supprimer client 2 → refresh → toujours supprimé
+— Redémarrage du navigateur —
+  ✓ redémarrage navigateur → rien ne ressuscite (état: [Mouhamed K. — DATA FUNNEL PRO, Client Exemple — Retainer])
+(nettoyage serveur: lignes du compte de test purgées)
+
+VÉRIFICATION MANUELLE (UI réelle): 5 ✓ / 0 ✗

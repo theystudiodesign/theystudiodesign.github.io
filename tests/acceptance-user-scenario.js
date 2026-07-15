@@ -95,7 +95,7 @@ async function wireContext(ctx, cloud) {
 
 /* Contexte PERSISTANT: fermer + relancer = vrai redémarrage navigateur. */
 async function launchBrowser(userDataDir, cloud) {
-  const ctx = await chromium.launchPersistentContext(userDataDir, { executablePath: CHROME, headless: true });
+  const ctx = await chromium.launchPersistentContext(userDataDir, { executablePath: CHROME, headless: true, ignoreHTTPSErrors: true, args: ['--ignore-certificate-errors'] });
   await wireContext(ctx, cloud);
   return ctx;
 }

@@ -15,7 +15,8 @@ const CFG = (() => {
 const QA = process.env.QA_EMAIL ? { email: process.env.QA_EMAIL, pass: process.env.QA_PASS || 'secret123-QA' } : null;
 const EMAIL = QA ? QA.email : (REAL ? `they.manualqa.${Date.now()}@gmail.com` : 'manual@test.ma');
 const PASS = QA ? QA.pass : 'secret123-QA';
-const SHOTS = path.join(ROOT, 'docs/qa-gestion');
+const SHOTS = path.join(ROOT, REAL ? 'docs/qa-gestion-real' : 'docs/qa-gestion');
+if (!fs.existsSync(SHOTS)) fs.mkdirSync(SHOTS, { recursive: true });
 const APP_PORT = 9081, MOCK_PORT = 9082;
 const APP = `http://localhost:${APP_PORT}/gestion/`;
 const MOCK = `http://localhost:${MOCK_PORT}`;
@@ -36,7 +37,7 @@ const srv = http.createServer((req, res) => {
 }).listen(APP_PORT);
 
 async function launch(dir) {
-  const ctx = await chromium.launchPersistentContext(dir, { executablePath: CHROME, headless: true, viewport: { width: 1280, height: 800 } });
+  const ctx = await chromium.launchPersistentContext(dir, { executablePath: CHROME, headless: true, viewport: { width: 1280, height: 800 }, ignoreHTTPSErrors: true, args: ['--ignore-certificate-errors'] });
   await ctx.addInitScript(() => sessionStorage.setItem('they_unlocked', '1'));
   await ctx.route('**/fonts.googleapis.com/**', r => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
   await ctx.route('**/supabase-config.js*', r => r.fulfill({ status: 200, contentType: 'text/javascript',
@@ -78,7 +79,7 @@ const refresh = async page => { await sleep(350); await page.reload({ waitUntil:
   let ctx = await launch(dir);
   let page = await open(ctx);
 
-  console.log('— Connexion Cloud Sync (mock) —');
+  console.log('— Connexion Cloud Sync (' + (REAL ? 'SUPABASE RÉEL' : 'mock') + ') —');
   await page.evaluate(() => { DB.clients.forEach(c => c.notes = 'réel'); save(); });
   await page.waitForSelector('#authGate');
   await page.fill('#ag_email', EMAIL); await page.fill('#ag_pass', PASS);

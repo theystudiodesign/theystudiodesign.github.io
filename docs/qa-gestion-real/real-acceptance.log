@@ -1,0 +1,40 @@
+CIBLE: SyncEngine v2 (build actuel) · SUPABASE RÉEL https://tychqyohodvjwafzfycg.supabase.co
+pré-vol: schéma v2 présent (deleted_at) ✓
+
+[S1] LOCAL — scénario exact, refresh immédiats, puis redémarrage navigateur
+    ✓ créer « S1-CLIENT-1 » → refresh → il existe
+    ✓ créer « S1-CLIENT-2 » → refresh → les deux existent
+    ✓ supprimer « S1-CLIENT-1 » → refresh → il est toujours supprimé
+    ✓ … et « S1-CLIENT-2 » est toujours là
+    ✓ supprimer « S1-CLIENT-2 » → refresh → il est toujours supprimé
+    ✓ redémarrage navigateur → « S1-CLIENT-1 » et « S1-CLIENT-2 » toujours supprimés (état: [Mouhamed K. — DATA FUNNEL PRO, Client Exemple — Retainer])
+
+[S2] CLOUD — même scénario, Cloud Sync activé (mock Supabase)
+    (nettoyage: lignes du compte de test purgées côté serveur)
+    ✓ créer « S2-CLIENT-1 » → refresh → il existe
+    ✓ créer « S2-CLIENT-2 » → refresh → les deux existent
+    ✓ supprimer « S2-CLIENT-1 » → refresh → il est toujours supprimé
+    ✓ … et « S2-CLIENT-2 » est toujours là
+    ✓ supprimer « S2-CLIENT-2 » → refresh → il est toujours supprimé
+    ✓ redémarrage navigateur → « S2-CLIENT-1 » et « S2-CLIENT-2 » toujours supprimés (état: [Mouhamed K. — DATA FUNNEL PRO, Client Exemple — Retainer])
+    ✓ le cloud a convergé: ni « S2-CLIENT-1 » ni « S2-CLIENT-2 » actifs côté serveur (cloud: [])
+    ✓ nouvel appareil (même compte) → aucun supprimé ne revient (état: [Client Exemple — Retainer, Mouhamed K. — DATA FUNNEL PRO])
+    (nettoyage: lignes du compte de test purgées côté serveur)
+
+[S3] CLOUD + 2 ONGLETS — le 2e onglet reste ouvert et sauvegarde après CHAQUE étape
+    (nettoyage: lignes du compte de test purgées côté serveur)
+    (onglet 2: save() après création de S3-CLIENT-1)
+    ✓ créer « S3-CLIENT-1 » → refresh → il existe
+    (onglet 2: save() après création de S3-CLIENT-2)
+    ✓ créer « S3-CLIENT-2 » → refresh → les deux existent
+    (onglet 2: save() après suppression de S3-CLIENT-1)
+    ✓ supprimer « S3-CLIENT-1 » → refresh → il est toujours supprimé
+    ✓ … et « S3-CLIENT-2 » est toujours là
+    (onglet 2: save() après suppression de S3-CLIENT-2)
+    ✓ supprimer « S3-CLIENT-2 » → refresh → il est toujours supprimé
+    ✓ l'onglet 2 refreshé ne ressuscite rien (état: [Mouhamed K. — DATA FUNNEL PRO, Client Exemple — Retainer])
+    ✓ redémarrage navigateur → « S3-CLIENT-1 » et « S3-CLIENT-2 » toujours supprimés (état: [Mouhamed K. — DATA FUNNEL PRO, Client Exemple — Retainer])
+    ✓ nouvel appareil (même compte) → aucun supprimé ne revient (état: [Mouhamed K. — DATA FUNNEL PRO, Client Exemple — Retainer])
+    (nettoyage: lignes du compte de test purgées côté serveur)
+
+========== SCÉNARIO UTILISATEUR [SyncEngine v2 (build actuel) · SUPABASE RÉEL https://tychqyohodvjwafzfycg.supabase.co]: 22 ✓ / 0 ✗ ==========
