@@ -129,6 +129,31 @@ def generate(loc, mod, path):
                     .replace('↗', '↖'))
     write(f'{loc}/{f}', html)
 
+def build_sitemap():
+    """Localized sitemap: every URL once, with xhtml:link hreflang alternates
+       for localized pages; EN-only case studies keep plain entries."""
+    def alt(path):
+        L = [f'    <xhtml:link rel="alternate" hreflang="en" href="{SITE}/{path}"/>']
+        for loc in LOCALES:
+            L.append(f'    <xhtml:link rel="alternate" hreflang="{loc}" href="{SITE}/{loc}/{path}"/>')
+        L.append(f'    <xhtml:link rel="alternate" hreflang="x-default" href="{SITE}/{path}"/>')
+        return '\n'.join(L)
+    prio = {'': '1.0', 'work/': '0.9', 'services/': '0.9', 'contact/': '0.9', 'studio/': '0.7',
+            'privacy/': '0.3', 'terms/': '0.3'}
+    out = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
+           '        xmlns:xhtml="http://www.w3.org/1999/xhtml">']
+    for path in LOCALIZED:
+        for base in [f'{SITE}/{path}'] + [f'{SITE}/{loc}/{path}' for loc in LOCALES]:
+            out.append(f'  <url><loc>{base}</loc><priority>{prio[path]}</priority>')
+            out.append(alt(path))
+            out.append('  </url>')
+    for path in EN_ONLY:
+        out.append(f'  <url><loc>{SITE}/{path}</loc><priority>0.8</priority></url>')
+    out.append('</urlset>')
+    write('sitemap.xml', '\n'.join(out) + '\n')
+    print('sitemap.xml:', 3 * len(LOCALIZED) + len(EN_ONLY), 'URLs')
+
 def main():
     for p in LOCALIZED + list(EN_ONLY):
         update_en(p)
@@ -142,6 +167,7 @@ def main():
         for p in LOCALIZED:
             generate(loc, mod, p)
         print(f'{loc}: {len(LOCALIZED)} pages generated')
+    build_sitemap()
     print('EN pages updated:', len(LOCALIZED) + len(EN_ONLY) + 1)
 
 if __name__ == '__main__':
