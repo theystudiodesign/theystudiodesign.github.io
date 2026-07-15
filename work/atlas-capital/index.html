@@ -13,8 +13,8 @@
 <meta name="theme-color" content="#F4F3F0">
 <link rel="icon" href="/icon-192.png">
 <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
-<link href="https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,700&f[]=sentient@400,401&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,700&f[]=sentient@400,401&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,700&f[]=sentient@400,401&display=swap" rel="stylesheet"></noscript>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="/assets/css/main.css">
 <!--
   ⚠ SAMPLE CASE STUDY — demonstration content for the case-study system.
@@ -34,6 +34,7 @@
       <a href="/studio/">Studio</a>
       <a href="/contact/">Contact</a>
     </nav>
+    <nav class="lang-nav" aria-label="Language"><a href="/work/" lang="en" hreflang="en" aria-current="true">EN</a><a href="/fr/work/" lang="fr" hreflang="fr">FR</a><a href="/ar/work/" lang="ar" hreflang="ar">AR</a></nav>
     <a class="btn btn-primary header-cta" href="/contact/" data-magnetic>Start a project</a>
     <button class="menu-toggle" aria-expanded="false" aria-label="Menu">
       <span></span><span></span>
@@ -50,6 +51,7 @@
     <a href="/contact/">Start a project</a>
   </nav>
   <div class="mobile-menu-foot">
+    <nav class="lang-nav" aria-label="Language"><a href="/work/" lang="en" hreflang="en" aria-current="true">EN</a><a href="/fr/work/" lang="fr" hreflang="fr">FR</a><a href="/ar/work/" lang="ar" hreflang="ar">AR</a></nav>
     <span class="label">hello@theystudiodesign.com</span>
     <span class="label">Casablanca · <span data-local-time>— GMT+1</span></span>
   </div>
@@ -61,9 +63,9 @@
   <section class="cs-hero">
     <div class="cs-visual ph ph-a" aria-hidden="true"><span class="ph-mark">AC—25</span></div>
     <div class="container cs-hero-inner">
-      <span class="label reveal">Case study — 01</span>
+      <span class="label reveal-load">Case study — 01</span>
       <h1 class="display" data-split>Atlas Capital</h1>
-      <p class="cs-summary reveal" style="--i:2">A boutique investment firm that looked like a boutique — repositioned to win enterprise mandates without losing its edge.</p>
+      <p class="cs-summary reveal-load" style="--i:2">A boutique investment firm that looked like a boutique — repositioned to win enterprise mandates without losing its edge.</p>
     </div>
   </section>
 
@@ -235,7 +237,7 @@
   </div>
   <div class="container footer-cols">
     <div>
-      <h4 class="label">Sitemap</h4>
+      <p class="label">Sitemap</p>
       <ul>
         <li><a href="/work/">Work</a></li>
         <li><a href="/services/">Services</a></li>
@@ -244,7 +246,7 @@
       </ul>
     </div>
     <div>
-      <h4 class="label">Socials</h4>
+      <p class="label">Socials</p>
       <ul>
         <li><a href="https://www.instagram.com/theystudiodesign" target="_blank" rel="noopener">Instagram</a></li>
         <li><a href="https://www.behance.net/theystudiodesign" target="_blank" rel="noopener">Behance</a></li>
@@ -252,7 +254,7 @@
       </ul>
     </div>
     <div>
-      <h4 class="label">Contact</h4>
+      <p class="label">Contact</p>
       <ul>
         <li><button class="copy-email" data-email="hello@theystudiodesign.com" title="Click to copy">hello@theystudiodesign.com</button></li>
         <li><p>Casablanca, Morocco</p></li>
@@ -264,8 +266,8 @@
   <div class="container footer-baseline">
     <span>© 2026 THE’Y Studio Design</span>
     <span class="legal"><a href="/privacy/">Privacy</a> <a href="/terms/">Terms</a></span>
-    <span class="lang-switch"><strong>EN</strong> · <span aria-disabled="true" title="Français — bientôt">FR</span></span>
-  </div>
+    <nav class="lang-nav" aria-label="Language"><a href="/work/" lang="en" hreflang="en" aria-current="true">EN</a><a href="/fr/work/" lang="fr" hreflang="fr">FR</a><a href="/ar/work/" lang="ar" hreflang="ar">AR</a></nav>
+    </div>
   <div class="footer-watermark" aria-hidden="true">THE’Y</div>
 </footer>
 

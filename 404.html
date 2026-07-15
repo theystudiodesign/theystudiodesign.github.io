@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#0F0F0E">
 <link rel="icon" href="/icon-192.png">
 <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
-<link href="https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,700&f[]=sentient@400,401&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,700&f[]=sentient@400,401&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,700&f[]=sentient@400,401&display=swap" rel="stylesheet"></noscript>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="/assets/css/main.css">
 </head>
 <body>
@@ -24,6 +24,7 @@
       <a href="/studio/">Studio</a>
       <a href="/contact/">Contact</a>
     </nav>
+    <nav class="lang-nav" aria-label="Language"><a href="/" lang="en" hreflang="en" aria-current="true">EN</a><a href="/fr/" lang="fr" hreflang="fr">FR</a><a href="/ar/" lang="ar" hreflang="ar">AR</a></nav>
     <a class="btn btn-primary header-cta" href="/contact/" data-magnetic>Start a project</a>
     <button class="menu-toggle" aria-expanded="false" aria-label="Menu">
       <span></span><span></span>
@@ -40,6 +41,7 @@
     <a href="/contact/">Start a project</a>
   </nav>
   <div class="mobile-menu-foot">
+    <nav class="lang-nav" aria-label="Language"><a href="/" lang="en" hreflang="en" aria-current="true">EN</a><a href="/fr/" lang="fr" hreflang="fr">FR</a><a href="/ar/" lang="ar" hreflang="ar">AR</a></nav>
     <span class="label">hello@theystudiodesign.com</span>
     <span class="label">Casablanca · <span data-local-time>— GMT+1</span></span>
   </div>
@@ -59,8 +61,8 @@
   <div class="container footer-baseline" style="border-top:0">
     <span>© 2026 THE’Y Studio Design</span>
     <span class="legal"><a href="/privacy/">Privacy</a> <a href="/terms/">Terms</a></span>
-    <span class="lang-switch"><strong>EN</strong> · <span aria-disabled="true" title="Français — bientôt">FR</span></span>
-  </div>
+    <nav class="lang-nav" aria-label="Language"><a href="/" lang="en" hreflang="en" aria-current="true">EN</a><a href="/fr/" lang="fr" hreflang="fr">FR</a><a href="/ar/" lang="ar" hreflang="ar">AR</a></nav>
+    </div>
 </footer>
 
 <script src="/assets/js/main.js" defer></script>

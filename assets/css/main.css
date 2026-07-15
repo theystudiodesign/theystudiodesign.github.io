@@ -342,6 +342,16 @@ strong, b { font-weight: 700; }
 }
 .reveal.in { opacity: 1; transform: none; }
 
+/* Above-the-fold entrance: pure CSS, starts at first paint (no JS wait) */
+.reveal-load {
+  animation: reveal-rise var(--t-reveal) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+@keyframes reveal-rise {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
+}
+
 .reveal-line { display: block; overflow: hidden; }
 .reveal-word {
   display: inline-block;
@@ -449,7 +459,7 @@ strong, b { font-weight: 700; }
 .cap-row:last-child { border-bottom: 1px solid var(--line); }
 .cap-num { font-family: var(--font-mono); font-size: 14px; color: var(--text-2); }
 .cap-title { font-size: clamp(28px, 4.4vw, 56px); font-weight: 300; letter-spacing: -0.02em; line-height: 1.05; }
-.cap-desc { color: var(--text-2); max-width: 34ch; text-align: right; font-size: 15px; }
+.cap-desc { color: var(--text-2); max-width: 34ch; text-align: end; font-size: 15px; }
 .cap-row .go {
   opacity: 0; transform: translateX(-8px);
   transition: opacity var(--t-micro) var(--ease-out), transform var(--t-micro) var(--ease-out);
@@ -695,8 +705,8 @@ strong, b { font-weight: 700; }
 @media (max-width: 800px) { .engagement-grid { grid-template-columns: 1fr; } }
 
 .pricing-block {
-  border-left: 1px solid var(--accent);
-  padding-left: clamp(24px, 4vw, 64px);
+  border-inline-start: 1px solid var(--accent);
+  padding-inline-start: clamp(24px, 4vw, 64px);
   max-width: 62ch;
   font-size: var(--fs-body-lg);
 }
@@ -846,3 +856,55 @@ strong, b { font-weight: 700; }
   .ink-reveal .w { opacity: 1; }
   .hero::before { animation: none; }
 }
+
+/* ---------- 24. i18n — language switcher ---------- */
+.lang-nav { display: flex; align-items: center; gap: 2px; }
+.lang-nav a {
+  font-family: var(--font-mono);
+  font-size: 11.5px; letter-spacing: .08em;
+  color: var(--text-2);
+  padding: 6px 7px;
+  border-bottom: 1px solid transparent;
+  transition: color var(--t-micro) var(--ease-out);
+}
+.lang-nav a:hover { color: var(--text-1); }
+.lang-nav a[aria-current="true"] { color: var(--text-1); border-bottom-color: var(--accent); }
+@media (max-width: 900px) { .site-header .lang-nav { display: none; } }
+.mobile-menu .lang-nav, .footer-baseline .lang-nav { display: flex; }
+
+/* ---------- 25. i18n — RTL & Arabic (deliberate, not mirrored blindly) ---------- */
+/* Arabic type stack: no italics, no negative tracking, taller leading */
+html[lang="ar"] {
+  --font-sans: "IBM Plex Sans Arabic", "General Sans", sans-serif;
+  --font-serif: "Amiri", serif;
+}
+html[lang="ar"] body { letter-spacing: 0; }
+html[lang="ar"] .display-xl { letter-spacing: 0; line-height: 1.12; font-size: clamp(44px, 8.4vw, 124px); }
+html[lang="ar"] .display { letter-spacing: 0; line-height: 1.18; }
+html[lang="ar"] .h1, html[lang="ar"] .h2, html[lang="ar"] .h3 { letter-spacing: 0; line-height: 1.3; }
+html[lang="ar"] .serif-accent, html[lang="ar"] .ethos .manifesto,
+html[lang="ar"] .pillar-promise, html[lang="ar"] .quote-block blockquote { font-style: normal; line-height: 1.6; }
+html[lang="ar"] .label, html[lang="ar"] .cs-meta-inner dt, html[lang="ar"] .field label {
+  font-family: var(--font-sans); letter-spacing: 0; text-transform: none; font-size: 13px;
+}
+html[lang="ar"] .main-nav a, html[lang="ar"] .mobile-menu nav a { letter-spacing: 0; text-transform: none; }
+html[lang="ar"] .cap-title, html[lang="ar"] .pillar-title { letter-spacing: 0; line-height: 1.25; }
+
+/* LTR islands: brand wordmark, clock, email, numbers stay left-to-right */
+[dir="rtl"] .wordmark, [dir="rtl"] [data-local-time], [dir="rtl"] .copy-email,
+[dir="rtl"] .metric .num, [dir="rtl"] .result-card .num, [dir="rtl"] .footer-watermark {
+  direction: ltr; unicode-bidi: isolate;
+}
+
+/* Directional geometry that must flip */
+[dir="rtl"] .scroll-cue { left: auto; right: var(--margin); }
+[dir="rtl"] .btn:hover .arrow, [dir="rtl"] .link-arrow:hover .arrow { transform: translateX(-4px); }
+[dir="rtl"] .link-u::after { transform-origin: right; }
+[dir="rtl"] .draw-line { transform-origin: right; }
+[dir="rtl"] .cap-row .go { transform: translateX(8px); }
+[dir="rtl"] .cap-row:hover .go { transform: none; }
+[dir="rtl"] .next-project:hover .display { transform: translateX(-12px); }
+[dir="rtl"] .hero::before { transform: scaleX(-1); }
+
+/* Deliberately NOT flipped: before/after slider (media is neutral),
+   charts/numerals, media placeholders, the cropped wordmark. */
