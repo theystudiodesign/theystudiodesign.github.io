@@ -931,6 +931,15 @@ html[data-theme="light"] {
 /* Case studies keep their art-directed Paper surface in both themes
    (.surface-paper re-declares tokens on <body>, closer than <html>). */
 
+/* Over the case-study hero (dark media + scrim), the not-yet-scrolled header
+   reads in light ink; once .is-scrolled adds the Paper backdrop, tokens revert. */
+.surface-paper .site-header:not(.is-scrolled) {
+  --text-1: #FFFFFF;
+  --text-2: rgba(255, 255, 255, .68);
+  --line: rgba(255, 255, 255, .16);
+  color: var(--text-1);
+}
+
 /* Theme toggle — small icon disclosure beside the language selector */
 .theme-toggle {
   display: inline-grid; place-items: center;
