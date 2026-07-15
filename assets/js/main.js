@@ -73,6 +73,34 @@
     });
   }
 
+  /* ---------- Language selector (header dropdown) ---------- */
+  $$("[data-lang-menu]").forEach(function (menu) {
+    var btn = $(".lang-menu-btn", menu);
+    var items = $$(".lang-menu-list a", menu);
+    var open = function () { menu.classList.add("open"); btn.setAttribute("aria-expanded", "true"); };
+    var close = function () { menu.classList.remove("open"); btn.setAttribute("aria-expanded", "false"); };
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      menu.classList.contains("open") ? close() : open();
+    });
+    document.addEventListener("click", function (e) {
+      if (!menu.contains(e.target)) close();
+    });
+    menu.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { close(); btn.focus(); }
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        if (!menu.classList.contains("open")) { open(); items[0].focus(); return; }
+        var i = items.indexOf(document.activeElement);
+        var next = e.key === "ArrowDown" ? (items[i + 1] || items[0]) : (items[i - 1] || items[items.length - 1]);
+        next.focus();
+      }
+    });
+    menu.addEventListener("focusout", function () {
+      requestAnimationFrame(function () { if (!menu.contains(document.activeElement)) close(); });
+    });
+  });
+
   /* ---------- Local time, Casablanca (§1.4) ---------- */
   var clocks = $$("[data-local-time]");
   if (clocks.length) {
