@@ -51,8 +51,10 @@ def switcher(active, path):
         items.append(f'<a href="{href}" lang="{code}" hreflang="{code}"{cur}>{code.upper()}</a>')
     return '<nav class="lang-nav" aria-label="Language">' + ''.join(items) + '</nav>'
 
-AR_FONTS = ('<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;700'
-            '&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">')
+AR_FONT_URL = ('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;700'
+               '&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap')
+AR_FONTS = (f'<link href="{AR_FONT_URL}" rel="stylesheet" media="print" onload="this.media=\'all\'">'
+            f'<noscript><link href="{AR_FONT_URL}" rel="stylesheet"></noscript>')
 
 def inject_switcher(html, active, path):
     sw = switcher(active, path)

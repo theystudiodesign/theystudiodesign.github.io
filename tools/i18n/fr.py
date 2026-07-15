@@ -42,9 +42,9 @@ STRINGS = {
     # footer
     "Have a project in mind?": "Un projet en tête\u00A0?",
     ">Book a call</a>": ">Réserver un appel</a>",
-    '<h4 class="label">Sitemap</h4>': '<h4 class="label">Plan du site</h4>',
-    '<h4 class="label">Socials</h4>': '<h4 class="label">Réseaux</h4>',
-    '<h4 class="label">Contact</h4>': '<h4 class="label">Contact</h4>',
+    '<p class="label">Sitemap</p>': '<p class="label">Plan du site</p>',
+    '<p class="label">Socials</p>': '<p class="label">Réseaux</p>',
+    '<p class="label">Contact</p>': '<p class="label">Contact</p>',
     "<p>Casablanca, Morocco</p>": "<p>Casablanca, Maroc</p>",
     "<p>Local time: <span data-local-time>": "<p>Heure locale\u00A0: <span data-local-time>",
     'title="Click to copy"': 'title="Cliquer pour copier"',
