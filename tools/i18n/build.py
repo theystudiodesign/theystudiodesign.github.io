@@ -52,7 +52,7 @@ def switcher(active, path):
     return '<nav class="lang-nav" aria-label="Language">' + ''.join(items) + '</nav>'
 
 AR_FONT_URL = ('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;700'
-               '&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap')
+               '&family=Amiri&display=swap')
 AR_FONTS = (f'<link href="{AR_FONT_URL}" rel="stylesheet" media="print" onload="this.media=\'all\'">'
             f'<noscript><link href="{AR_FONT_URL}" rel="stylesheet"></noscript>')
 
