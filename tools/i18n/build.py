@@ -125,7 +125,8 @@ def generate(loc, mod, path):
     # content
     html = apply_dict(html, mod.STRINGS)
     if loc == 'ar':
-        html = html.replace('→', '←').replace('↗', '↖')
+        html = (html.replace('→', '\x00').replace('←', '→').replace('\x00', '←')
+                    .replace('↗', '↖'))
     write(f'{loc}/{f}', html)
 
 def main():
