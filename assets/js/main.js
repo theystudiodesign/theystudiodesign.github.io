@@ -73,6 +73,36 @@
     });
   }
 
+  /* ---------- Theme toggle (dark default / light) ---------- */
+  $$("[data-theme-toggle]").forEach(function (btn) {
+    var themeMeta = $('meta[name="theme-color"]');
+    var apply = function (t, animate) {
+      if (animate && !reduced) {
+        document.documentElement.classList.add("theming");
+        setTimeout(function () { document.documentElement.classList.remove("theming"); }, 380);
+      }
+      if (t === "light") document.documentElement.setAttribute("data-theme", "light");
+      else document.documentElement.removeAttribute("data-theme");
+      if (themeMeta && !document.body.classList.contains("surface-paper")) {
+        themeMeta.setAttribute("content", t === "light" ? "#F8F8F6" : "#0F0F0E");
+      }
+    };
+    btn.addEventListener("click", function () {
+      var next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+      try { localStorage.setItem("they_theme", next); } catch (e) {}
+      apply(next, true);
+      track("theme_toggle", { theme: next });
+    });
+    /* follow OS changes only while the user hasn't chosen explicitly */
+    try {
+      if (!localStorage.getItem("they_theme")) {
+        window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", function (e) {
+          apply(e.matches ? "light" : "dark", true);
+        });
+      }
+    } catch (e) {}
+  });
+
   /* ---------- Local time, Casablanca (§1.4) ---------- */
   var clocks = $$("[data-local-time]");
   if (clocks.length) {

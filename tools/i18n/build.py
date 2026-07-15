@@ -43,6 +43,23 @@ def hreflang_block(path):
     L.append(f'<link rel="alternate" hreflang="x-default" href="{SITE}/{path}">')
     return '\n'.join(L)
 
+TOGGLE_ARIA = {'en': 'Toggle theme', 'fr': 'Changer de thème', 'ar': 'تبديل المظهر'}
+def theme_toggle(active):
+    return ('<button class="theme-toggle" type="button" data-theme-toggle '
+            f'aria-label="{TOGGLE_ARIA[active]}">'
+            '<svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" '
+            'stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/>'
+            '<path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7"/></svg>'
+            '<svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" '
+            'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+            '<path d="M20.2 14.2A8.2 8.2 0 1 1 9.8 3.8a6.8 6.8 0 0 0 10.4 10.4Z"/></svg></button>')
+
+FOUC_GUARD = ("<script>(function(){try{var t=localStorage.getItem('they_theme');"
+              "if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)t='light';"
+              "if(t==='light'){document.documentElement.setAttribute('data-theme','light');"
+              "var m=document.querySelector('meta[name=theme-color]');"
+              "if(m&&m.content==='#0F0F0E')m.content='#F8F8F6';}}catch(e){}})()</script>")
+
 def switcher(active, path):
     """path = locale-relative page path ('' | 'work/' | ...)."""
     items = []
@@ -58,8 +75,11 @@ AR_FONTS = ('<link rel="preload" href="/assets/fonts/IBMPlexSansArabic-300-arabi
 
 def inject_switcher(html, active, path):
     sw = switcher(active, path)
-    # header: before the CTA pill
-    html = html.replace('<a class="btn btn-primary header-cta"', sw + '\n    <a class="btn btn-primary header-cta"', 1)
+    # head: apply saved/OS theme before first paint (no flash)
+    html = html.replace('</head>', FOUC_GUARD + '\n</head>', 1)
+    # header: switcher + theme toggle before the CTA pill
+    html = html.replace('<a class="btn btn-primary header-cta"',
+                        sw + '\n    ' + theme_toggle(active) + '\n    <a class="btn btn-primary header-cta"', 1)
     # mobile menu foot
     html = html.replace('<div class="mobile-menu-foot">', '<div class="mobile-menu-foot">\n    ' + sw, 1)
     # footer baseline: drop the static EN·FR placeholder, then anchor after the legal links
@@ -71,6 +91,8 @@ def inject_switcher(html, active, path):
 def strip_existing_i18n(html):
     """makes the script idempotent on EN sources"""
     html = re.sub(r'<nav class="lang-nav" aria-label="Language">.*?</nav>\n?\s*', '', html, flags=re.S)
+    html = re.sub(r'<button class="theme-toggle".*?</button>\n?\s*', '', html, flags=re.S)
+    html = re.sub(r'<script>\(function\(\)\{try\{var t=localStorage\.getItem\(.they_theme.\).*?</script>\n?', '', html, flags=re.S)
     html = re.sub(r'<link rel="alternate" hreflang=[^>]+>\n?', '', html)
     return html
 
