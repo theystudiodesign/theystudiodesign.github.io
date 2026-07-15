@@ -393,9 +393,13 @@ strong, b { font-weight: 700; }
   from { transform: translate3d(-3%, -2%, 0); }
   to   { transform: translate3d(3%, 2%, 0); }
 }
+.hero-eyebrow { margin-bottom: var(--sp-5); }
 .hero-statement { max-width: 12ch; }
+/* Punchline gets the one accent color in the hero — same lime as the CTA (§9.1) */
+html[lang="en"] .hero-statement .reveal-line:last-of-type .reveal-word { color: var(--accent); }
 .hero-sub { margin-top: var(--sp-6); max-width: 60ch; color: var(--text-2); }
 .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-5); margin-top: var(--sp-7); }
+.hero-proof-line { margin-top: var(--sp-6); }
 .scroll-cue {
   position: absolute; bottom: var(--sp-6); left: var(--margin);
   display: flex; align-items: center; gap: 12px;
