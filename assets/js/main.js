@@ -154,22 +154,35 @@
     revealables.forEach(function (el) { el.classList.add("in", "words-in"); });
   }
 
-  /* ---------- Hero word split (masked stagger, 80ms/word §3.1) ---------- */
+  /* ---------- Hero word split (masked stagger, 80ms/word §3.1) ----------
+     Authored <br> elements are preserved so every locale can compose the
+     same deliberate line structure (identical hero anatomy EN/FR/AR). */
   $$("[data-split]").forEach(function (el) {
-    var words = el.textContent.trim().split(/\s+/);
+    var lines = [[]];
+    Array.prototype.slice.call(el.childNodes).forEach(function (n) {
+      if (n.nodeType === 1 && n.tagName === "BR") lines.push([]);
+      else if (n.textContent) n.textContent.trim().split(/\s+/).forEach(function (w) {
+        if (w) lines[lines.length - 1].push(w);
+      });
+    });
     el.textContent = "";
     el.setAttribute("data-words", "");
-    words.forEach(function (w, i) {
-      var line = document.createElement("span");
-      line.className = "reveal-line";
-      line.style.display = "inline-block";
-      var word = document.createElement("span");
-      word.className = "reveal-word";
-      word.style.transitionDelay = (i * 80) + "ms";
-      word.textContent = w;
-      line.appendChild(word);
-      el.appendChild(line);
-      el.appendChild(document.createTextNode(" "));
+    var i = 0;
+    lines.forEach(function (words, li) {
+      words.forEach(function (w) {
+        var line = document.createElement("span");
+        line.className = "reveal-line";
+        line.style.display = "inline-block";
+        var word = document.createElement("span");
+        word.className = "reveal-word";
+        word.style.transitionDelay = (i * 80) + "ms";
+        word.textContent = w;
+        line.appendChild(word);
+        el.appendChild(line);
+        el.appendChild(document.createTextNode(" "));
+        i++;
+      });
+      if (li < lines.length - 1) el.appendChild(document.createElement("br"));
     });
     if (reduced) el.classList.add("words-in");
     else requestAnimationFrame(function () {
