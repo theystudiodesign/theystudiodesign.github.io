@@ -51,10 +51,11 @@ def switcher(active, path):
         items.append(f'<a href="{href}" lang="{code}" hreflang="{code}"{cur}>{code.upper()}</a>')
     return '<nav class="lang-nav" aria-label="Language">' + ''.join(items) + '</nav>'
 
-AR_FONT_URL = ('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;700'
-               '&family=Amiri&display=swap')
-AR_FONTS = (f'<link href="{AR_FONT_URL}" rel="stylesheet" media="print" onload="this.media=\'all\'">'
-            f'<noscript><link href="{AR_FONT_URL}" rel="stylesheet"></noscript>')
+# Arabic fonts: self-hosted (OFL) — preload the two weights used above the fold,
+# small same-origin stylesheet loads normally (no third-party swap delay).
+AR_FONTS = ('<link rel="preload" href="/assets/fonts/IBMPlexSansArabic-300-arabic.woff2" as="font" type="font/woff2" crossorigin>\n'
+            '<link rel="preload" href="/assets/fonts/IBMPlexSansArabic-400-arabic.woff2" as="font" type="font/woff2" crossorigin>\n'
+            '<link rel="stylesheet" href="/assets/css/fonts-ar.css">')
 
 def inject_switcher(html, active, path):
     sw = switcher(active, path)
