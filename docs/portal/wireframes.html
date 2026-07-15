@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE’Y Client Portal — Wireframes (architecture sprint)</title>
+<style>
+/* Wireframes use the production token values (§9) — self-contained copy for portability */
+:root{--ink:#0F0F0E;--ink9:#161615;--ink8:#1F1F1D;--t1:#fff;--t2:#9A9A96;--line:rgba(255,255,255,.14);
+--accent:#E8FF47;--aink:#131308;--mono:ui-monospace,'Space Mono',monospace;--sans:system-ui,'General Sans',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#242422;color:var(--t1);font-family:var(--sans);padding:48px;font-size:13px;line-height:1.5}
+h1{font-weight:300;font-size:28px;margin-bottom:6px} .note{color:var(--t2);max-width:70ch;margin-bottom:40px}
+.board{margin:56px 0} .board>h2{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--t2);margin-bottom:14px}
+.frame{background:var(--ink);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.desktop{width:1180px;max-width:100%} .mobile{width:340px}
+.row{display:flex} .col{display:flex;flex-direction:column}
+.pad{padding:22px} .gap{gap:14px}
+.hair{border-top:1px solid var(--line)}
+.box{border:1px dashed rgba(255,255,255,.22);border-radius:8px;padding:12px;color:var(--t2)}
+.lab{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--t2)}
+.pill{display:inline-block;background:var(--accent);color:var(--aink);border-radius:999px;padding:6px 14px;font-weight:600;font-size:12px}
+.ghost{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:12px;color:var(--t1)}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);vertical-align:middle;margin-inline-end:6px}
+.dot.g{background:#7FA98A}.dot.o{background:#D4B36A}.dot.r{background:#D98A7E}
+.side{width:200px;background:var(--ink9);border-inline-end:1px solid var(--line);padding:18px;display:flex;flex-direction:column;gap:4px;min-height:520px}
+.side a{color:var(--t2);padding:8px 10px;border-radius:8px;text-decoration:none;display:block}
+.side a.on{color:var(--t1);background:var(--ink8)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:1px solid var(--line)}
+.meter{height:3px;background:var(--ink8);border-radius:2px;overflow:hidden}.meter i{display:block;height:100%;background:var(--accent)}
+.card{background:var(--ink9);border:1px solid var(--line);border-radius:12px;padding:18px}
+.list>div{display:flex;justify-content:space-between;align-items:center;padding:13px 4px;border-top:1px solid var(--line)}
+.mono{font-family:var(--mono);font-size:11px;color:var(--t2)}
+.big{font-weight:300;font-size:22px;letter-spacing:-.01em}
+.tl{position:relative;padding-inline-start:18px}.tl:before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:1px;background:var(--line)}
+.tl>div{position:relative;padding:8px 0}.tl>div:before{content:"";position:absolute;left:-17px;top:14px;width:9px;height:9px;border-radius:50%;background:var(--ink8);border:1px solid var(--t2)}
+.tl>div.done:before{background:var(--accent);border-color:var(--accent)}
+.stick{background:var(--ink8);border:1px solid var(--line);border-radius:12px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+.ann{font-family:var(--mono);font-size:10px;color:var(--accent);margin-top:8px}
+</style>
+</head>
+<body>
+<h1>Client Portal — wireframes</h1>
+<p class="note">Architecture-sprint fidelity: structure, hierarchy and component placement only. Visual language = the existing THE’Y system (Ink surface shown; Light theme derives from the same tokens). Annotations in accent mono.</p>
+
+<!-- 1. LOGIN -->
+<section class="board"><h2>01 · /login</h2>
+<div class="frame desktop"><div class="row">
+  <div class="col pad gap" style="flex:1;justify-content:center;min-height:420px;padding-inline:96px">
+    <div style="font-weight:300;font-size:34px;max-width:14ch">Your projects, in one calm place.</div>
+    <span class="lab">THE’Y CLIENT PORTAL</span>
+  </div>
+  <div class="col pad gap" style="width:44%;border-inline-start:1px solid var(--line);justify-content:center;padding-inline:56px">
+    <span class="lab">Sign in</span>
+    <div class="box">email — underline input</div>
+    <span class="pill">Email me a magic link →</span>
+    <span class="mono">or use password · trouble? hello@theystudiodesign.com</span>
+    <div class="ann">invite-only: no signup surface exists</div>
+  </div>
+</div></div></section>
+
+<!-- 2. DASHBOARD -->
+<section class="board"><h2>02 · / (dashboard)</h2>
+<div class="frame desktop"><div class="row">
+  <div class="side">
+    <span class="lab" style="margin-bottom:10px">THE’<b style="color:var(--t1)">Y</b> — ATLAS CAPITAL</span>
+    <a class="on">Overview</a><a>Projects</a><a>Deliverables</a><a>Invoices</a><a>Meetings</a>
+    <div style="flex:1"></div><a>Settings</a>
+    <div class="ann">sidebar 200px · client switcher only if multi-client member</div>
+  </div>
+  <div class="col" style="flex:1">
+    <div class="top"><span class="big">Good morning, Sara</span>
+      <span><span class="ghost">🔔 2</span> <span class="ghost">☀︎/☾</span> <span class="ghost">EN ▾</span></span></div>
+    <div class="pad col gap">
+      <div class="row gap">
+        <div class="card" style="flex:2">
+          <span class="lab">Rebrand 2026 · <span class="dot g"></span>active</span>
+          <div class="big" style="margin:8px 0 12px">72%</div>
+          <div class="meter"><i style="width:72%"></i></div>
+          <div class="mono" style="margin-top:12px">next: Brand guidelines — due Jul 28 · latest update 2d ago</div>
+        </div>
+        <div class="card" style="flex:1"><span class="lab">Needs your attention</span>
+          <div class="list"><div><span><span class="dot"></span>Logo v3 — approve</span><span>→</span></div>
+          <div><span><span class="dot o"></span>Invoice THEY-014 due</span><span>→</span></div></div></div>
+      </div>
+      <div class="card"><span class="lab">Latest updates</span>
+        <div class="list">
+          <div><span>Direction B retired — here’s why</span><span class="mono">Rebrand · 2d</span></div>
+          <div><span>Week 5: typography locked</span><span class="mono">Rebrand · 6d</span></div>
+        </div></div>
+      <div class="ann">portal_summary() feeds header · cards link deep (dashboard = router, like the site)</div>
+    </div>
+  </div>
+</div></div></section>
+
+<!-- 3. PROJECT -->
+<section class="board"><h2>03 · /projects/:id</h2>
+<div class="frame desktop"><div class="row">
+  <div class="side"><a>Overview</a><a class="on">Projects</a><a>Deliverables</a><a>Invoices</a><a>Meetings</a></div>
+  <div class="col" style="flex:1">
+    <div class="top"><span class="big">Rebrand 2026</span><span class="mono">72% · due Sep 12</span></div>
+    <div class="pad row gap">
+      <div class="col gap" style="flex:1">
+        <span class="lab">Milestones</span>
+        <div class="tl">
+          <div class="done">Discovery <span class="mono">done · Jun 20</span></div>
+          <div class="done">Strategy &amp; brief <span class="mono">done · Jul 02</span></div>
+          <div>Identity design <span class="mono">doing</span></div>
+          <div>Guidelines <span class="mono">due Jul 28</span></div>
+        </div>
+      </div>
+      <div class="col gap" style="flex:1.4">
+        <span class="lab">Updates</span>
+        <div class="card">Direction B retired — here’s why<br><span class="mono">markdown body · 2d ago</span></div>
+        <span class="lab" style="margin-top:8px">Deliverables</span>
+        <div class="row gap"><div class="box" style="flex:1">Logo v3 · <span class="dot"></span>shared</div>
+        <div class="box" style="flex:1">Moodboard v2 · <span class="dot g"></span>approved</div></div>
+      </div>
+    </div>
+  </div>
+</div></div></section>
+
+<!-- 4. DELIVERABLE + APPROVAL -->
+<section class="board"><h2>04 · /deliverables/:id — the decision moment</h2>
+<div class="frame desktop"><div class="col">
+  <div class="top"><span class="big">Logo v3 <span class="mono">· Rebrand 2026 · shared Jul 14</span></span><span class="ghost">Download ↓</span></div>
+  <div class="pad"><div class="box" style="height:230px;display:flex;align-items:center;justify-content:center">preview frame (signed URL, radius 0 — media is sharp)</div></div>
+  <div class="pad" style="padding-top:0">
+    <div class="stick"><span><span class="lab">Your decision</span> — visible to client_owner only</span>
+      <span><span class="ghost">Request changes…</span> <span class="pill">Approve ✓</span></span></div>
+    <div class="ann">changes_requested requires a note (dialog) · decisions append-only · audit_log</div>
+  </div>
+</div></div></section>
+
+<!-- 5. INVOICES -->
+<section class="board"><h2>05 · /invoices</h2>
+<div class="frame desktop"><div class="col">
+  <div class="top"><span class="big">Invoices</span><span class="mono">2 open · 6 paid</span></div>
+  <div class="pad"><div class="list" style="border-bottom:1px solid var(--line)">
+    <div><span class="mono">THEY-2026-014</span><span>Jul 10</span><span>18 500 MAD</span><span><span class="dot o"></span>due Jul 25</span><span class="ghost">PDF ↓</span></div>
+    <div><span class="mono">THEY-2026-011</span><span>Jun 02</span><span>24 000 MAD</span><span><span class="dot g"></span>paid</span><span class="ghost">PDF ↓</span></div>
+  </div>
+  <div class="ann">tabular-nums · status = dot + label · PDFs via sign_invoice() RPC</div></div>
+</div></div></section>
+
+<!-- 6. MEETINGS + MOBILE -->
+<section class="board"><h2>06 · /meetings — and the mobile shell</h2>
+<div class="row gap" style="align-items:flex-start">
+<div class="frame desktop" style="width:800px"><div class="col">
+  <div class="top"><span class="big">Meetings</span></div>
+  <div class="pad row gap">
+    <div class="box" style="flex:1.3;height:220px;display:flex;align-items:center;justify-content:center">Calendly inline — “Project check-in · 30 min”, prefilled</div>
+    <div class="col gap" style="flex:1"><span class="lab">Upcoming</span>
+      <div class="card">Jul 22 · 10:00 GMT+1 <span class="mono">check-in</span></div>
+      <span class="lab">Past</span><div class="card" style="color:var(--t2)">Jul 01 · kickoff</div></div>
+  </div>
+</div></div>
+<div class="frame mobile"><div class="col">
+  <div class="top" style="padding:12px 16px"><span>THE’<b>Y</b></span><span>🔔 ☾ ≡</span></div>
+  <div class="pad col gap">
+    <div class="card"><span class="lab">Rebrand 2026</span><div class="big" style="margin:6px 0">72%</div><div class="meter"><i style="width:72%"></i></div></div>
+    <div class="card"><span class="dot"></span>Logo v3 — approve →</div>
+    <div class="box">tab bar: Overview · Files · Invoices · More</div>
+  </div>
+  <div class="ann" style="padding:0 16px 16px">mobile = same components, bottom tab bar; approval bar becomes a sheet</div>
+</div></div>
+</div></section>
+</body>
+</html>
