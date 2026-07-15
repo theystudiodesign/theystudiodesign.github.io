@@ -393,13 +393,9 @@ strong, b { font-weight: 700; }
   from { transform: translate3d(-3%, -2%, 0); }
   to   { transform: translate3d(3%, 2%, 0); }
 }
-.hero-eyebrow { margin-bottom: var(--sp-5); }
 .hero-statement { max-width: 12ch; }
-/* Punchline gets the one accent color in the hero — same lime as the CTA (§9.1) */
-html[lang="en"] .hero-statement .reveal-line:last-of-type .reveal-word { color: var(--accent); }
 .hero-sub { margin-top: var(--sp-6); max-width: 60ch; color: var(--text-2); }
 .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-5); margin-top: var(--sp-7); }
-.hero-proof-line { margin-top: var(--sp-6); }
 .scroll-cue {
   position: absolute; bottom: var(--sp-6); left: var(--margin);
   display: flex; align-items: center; gap: 12px;
@@ -409,6 +405,68 @@ html[lang="en"] .hero-statement .reveal-line:last-of-type .reveal-word { color: 
 .scroll-cue::before {
   content: ""; width: 40px; height: 1px; background: var(--line);
 }
+
+/* ---------- 9b. Home — Hero v2 (full redesign, EN homepage only) ----------
+   Everything below is scoped under .hero-v2 (a modifier class added only
+   to /index.html's hero). The base .hero rules above are untouched and
+   keep serving /fr/ and /ar/, whose hero markup was not changed. */
+.hero.hero-v2 {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 92svh;
+  padding-top: clamp(112px, 13vh, 160px);
+  padding-bottom: var(--sp-6);
+}
+
+.hero-top {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: var(--sp-4);
+}
+.hero-status {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-family: var(--font-mono); font-size: var(--fs-label);
+  letter-spacing: .1em; text-transform: uppercase; color: var(--text-2);
+}
+.hero-status-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none;
+  animation: hero-pulse 2.4s var(--ease-out) infinite;
+}
+@media (prefers-reduced-motion: reduce) { .hero-status-dot { animation: none; } }
+@keyframes hero-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+
+.hero-rule { display: block; height: 1px; width: 100%; background: var(--line); margin-block: var(--sp-5); }
+
+.hero-main { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; padding-block: var(--sp-3); }
+.hero-v2 .hero-statement {
+  max-width: 15ch;
+  font-size: clamp(56px, 10.5vw, 168px);
+  letter-spacing: -0.03em;
+}
+/* Punchline lands in the one accent color in the hero — same lime as the CTA (§9.1) */
+.hero-v2 .hero-statement .reveal-line:last-of-type .reveal-word { color: var(--accent); }
+
+.hero-body {
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+  gap: clamp(var(--sp-6), 4vw, var(--sp-9));
+  margin-top: clamp(var(--sp-6), 3.5vw, var(--sp-8));
+}
+.hero-v2 .hero-sub { margin-top: 0; max-width: 46ch; }
+.hero-cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-5); }
+.hero-cta-note { display: block; margin-top: var(--sp-3); }
+
+.hero-bottom {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: var(--sp-4) var(--sp-7);
+}
+.hero-v2 .scroll-cue { position: static; bottom: auto; left: auto; }
+.hero-proof { display: flex; flex-wrap: wrap; gap: var(--sp-6); color: var(--text-2); font-size: 14px; }
+.hero-proof .num { font-family: var(--font-serif); color: var(--text-1); font-weight: 400; }
+.hero-clock { white-space: nowrap; }
+@media (max-width: 700px) { .hero-clock { display: none; } }
 
 /* ---------- 10. Home — Selected Work (§3.2) ---------- */
 .work-entry { display: block; margin-bottom: clamp(80px, 10vw, 120px); }
