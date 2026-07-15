@@ -342,6 +342,16 @@ strong, b { font-weight: 700; }
 }
 .reveal.in { opacity: 1; transform: none; }
 
+/* Above-the-fold entrance: pure CSS, starts at first paint (no JS wait) */
+.reveal-load {
+  animation: reveal-rise var(--t-reveal) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+@keyframes reveal-rise {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
+}
+
 .reveal-line { display: block; overflow: hidden; }
 .reveal-word {
   display: inline-block;
