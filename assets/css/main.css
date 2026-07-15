@@ -216,7 +216,7 @@ strong, b { font-weight: 700; }
   display: flex; align-items: center; justify-content: space-between; gap: var(--sp-5);
 }
 .wordmark {
-  font-size: 20px; font-weight: 300; letter-spacing: .32em; line-height: 1;
+  font-size: 22px; font-weight: 300; letter-spacing: .32em; line-height: 1;
   white-space: nowrap;
 }
 .wordmark b { font-weight: 800; letter-spacing: 0; }
@@ -225,7 +225,7 @@ strong, b { font-weight: 700; }
   font-size: 13.5px; letter-spacing: .12em; text-transform: uppercase;
   color: var(--text-2); position: relative;
   transition: color var(--t-micro) var(--ease-out);
-  padding-block: 6px;
+  padding-block: 7px 5px;
 }
 .main-nav a:hover { color: var(--text-1); }
 .main-nav a[aria-current="page"] { color: var(--text-1); }
@@ -933,9 +933,9 @@ strong, b { font-weight: 700; }
 .lang-nav a:hover { color: var(--text-1); }
 .lang-nav a[aria-current="true"] { color: var(--text-1); border-bottom-color: var(--accent); }
 /* Header instance: group separation from the primary nav (collapses at tight widths)
-   + asymmetric padding drops the mono baseline 2px to sit on the nav/wordmark baseline. */
+   + asymmetric padding drops the mono baseline to sit on the nav/wordmark baseline. */
 .site-header .lang-nav { margin-inline-start: clamp(0px, 8vw - 72px, 40px); }
-.site-header .lang-nav a { padding: 8px 7px 4px; }
+.site-header .lang-nav a { padding: 9px 7px 3px; }
 @media (max-width: 900px) { .site-header .lang-nav { display: none; } }
 .mobile-menu .lang-nav, .footer-baseline .lang-nav { display: flex; }
 
