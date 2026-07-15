@@ -94,7 +94,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 ::selection { background: var(--accent); color: var(--accent-ink); }
 
 :focus-visible {
-  outline: 1px solid var(--accent);
+  outline: 1px solid var(--focus, var(--accent));
   outline-offset: 4px;
   border-radius: 2px;
 }
@@ -176,8 +176,7 @@ strong, b { font-weight: 700; }
 .btn:hover .arrow { transform: translateX(4px); }
 
 .btn-primary { background: var(--accent); color: var(--accent-ink); }
-.btn-primary:hover { background: #fff; color: #111110; }
-.surface-paper .btn-primary:hover { background: #111110; color: #fff; }
+.btn-primary:hover { background: var(--text-1); color: var(--surface); }
 
 .btn-outline { border: 1px solid var(--line); color: var(--text-1); }
 .btn-outline:hover { background: var(--text-1); color: var(--surface); border-color: var(--text-1); }
@@ -251,7 +250,7 @@ strong, b { font-weight: 700; }
 /* Mobile overlay — a brand moment (§1.3) */
 .mobile-menu {
   position: fixed; inset: 0; z-index: 90;
-  background: var(--ink-950); color: #fff;
+  background: var(--surface); color: var(--text-1);
   display: flex; flex-direction: column; justify-content: center;
   padding: var(--sp-9) var(--margin) var(--sp-7);
   opacity: 0; visibility: hidden;
@@ -347,9 +346,10 @@ strong, b { font-weight: 700; }
   animation: reveal-rise var(--t-reveal) var(--ease-out) both;
   animation-delay: calc(var(--i, 0) * 90ms);
 }
+/* transform-only: painted from the first frame → no LCP penalty */
 @keyframes reveal-rise {
-  from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: none; }
+  from { transform: translateY(26px); }
+  to   { transform: none; }
 }
 
 .reveal-line { display: block; overflow: hidden; }
@@ -382,10 +382,11 @@ strong, b { font-weight: 700; }
   position: relative;
   padding-top: 120px;
   padding-bottom: 120px;
+  overflow: clip; /* the ambient glow drifts ±3% — never let it create scroll overflow (RTL) */
 }
 .hero::before {
   content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(ellipse 68% 52% at 50% 38%, rgba(255,255,255,.05), transparent 70%);
+  background: radial-gradient(ellipse 68% 52% at 50% 38%, var(--hero-glow, rgba(255,255,255,.05)), transparent 70%);
   animation: light-drift 22s var(--ease-move) infinite alternate;
 }
 @keyframes light-drift {
@@ -908,3 +909,56 @@ html[lang="ar"] .cap-title, html[lang="ar"] .pillar-title { letter-spacing: 0; l
 
 /* Deliberately NOT flipped: before/after slider (media is neutral),
    charts/numerals, media placeholders, the cropped wordmark. */
+
+
+/* ---------- 26. Theme system — Dark (default) / Light ---------- */
+:root {
+  color-scheme: dark;
+  --focus: var(--accent);
+  --hero-glow: rgba(255, 255, 255, .05);
+}
+html[data-theme="light"] {
+  color-scheme: light;
+  --surface: #F8F8F6;          /* warm white — never pure white */
+  --surface-raised: #F0EFEB;
+  --surface-card: #FFFFFF;     /* cards: white + soft hairline borders */
+  --text-1: #111111;
+  --text-2: #66655F;           /* AA on #F8F8F6 */
+  --line: rgba(17, 17, 16, .14);
+  --focus: #111111;            /* accent outline would vanish on warm white */
+  --hero-glow: rgba(17, 17, 16, .045);
+}
+/* Case studies keep their art-directed Paper surface in both themes
+   (.surface-paper re-declares tokens on <body>, closer than <html>). */
+
+/* Over the case-study hero (dark media + scrim), the not-yet-scrolled header
+   reads in light ink; once .is-scrolled adds the Paper backdrop, tokens revert. */
+.surface-paper .site-header:not(.is-scrolled) {
+  --text-1: #FFFFFF;
+  --text-2: rgba(255, 255, 255, .68);
+  --line: rgba(255, 255, 255, .16);
+  color: var(--text-1);
+}
+
+/* Theme toggle — small icon disclosure beside the language selector */
+.theme-toggle {
+  display: inline-grid; place-items: center;
+  width: 40px; height: 40px;
+  color: var(--text-2);
+  border-radius: 50%;
+  transition: color var(--t-micro) var(--ease-out);
+}
+.theme-toggle:hover { color: var(--text-1); }
+.theme-toggle svg { width: 17px; height: 17px; }
+.theme-toggle .i-moon { display: none; }
+html[data-theme="light"] .theme-toggle .i-sun { display: none; }
+html[data-theme="light"] .theme-toggle .i-moon { display: block; }
+
+/* Smooth cross-fade only while switching (class added for ~380ms by JS) */
+@media (prefers-reduced-motion: no-preference) {
+  html.theming, html.theming *, html.theming *::before, html.theming *::after {
+    transition: background-color 300ms var(--ease-out), color 300ms var(--ease-out),
+                border-color 300ms var(--ease-out), fill 300ms var(--ease-out),
+                stroke 300ms var(--ease-out), box-shadow 300ms var(--ease-out) !important;
+  }
+}
