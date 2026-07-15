@@ -1,6 +1,6 @@
 # THE'Y Client Portal — Architecture Package (Phase 4 · Foundation)
 
-**Status: for review. Architecture only — no production code, no changes to the live website or Gestion.**
+**Status: v2 — architecture approved, product scope ratified. Architecture only — no production code, no changes to the live website or Gestion. Implementation awaits explicit approval.**
 
 | Document | Contents |
 |---|---|
@@ -11,9 +11,17 @@
 | [SECURITY_REVIEW.md](./SECURITY_REVIEW.md) | Trust boundaries, full RLS matrix, threat model & mitigations, audit/privacy posture, pre-implementation gate checklist |
 | [API_CONTRACTS.md](./API_CONTRACTS.md) | PostgREST reads/writes, RPCs (signed downloads, summary), Edge Functions (invite, calendly-webhook, notify), realtime channels, versioning policy |
 
-## Decisions requested before implementation
-1. **Subdomain + new repo** `theystudiodesign/portal` → `portal.theystudiodesign.com` (Blueprint §8.2.1)
-2. **Same Supabase project** as Gestion (one Postgres, RLS-separated audiences) — confirm project **region** for privacy posture
-3. **Email provider** for notification digests (proposed: Resend)
-4. **v1 scope cut** as listed in ARCHITECTURE §10 (no payments collection, no client uploads, EN/FR at launch)
-5. Calendly account (already a Phase-1 open item) — needed for booking v1
+## Ratified decisions (studio, this revision)
+1. ✅ **Dedicated repo** → `portal.theystudiodesign.com`; marketing site fully independent
+2. ✅ **Same Supabase project** — no second database
+3. ✅ **Magic link only** — no passwords in v1; invite-only
+4. ✅ **Premium client experience, not a CRM** — calm, minimal, elegant
+5. ✅ **v1 modules:** Dashboard · Project Progress · Timeline · Deliverables · Files · Meetings · Invoices · Notes · Approvals · Profile — everything else deferred
+6. ✅ **Native booking** — availability in Supabase, provider-agnostic; Calendly = optional future adapter
+7. ✅ **Notifications abstraction** — email provider replaceable (`EmailProvider` adapter, env-selected)
+8. ✅ **Gestion = source of truth** — portal shows published information only; internal data unreachable by construction
+9. ✅ **RLS model kept** — every request server-authorized; no client-side trust
+
+## Still open (non-blocking, to settle during implementation)
+- Supabase project **region confirmation** (privacy posture)
+- First concrete `EmailProvider` adapter to enable (interface is fixed either way)

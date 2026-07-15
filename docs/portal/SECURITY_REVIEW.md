@@ -5,8 +5,8 @@
 ```
 Browser (client member)  ──JWT──▶  Supabase REST/Realtime/Storage   (anon key + user JWT, RLS)
 Browser (studio)         ──JWT──▶  same, wider policies
-Calendly                 ──HMAC──▶ Edge Function calendly-webhook    (service role inside only)
 Edge Functions (invite, notify)   service role — never shipped to any client
+(no third-party scheduler in v1; future provider adapters = signature-verified Edge Functions)
 Marketing site                    zero state, zero secrets — out of scope by construction
 ```
 
@@ -16,10 +16,11 @@ Marketing site                    zero state, zero secrets — out of scope by c
 |---|---|---|---|---|
 | portal_members | CRUD | SELECT own client's rows; INSERT/REVOKE `client_member` of own client | SELECT own row | — |
 | portal_projects | CRUD | SELECT published ∧ member | SELECT published ∧ member | — |
-| milestones / updates / deliverables | CRUD | SELECT via project membership (updates: published only; deliverables: status ≠ draft) | same | — |
-| approvals | SELECT/INSERT | INSERT (own client, shared deliverable) + SELECT | SELECT | — |
+| milestones / notes / assets | CRUD | SELECT via project membership (notes: published only; assets: status ≠ draft) | same | — |
+| approvals | SELECT/INSERT | INSERT (own client, shared deliverable-kind asset) + SELECT | SELECT | — |
+| availability_rules / overrides | CRUD | SELECT (active only — needed to render the picker) | SELECT | — |
 | invoices | CRUD | SELECT own client (status ≠ draft) | SELECT same | — |
-| bookings | CRUD | SELECT/INSERT own client | same | — |
+| bookings | CRUD | SELECT own client · INSERT **only via `book_slot` RPC** (table INSERT denied to clients) · cancel own ≥24h | SELECT · book via RPC | — |
 | notifications | — (system writes) | SELECT/UPDATE(read_at) own rows | same | — |
 | audit_log | SELECT | — | — | — |
 | Gestion tables (clients, projets, taches, paiements, events) | existing owner-only policies — **unchanged** | — | — | — |
@@ -34,8 +35,10 @@ Membership predicate (single SQL function, `security definer`, used by every pol
 | Cross-client data access (IDOR) | RLS on every table/view; **pgTAP/integration tests that assert cross-client SELECTs return 0 rows** before any UI ships |
 | Leaked file URLs | private buckets; signed URLs TTL ≤ 5 min, minted by RPC that re-checks membership + logs to audit_log |
 | Forged approvals | `approvals.decided_by = auth.uid()` enforced by policy `with check`; role checked in policy; append-only (no UPDATE/DELETE policies) |
-| Webhook spoofing (bookings) | Calendly signature verification in Edge Function; reject clock-skewed payloads; idempotency on `calendly_event_uri` |
+| Double / phantom bookings | slot validity re-checked **inside the booking transaction**; `EXCLUDE USING gist` range constraint makes overlapping confirmed bookings impossible; table INSERT denied to client roles (RPC only) |
+| Booking spam | `book_slot` rate limit (N per member per day, enforced in RPC) + lead-time & horizon caps from rules |
 | Invite abuse / enumeration | invites only via studio-JWT-gated Edge Function; generic error messages on /login; Supabase rate limits + captcha-free honeypot on nothing (no public forms) |
+| Password attacks | **no passwords exist** (magic link only) — the entire credential-stuffing/reset-flow surface is absent |
 | Session theft (XSS) | no third-party scripts except supabase-js (pinned, self-hosted like the Arabic fonts); strict escaping of markdown (updates rendered through a whitelist renderer); CSP via meta (`default-src 'self'`; `connect-src` supabase + calendly; `frame-src` calendly) — GitHub Pages can't set headers: **documented residual risk**, revisit host (Cloudflare Pages) if CSP-in-header becomes a requirement |
 | Privilege escalation via role edit | `portal_members.role` writable only by studio policy; `client_owner` can only INSERT rows with role='client_member' (CHECK in policy) |
 | Secrets in repo | service role & Resend keys only in Supabase function env; repo scanned (same discipline as today) |
@@ -52,8 +55,8 @@ Membership predicate (single SQL function, `security definer`, used by every pol
 
 - [ ] RLS policies written **with tests first** (cross-tenant zero-row proofs)
 - [ ] Signed-URL RPCs reviewed (membership + TTL + audit)
-- [ ] Edge Functions: signature verification + idempotency tests
+- [ ] Edge Functions: auth verification + idempotency tests · `book_slot` concurrency test (parallel bookings → exactly one wins)
 - [ ] Markdown renderer whitelist test (no raw HTML pass-through)
 - [ ] Invite flow abuse review (expiry, resend limits)
-- [ ] Supabase Auth settings: confirm email ON (already), secure password policy, magic-link expiry
+- [ ] Supabase Auth settings: confirm email ON (already), **password auth disabled**, magic-link expiry + rate limits
 - [ ] Dependency pinning (supabase-js self-hosted, checksum)
