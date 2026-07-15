@@ -43,12 +43,33 @@ def hreflang_block(path):
     L.append(f'<link rel="alternate" hreflang="x-default" href="{SITE}/{path}">')
     return '\n'.join(L)
 
+LANG_NAMES = {'en': 'English', 'fr': 'Français', 'ar': 'العربية'}
+LANG_ARIA = {'en': 'Language: English', 'fr': 'Langue : Français', 'ar': 'اللغة: العربية'}
+CARET = ('<svg class="lang-caret" width="9" height="9" viewBox="0 0 10 10" aria-hidden="true">'
+         '<path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" '
+         'stroke-linecap="round" stroke-linejoin="round"/></svg>')
+
+def lang_hrefs(path):
+    return (('en', f'/{path}'), ('fr', f'/fr/{path}'), ('ar', f'/ar/{path}'))
+
 def switcher(active, path):
-    """path = locale-relative page path ('' | 'work/' | ...)."""
+    """Header: compact premium dropdown — active code + caret, floating list."""
     items = []
-    for code, href in (('en', f'/{path}'), ('fr', f'/fr/{path}'), ('ar', f'/ar/{path}')):
+    for code, href in lang_hrefs(path):
         cur = ' aria-current="true"' if code == active else ''
-        items.append(f'<a href="{href}" lang="{code}" hreflang="{code}"{cur}>{code.upper()}</a>')
+        items.append(f'<li><a href="{href}" lang="{code}" hreflang="{code}"{cur}>'
+                     f'<span class="check" aria-hidden="true">✓</span>{LANG_NAMES[code]}</a></li>')
+    return ('<div class="lang-menu" data-lang-menu>'
+            f'<button class="lang-menu-btn" type="button" aria-haspopup="true" aria-expanded="false" '
+            f'aria-label="{LANG_ARIA[active]}"><span class="lang-code">{active.upper()}</span>{CARET}</button>'
+            '<ul class="lang-menu-list">' + ''.join(items) + '</ul></div>')
+
+def switcher_inline(active, path):
+    """Footer / mobile overlay: quiet full-name links."""
+    items = []
+    for code, href in lang_hrefs(path):
+        cur = ' aria-current="true"' if code == active else ''
+        items.append(f'<a href="{href}" lang="{code}" hreflang="{code}"{cur}>{LANG_NAMES[code]}</a>')
     return '<nav class="lang-nav" aria-label="Language">' + ''.join(items) + '</nav>'
 
 # Arabic fonts: self-hosted (OFL) — preload the two weights used above the fold,
@@ -58,18 +79,20 @@ AR_FONTS = ('<link rel="preload" href="/assets/fonts/IBMPlexSansArabic-300-arabi
 
 def inject_switcher(html, active, path):
     sw = switcher(active, path)
-    # header: before the CTA pill
+    sw_i = switcher_inline(active, path)
+    # header: compact dropdown before the CTA pill
     html = html.replace('<a class="btn btn-primary header-cta"', sw + '\n    <a class="btn btn-primary header-cta"', 1)
-    # mobile menu foot
-    html = html.replace('<div class="mobile-menu-foot">', '<div class="mobile-menu-foot">\n    ' + sw, 1)
+    # mobile menu foot: inline full names
+    html = html.replace('<div class="mobile-menu-foot">', '<div class="mobile-menu-foot">\n    ' + sw_i, 1)
     # footer baseline: drop the static EN·FR placeholder, then anchor after the legal links
     html = re.sub(r'<span class="lang-switch">.*?</span>\s*</span>\n?', '', html, flags=re.S)
     html = re.sub(r'(<span class="legal">.*?</span>)',
-                  lambda m: m.group(1) + '\n    ' + sw, html, count=1, flags=re.S)
+                  lambda m: m.group(1) + '\n    ' + sw_i, html, count=1, flags=re.S)
     return html
 
 def strip_existing_i18n(html):
     """makes the script idempotent on EN sources"""
+    html = re.sub(r'<div class="lang-menu" data-lang-menu>.*?</ul></div>\n?\s*', '', html, flags=re.S)
     html = re.sub(r'<nav class="lang-nav" aria-label="Language">.*?</nav>\n?\s*', '', html, flags=re.S)
     html = re.sub(r'<link rel="alternate" hreflang=[^>]+>\n?', '', html)
     return html
