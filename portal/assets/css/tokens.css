@@ -1,0 +1,66 @@
+/* ============================================================
+   THE'Y Client Portal — design tokens
+   SYNCED from the marketing repo (assets/css/main.css §1 + theme §26).
+   Do not edit by hand — run tools/sync-tokens (implementation) to refresh.
+   Single source of truth remains the marketing design system.
+   ============================================================ */
+:root {
+  --ink-950: #0F0F0E; --ink-900: #161615; --ink-800: #1F1F1D;
+  --paper-50: #F4F3F0; --paper-100: #EAE8E3;
+
+  --surface: var(--ink-950);
+  --surface-raised: var(--ink-900);
+  --surface-card: var(--ink-800);
+  --text-1: #FFFFFF;
+  --text-2: #9A9A96;
+  --line: rgba(255, 255, 255, .14);
+
+  --accent: #E8FF47;
+  --accent-ink: #131308;
+  --ok: #7FA98A;
+  --warn: #D4B36A;
+  --err: #D98A7E;
+  --info: #8FB3D4;
+
+  --font-sans: "General Sans", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: "Sentient", Georgia, serif;
+  --font-mono: "Space Mono", ui-monospace, "SF Mono", monospace;
+
+  --fs-display: clamp(40px, 6.4vw, 96px);
+  --fs-h1: clamp(34px, 4.4vw, 64px);
+  --fs-h2: clamp(28px, 3vw, 40px);
+  --fs-h3: clamp(20px, 1.8vw, 24px);
+  --fs-body-lg: 20px;
+  --fs-body: 17px;
+  --fs-label: 12.5px;
+
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
+  --sp-9: 96px; --sp-10: 128px;
+
+  --r-0: 0; --r-sm: 8px; --r-md: 12px; --r-pill: 999px;
+
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-move: cubic-bezier(.65, 0, .35, 1);
+  --t-micro: 200ms;
+  --t-reveal: 500ms;
+
+  --margin: clamp(20px, 4vw, 40px);
+  --shadow-1: 0 16px 48px rgba(0, 0, 0, .28);
+
+  color-scheme: dark;
+  --focus: var(--accent);
+}
+
+/* Light theme — token remap (mirrors marketing §26) */
+html[data-theme="light"] {
+  color-scheme: light;
+  --surface: #F8F8F6;
+  --surface-raised: #F0EFEB;
+  --surface-card: #FFFFFF;
+  --text-1: #111111;
+  --text-2: #66655F;
+  --line: rgba(17, 17, 16, .14);
+  --focus: #111111;
+  --shadow-1: 0 16px 48px rgba(17, 17, 16, .10);
+}
