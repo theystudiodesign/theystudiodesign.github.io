@@ -54,7 +54,6 @@ def switcher(active, path):
 # Arabic fonts: self-hosted (OFL) — preload the two weights used above the fold,
 # small same-origin stylesheet loads normally (no third-party swap delay).
 AR_FONTS = ('<link rel="preload" href="/assets/fonts/IBMPlexSansArabic-300-arabic.woff2" as="font" type="font/woff2" crossorigin>\n'
-            '<link rel="preload" href="/assets/fonts/IBMPlexSansArabic-400-arabic.woff2" as="font" type="font/woff2" crossorigin>\n'
             '<link rel="stylesheet" href="/assets/css/fonts-ar.css">')
 
 def inject_switcher(html, active, path):
