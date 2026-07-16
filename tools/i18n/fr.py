@@ -64,7 +64,7 @@ STRINGS = {
     "</span> repeat &amp; referral</span>": "</span> fidélité &amp; recommandation</span>",
     "See the work <span": "Voir les projets <span",
     '>Scroll</span>': '>Défiler</span>',
-    "Selected work (01–04)": "Projets sélectionnés (01–04)",
+    ">Selected work</h2>": ">Projets sélectionnés</h2>",
     "All work <span": "Tous les projets <span",
     'data-cursor-chip="View case study →"': 'data-cursor-chip="Voir l’étude de cas →"',
     'data-cursor-chip="All work →"': 'data-cursor-chip="Tous les projets →"',
