@@ -379,11 +379,11 @@ STRINGS = {
     "<p>Inquiry correspondence is kept for as long as needed to handle your request and for reasonable business records thereafter. Ask us to delete your data at any time.</p>":
         "<p>La correspondance liée aux demandes est conservée le temps de traiter votre requête, puis pour des besoins raisonnables d’archivage. Demandez la suppression de vos données à tout moment.</p>",
     "<h2>Your rights</h2>": "<h2>Vos droits</h2>",
-    "<p>You may request access to, correction of, or deletion of your personal data — in line with Moroccan Law 09-08 and, where applicable, the GDPR. Write to <a class=\"link-u\" href=\"mailto:hello@theystudiodesign.com\">hello@theystudiodesign.com</a> and we’ll act within 30 days.</p>":
-        "<p>Vous pouvez demander l’accès, la rectification ou la suppression de vos données personnelles — conformément à la loi marocaine 09-08 et, le cas échéant, au RGPD. Écrivez à <a class=\"link-u\" href=\"mailto:hello@theystudiodesign.com\">hello@theystudiodesign.com</a> et nous agirons sous 30 jours.</p>",
+    "<p>You may request access to, correction of, or deletion of your personal data — in line with Moroccan Law 09-08 and, where applicable, the GDPR. Write to <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a> and we’ll act within 30 days.</p>":
+        "<p>Vous pouvez demander l’accès, la rectification ou la suppression de vos données personnelles — conformément à la loi marocaine 09-08 et, le cas échéant, au RGPD. Écrivez à <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a> et nous agirons sous 30 jours.</p>",
     "<h2>Contact</h2>": "<h2>Contact</h2>",
-    "<p>THE’Y Studio Design, Casablanca, Morocco — <a class=\"link-u\" href=\"mailto:hello@theystudiodesign.com\">hello@theystudiodesign.com</a></p>":
-        "<p>THE’Y Studio Design, Casablanca, Maroc — <a class=\"link-u\" href=\"mailto:hello@theystudiodesign.com\">hello@theystudiodesign.com</a></p>",
+    "<p>THE’Y Studio Design, Casablanca, Morocco — <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a></p>":
+        "<p>THE’Y Studio Design, Casablanca, Maroc — <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a></p>",
 
     # ===== terms =====
     "Terms of use": "Conditions d’utilisation",
