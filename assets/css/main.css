@@ -477,6 +477,50 @@ strong, b { font-weight: 700; }
   100% { transform: translate3d(0, 0, 0); }
 }
 
+/* ---- Light mode: elevated hero ambience (§9b-light) ----
+   On the warm-white surface the ink orb + grain read as nearly blank, so
+   Light Mode composes two extra layers on the empty inline-end half of the
+   hero (the side opposite the statement — flips automatically for RTL):
+     a. warm aurora   — three soft pools in warm neutrals drawn from the
+                        surface family (no color, no lime — see §26),
+                        breathing slowly, transform-only on its own layer
+     b. drafting grid — 1px ink hairlines masked toward the empty side,
+                        drifting diagonally (seamless 96px tile)
+   Both are pseudo-elements of the existing .hero-bg, so /, /fr/ and /ar/
+   inherit them with zero markup changes. Dark mode is untouched: every
+   rule is scoped under html[data-theme="light"]. RTL mirrors the layers
+   with the independent `scale` property, which composes with the
+   `transform` keyframes instead of being overwritten by them. */
+html[data-theme="light"] .hero-bg::before {
+  content: ""; position: absolute; inset: -14%;
+  background:
+    radial-gradient(ellipse 34% 44% at 76% 26%, rgba(211, 202, 180, .72), transparent 70%),
+    radial-gradient(ellipse 30% 40% at 90% 66%, rgba(196, 190, 171, .55), transparent 70%),
+    radial-gradient(ellipse 26% 34% at 64% 58%, rgba(229, 225, 212, .9), transparent 70%);
+  will-change: transform;
+  animation: aurora-breathe 19s ease-in-out infinite alternate;
+}
+@keyframes aurora-breathe {
+  from { transform: translate3d(-1.5%, -2%, 0) scale(1); }
+  to   { transform: translate3d(1.5%, 2.5%, 0) scale(1.07); }
+}
+html[data-theme="light"] .hero-bg::after {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(17, 17, 16, .085) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(17, 17, 16, .085) 1px, transparent 1px);
+  background-size: 96px 96px;
+  -webkit-mask-image: radial-gradient(ellipse 62% 78% at 82% 42%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(ellipse 62% 78% at 82% 42%, #000 0%, transparent 72%);
+  animation: grid-drift 46s linear infinite;
+}
+@keyframes grid-drift {
+  from { background-position: 0 0; }
+  to   { background-position: 96px 96px; }
+}
+[dir="rtl"] .hero-bg::before,
+[dir="rtl"] .hero-bg::after { scale: -1 1; }
+
 .hero-top {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
   gap: var(--sp-4);
@@ -979,7 +1023,8 @@ strong, b { font-weight: 700; }
   .reveal, .reveal-word, .footer-watermark { opacity: 1 !important; transform: none !important; }
   .reveal-media::after { display: none; }
   .ink-reveal .w { opacity: 1; }
-  .hero::before, .hero-bg-orb, .hero-bg-grain { animation: none; }
+  .hero::before, .hero-bg-orb, .hero-bg-grain,
+  .hero-bg::before, .hero-bg::after { animation: none; }
 }
 
 /* ---------- 24. i18n — language switcher ---------- */
@@ -1087,11 +1132,14 @@ html[data-theme="light"] {
   --accent-ink: #F8F8F6;       /* warm white text on the black accent fill */
   --focus: #111111;
   --hero-glow: rgba(17, 17, 16, .045);
-  /* Light surfaces: ink-only ambience — no lime (see accent rule above) */
-  --hero-orb: rgba(17, 17, 16, .05);
-  --hero-orb-soft: rgba(17, 17, 16, .02);
-  --hero-grain: .035;
-  --hero-vignette: radial-gradient(ellipse 130% 110% at 50% 42%, transparent 62%, rgba(17, 17, 16, .05) 100%);
+  /* Light surfaces: ink + warm-neutral ambience — no lime (see accent rule
+     above). Values raised from the original near-invisible pass so the
+     composition actually reads on the warm white; the aurora + drafting
+     grid layers (§9b-light) carry the rest. */
+  --hero-orb: rgba(17, 17, 16, .065);
+  --hero-orb-soft: rgba(17, 17, 16, .028);
+  --hero-grain: .05;
+  --hero-vignette: radial-gradient(ellipse 130% 110% at 50% 42%, transparent 60%, rgba(17, 17, 16, .075) 100%);
 }
 /* Light mode, hero typography: pure ink, no accent word — the accent retreats
    to interaction (CTA, active-language dot, availability dot, hovers, small UI).
