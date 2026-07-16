@@ -66,7 +66,8 @@
 }
 
 /* Paper surface — case-study reading (§9.1). Paper is light in both themes,
-   so it always carries the light-surface accent remap (see §26). */
+   so it always carries the light-surface accent remap (see §26):
+   on light surfaces the accent role resolves to ink — no lime at all. */
 .surface-paper {
   --surface: var(--paper-50);
   --surface-raised: var(--paper-100);
@@ -74,8 +75,8 @@
   --text-1: #111110;
   --text-2: #6B6A66;
   --line: rgba(17, 17, 16, .14);
-  --accent: #5A6600;
-  --accent-ink: #F6FFCF;
+  --accent: #111110;
+  --accent-ink: #FFFFFF;
 }
 
 /* ---------- 2. Reset & base ---------- */
@@ -1026,12 +1027,13 @@ html[data-theme="light"] {
   --text-1: #111111;
   --text-2: #66655F;           /* AA on #F8F8F6 */
   --line: rgba(17, 17, 16, .14);
-  /* The brand lime remapped for light surfaces: same hue family, driven
-     dark enough to hold AA (5.9:1 on #F8F8F6). Every accent consumer
-     (hero punchline, CTA fill, dots, borders) inherits it via the token. */
-  --accent: #5A6600;
-  --accent-ink: #F6FFCF;       /* 6:1 on the dark accent — CTA text stays legible */
-  --focus: #5A6600;
+  /* Light Mode carries NO lime at all: the accent role resolves to ink,
+     so every accent consumer (CTA fill, chips, filters, dots, borders,
+     progress bars) reads black on the warm white. Maximum contrast (17.9:1).
+     Dark Mode keeps the signature lime untouched. */
+  --accent: #111111;
+  --accent-ink: #F8F8F6;       /* warm white text on the black accent fill */
+  --focus: #111111;
   --hero-glow: rgba(17, 17, 16, .045);
 }
 /* Light mode, hero typography: pure ink, no accent word — the accent retreats
@@ -1046,6 +1048,17 @@ html[data-theme="light"] .hero-v2 .hero-statement .reveal-line:last-of-type .rev
   color: #111111;
   font-weight: 700;
 }
+/* On light surfaces the accent equals the ink, so the old primary-button
+   hover (fill with --text-1) would produce zero feedback — hover lifts to
+   charcoal instead. Typography that used to be accent-colored gets weight,
+   not color: the active mobile-menu item goes bold. */
+html[data-theme="light"] .btn-primary:hover,
+.surface-paper .btn-primary:hover {
+  background: #3A3A37;
+  color: #F8F8F6;
+}
+html[data-theme="light"] .mobile-menu nav a[aria-current="page"],
+.surface-paper .mobile-menu nav a[aria-current="page"] { font-weight: 700; }
 /* Case studies keep their art-directed Paper surface in both themes
    (.surface-paper re-declares tokens on <body>, closer than <html>). */
 
@@ -1055,11 +1068,17 @@ html[data-theme="light"] .hero-v2 .hero-statement .reveal-line:last-of-type .rev
   --text-1: #FFFFFF;
   --text-2: rgba(255, 255, 255, .68);
   --line: rgba(255, 255, 255, .16);
+  /* Over the dark hero media the ink accent would vanish — the accent
+     role inverts to white here, so the CTA stays a filled primary. */
+  --accent: #FFFFFF;
+  --accent-ink: #0F0F0E;
   color: var(--text-1);
 }
-/* Light-ink header: hovered CTA fills white, so ink must go dark
-   (--surface stays Paper here and would fail contrast). */
-.surface-paper .site-header:not(.is-scrolled) .header-cta:hover { color: #0F0F0E; }
+/* White-filled CTA over the hero: hover dims the fill for feedback. */
+.surface-paper .site-header:not(.is-scrolled) .header-cta:hover {
+  background: rgba(255, 255, 255, .84);
+  color: #0F0F0E;
+}
 
 /* Theme toggle — small icon disclosure beside the language selector */
 .theme-toggle {

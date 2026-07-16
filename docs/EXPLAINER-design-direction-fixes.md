@@ -22,7 +22,7 @@ The fix rests on three small ideas:
 
 **1. Let the browser do baseline math.** Instead of nudging the logo with a magic `top: -4.75px`, the header row now uses `align-items: baseline`. Flexbox aligns the *text baselines* of the wordmark (49px), the nav links (13.5px) and the language switcher (13.5px) exactly — at any font size, forever. Buttons and icons opt out with `align-self: center`. Toy example: put `<span style="font-size:49px">THE'Y</span>` and `<span style="font-size:13.5px">WORK</span>` in a baseline flex row — their letters sit on the same invisible line with zero arithmetic.
 
-**2. A color is a role, not a value.** "Lime" is really the role *brand accent*. On ink it's `#E8FF47`; on warm white that value is unreadable (≈1.2:1). So the light theme re-declares the role: `--accent: #5A6600` — the same hue family driven dark enough for **5.9:1** contrast. Because every consumer references the token, the hero punchline, CTA, dots and borders all switch together. No component changed.
+**2. A color is a role, not a value.** "Lime" is really the role *brand accent*. On ink it's `#E8FF47`; on warm white that value is unreadable (≈1.2:1). So the light theme re-declares the role: `--accent: #111111` — on light surfaces the accent resolves to **pure ink**, banishing the lime entirely. Because every consumer references the token, the CTA fill, chips, filters, dots and borders all go black together (17.9:1 contrast). Typography that used to lean on the accent color now leans on **weight** instead: the punchline word goes bold. No component changed.
 
 **3. Line breaks are authored, not accidental.** Three translations of one headline have three different lengths; letting them wrap naturally gave EN two lines, FR three, AR two-but-clipped. The headline now carries an explicit `<br>` per locale (`Brands that refuse<br>to be ignored.` / `Des marques<br>impossibles à ignorer.` / `علامات ترفض<br>أن تُتجاهل.`), the split animation preserves it, and one shared size — `clamp(52px, 8.6vw, 138px)`, tuned so the *longest* localized line fits — serves all three. Same scale, same two lines, same impact.
 
@@ -57,21 +57,24 @@ Footer and mobile-menu instances keep their quiet mono style.
 
 ```css
 html[data-theme="light"] {
-  --accent: #5A6600;      /* 5.9:1 on #F8F8F6 */
-  --accent-ink: #F6FFCF;  /* 6:1 on the accent — CTA text */
-  --focus: #5A6600;
+  --accent: #111111;      /* light surfaces carry NO lime — accent = ink (17.9:1) */
+  --accent-ink: #F8F8F6;  /* warm white text on the black accent fill */
+  --focus: #111111;
 }
-.surface-paper { --accent: #5A6600; --accent-ink: #F6FFCF; }  /* Paper is light in both themes */
+.surface-paper { --accent: #111110; --accent-ink: #FFFFFF; }  /* Paper is light in both themes */
 ```
 
-**Refinement (second design pass):** in Light Mode the accent is banished from hero *typography* entirely — the headline is 100% ink (`#111111`) at a slightly heavier cut (`font-weight: 400` vs 300) for impact, and the accent lives only in interaction: primary CTA, active-language dot, availability dot, hovers and small UI details. Dark Mode keeps the lime punchline word unchanged.
+**Final treatment (third design pass, per studio direction):** the lime simply doesn't read on light surfaces, so in Light Mode it's removed *everywhere* — not just the hero. The accent role resolves to ink, so every accent-filled control (primary CTA, filter pills, chips, dots, progress bars, before/after handle) renders **black with warm-white text**. Typography that used to be accent-colored expresses emphasis through **weight**: the hero punchline is 100% ink at `font-weight: 700`, and the active mobile-menu item goes bold. Dark Mode keeps the signature lime completely unchanged.
 
 ```css
 html[data-theme="light"] .hero-v2 .hero-statement { color: #111111; font-weight: 400; }
-html[data-theme="light"] .hero-v2 .hero-statement .reveal-line:last-of-type .reveal-word { color: inherit; }
+html[data-theme="light"] .hero-v2 .hero-statement .reveal-line:last-of-type .reveal-word { color: #111111; font-weight: 700; }
+html[data-theme="light"] .mobile-menu nav a[aria-current="page"] { font-weight: 700; }
 ```
 
-The weight bump was verified not to change composition: still exactly 2 lines with zero overflow at 1440/1280/1024 in all three languages (weight 400 exists in both type stacks — General Sans via CDN and the self-hosted IBM Plex Sans Arabic).
+Two consequences are handled explicitly. First, `.btn-primary:hover` used to fill with `--text-1` — but now accent *equals* text-1 on light surfaces, so hover would give zero feedback; light-mode hover lifts to charcoal instead (`#3A3A37`). Second, over the dark case-study hero media the ink accent would vanish, so the not-yet-scrolled header inverts the role to white (`--accent: #FFFFFF; --accent-ink: #0F0F0E`) and the CTA stays a filled primary.
+
+The weight bump was verified not to change composition: still exactly 2 lines with zero overflow at 1440/1280/1024 in all three languages (the weights exist in both type stacks — General Sans via CDN and the self-hosted IBM Plex Sans Arabic).
 
 ### 4 · Always-filled primary CTA (`main.css` §6)
 
@@ -110,16 +113,18 @@ Every hero-v2 string PR #32 had hand-patched is now a real dictionary entry (sta
 
 All checks ran against a local server with Playwright; screenshots live in [`docs/qa-design-direction/`](qa-design-direction/).
 
-- **Programmatic, 3 languages × 2 themes × 1440px:** wordmark `49px` everywhere; nav and lang-switcher baselines equal (62.0 = 62.0); headline `123.8px`, exactly 2 lines, identical 1253px block width in EN/FR/AR; accent word = `#E8FF47` (dark) / `#5A6600` (light); header + hero CTAs accent-filled, `border: none`, both themes; AR status renders in IBM Plex Sans Arabic with zero letter-spacing; horizontal overflow 0.
+- **Programmatic, 3 languages × 2 themes × 1440px:** wordmark `49px` everywhere; nav and lang-switcher baselines equal (62.0 = 62.0); headline `123.8px`, exactly 2 lines, identical 1253px block width in EN/FR/AR; punchline word = lime `#E8FF47` weight 300 (dark) / ink `#111111` weight **700** (light); header + hero CTAs accent-filled, `border: none`, both themes — black in light, lime in dark; AR status renders in IBM Plex Sans Arabic with zero letter-spacing; horizontal overflow 0.
 - **Responsive:** 1024px — 2 lines, all languages, no overflow; 390px — consistent natural wrap, no overflow, logo unchanged.
 - **Regression sweep:** 12 routes (all locales, services/work/contact, case study, 404) — split animation intact, zero JS errors.
-- **Paper surface (light):** case-study progress bar and CTA both `#5A6600`.
+- **Zero-lime audit (light):** every element on 9 routes scanned for computed lime/olive in color, background and borders — **0 hits** on all of them.
+- **Hover feedback (light):** primary CTA `#111111 → #3A3A37` on hover — verified computed.
+- **Paper surface:** case-study progress bar and CTA both ink; over the dark hero media the header CTA inverts to a white fill.
 - **No-JS fallback:** FR headline renders the authored two lines statically.
-- **Contrast (computed):** `#5A6600` on `#F8F8F6` = 5.92:1 (AA all text); `#F6FFCF` on `#5A6600` = 6.03:1.
+- **Contrast (computed):** `#111111` on `#F8F8F6` = 17.9:1; `#F8F8F6` on `#111111` (CTA text) = 17.9:1 — AAA everywhere the accent appears in light mode.
 
 **Manual QA guide:**
-1. Open the home page, toggle ☀︎/☾ — the CTA must stay filled and the punchline legible in both themes.
-2. Switch EN→FR→AR from the header — the switcher should sit on the nav's baseline and each hero should show the same two-line composition with the last word accented.
+1. Open the home page, toggle ☀︎/☾ — the CTA must stay filled in both themes: lime in dark, **black** in light. In light mode there must be no lime anywhere on the page.
+2. Switch EN→FR→AR from the header — the switcher should sit on the nav's baseline and each hero should show the same two-line composition, with the last word lime (dark) or bold ink (light).
 3. Squint-test the three heroes side by side (`docs/qa-design-direction/side-by-side-*.png`).
 4. Check `/ar/` closely — no disconnected letters anywhere above the fold.
 5. Resize to 390px — nothing overflows.
@@ -157,7 +162,7 @@ All checks ran against a local server with Playwright; screenshots live in [`doc
 <details>
 <summary><b>2. A new component uses <code>color: var(--accent)</code>. What color is it on a case-study page in dark theme, and why?</b></summary>
 
-**Answer:** `#5A6600` (the dark olive), not the lime. Case studies apply `.surface-paper` to the body, and that class now remaps `--accent`/`--accent-ink` because Paper is a light surface in *both* themes. Consistency comes from the token cascade, not from the theme attribute alone.
+**Answer:** `#111110` (ink), not the lime. Case studies apply `.surface-paper` to the body, and that class now remaps `--accent`/`--accent-ink` because Paper is a light surface in *both* themes — and light surfaces carry no lime at all. Consistency comes from the token cascade, not from the theme attribute alone.
 </details>
 
 <details>
