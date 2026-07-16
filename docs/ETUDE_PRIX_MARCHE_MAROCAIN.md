@@ -68,3 +68,22 @@ Nouveaux paliers appliqués au site :
 | Chips budget | < 20 000 / 20–50 000 / 50–120 000 / 120 000+ | **< 5 000 · 5 000–15 000 · 15 000–30 000 · 30 000+ DH** |
 
 Lecture marché : le freelance sérieux plafonne vers 8 000 DH pour une identité ; la petite agence démarre vers 10–15 000 DH. L'ancre à 12 000 DH place THE'Y juste au-dessus du freelance (signal de structure et de méthode) tout en restant nettement sous les agences installées — cohérent avec « image premium, prix accessibles ». Le palier 15 000–30 000 DH capte les projets identité + web combinés ; 30 000+ couvre les périmètres multiples et retainers.
+
+
+---
+
+## 7. Tarification de lancement (juillet 2026 — temporaire, à réviser à la hausse)
+
+Décision du studio : démarrer bas pour remplir le portfolio et générer du bouche-à-oreille, puis monter progressivement.
+
+| Élément | §6 (cible) | Lancement (actuel) |
+|---|---|---|
+| Ancre « Signature » | ~12 000 DH | **~5 000 DH** |
+| Chips budget | < 5 000 → 30 000+ | **< 2 500 · 2 500–5 000 · 5 000–10 000 · 10 000+ DH** |
+
+**Plan de montée recommandé** (à déclencher manuellement, pas de date fixe) :
+1. **Palier 1 (actuel)** — ancre 5 000 DH : remplir le portfolio, viser 4–6 projets signés.
+2. **Palier 2** — ancre 8 000 DH : dès 3 case studies publiés + premières recommandations.
+3. **Palier 3 (cible §6)** — ancre 12 000 DH, chips < 5 000 → 30 000+ : dès que le carnet de commandes dépasse ~6 semaines.
+
+Règle : ne jamais baisser un devis déjà envoyé ; les nouveaux prix ne s'appliquent qu'aux nouveaux leads.
