@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
 <link href="https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,700&f[]=sentient@400,401&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,700&f[]=sentient@400,401&display=swap" rel="stylesheet"></noscript>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="/assets/css/main.css?v=49">
+<link rel="stylesheet" href="/assets/css/main.css?v=50">
 <script>(function(){try{var t=localStorage.getItem('they_theme');if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)t='light';if(t==='light'){document.documentElement.setAttribute('data-theme','light');var m=document.querySelector('meta[name=theme-color]');if(m&&m.content==='#0F0F0E')m.content='#F8F8F6';}}catch(e){}})()</script>
 </head>
 <body>
@@ -93,10 +93,10 @@
         <fieldset class="form-step active" style="border:0">
           <legend class="form-q">What do you need?</legend>
           <div class="chips" data-multi="true" data-chip-group="services" role="group" aria-label="Services">
-            <button type="button" class="chip" aria-pressed="false">Brand Identity</button>
-            <button type="button" class="chip" aria-pressed="false">Digital &amp; Web</button>
-            <button type="button" class="chip" aria-pressed="false">Art Direction</button>
-            <button type="button" class="chip" aria-pressed="false">Label &amp; Packaging</button>
+            <button type="button" class="chip" data-svc="brand" aria-pressed="false">Brand Identity</button>
+            <button type="button" class="chip" data-svc="digital" aria-pressed="false">Digital &amp; Web</button>
+            <button type="button" class="chip" data-svc="direction" aria-pressed="false">Art Direction</button>
+            <button type="button" class="chip" data-svc="packaging" aria-pressed="false">Label &amp; Packaging</button>
             <button type="button" class="chip" aria-pressed="false">Not sure yet</button>
           </div>
           <div class="field">
@@ -135,6 +135,13 @@
         <!-- Step 3 — You -->
         <fieldset class="form-step" style="border:0">
           <legend class="form-q">And you are?</legend>
+          <!-- Pack fast-track (§7.2): shown when arriving from a fixed-price
+               pack — scope & price are set, so steps 1–2 are skipped. -->
+          <p class="form-pack-note" data-pack-note hidden>
+            <span class="note-label">Selected pack:</span>
+            <strong><span data-pack-name="label" hidden>Label Design — from 800 DH</span><span data-pack-name="packaging" hidden>Packaging Design — from 1,500 DH</span><span data-pack-name="launch" hidden>Product Launch Pack — from 5,500 DH</span></strong>
+            <span class="note-hint">Fixed scope, fixed price — just tell us who you are.</span>
+          </p>
           <div class="field" data-required>
             <label for="f-name">Name</label>
             <input type="text" id="f-name" name="name" autocomplete="name">
