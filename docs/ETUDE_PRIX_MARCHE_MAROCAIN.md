@@ -52,3 +52,19 @@ Pourquoi ces paliers : 20K est le seuil « projet sérieux » au Maroc ; 50K sé
 1. Réviser l'ancre annuellement (inflation ~2–3 %/an, montée en gamme du portfolio).
 2. Pour les leads internationaux (hors Maroc), donner l'équivalent EUR/USD dans le devis, pas sur le site — le DH affiché ancre le positionnement local sans brider l'international (« Casablanca → worldwide »).
 3. Si le taux de conversion du formulaire chute sur la chip « < 20K », c'est un signal de qualification sain, pas un problème.
+
+
+---
+
+## 6. Révision — positionnement retenu par le studio (juillet 2026)
+
+Décision du studio : structure légère (petite agence), image premium — **tarification entre freelance et petite agence**, pas dans le segment « studio premium ».
+
+Nouveaux paliers appliqués au site :
+
+| Élément | Avant | Après |
+|---|---|---|
+| Ancre « Signature » | ~40 000 DH | **~12 000 DH** |
+| Chips budget | < 20 000 / 20–50 000 / 50–120 000 / 120 000+ | **< 5 000 · 5 000–15 000 · 15 000–30 000 · 30 000+ DH** |
+
+Lecture marché : le freelance sérieux plafonne vers 8 000 DH pour une identité ; la petite agence démarre vers 10–15 000 DH. L'ancre à 12 000 DH place THE'Y juste au-dessus du freelance (signal de structure et de méthode) tout en restant nettement sous les agences installées — cohérent avec « image premium, prix accessibles ». Le palier 15 000–30 000 DH capte les projets identité + web combinés ; 30 000+ couvre les périmètres multiples et retainers.
