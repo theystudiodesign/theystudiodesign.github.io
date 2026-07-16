@@ -462,16 +462,28 @@
       return $$('.chip[aria-pressed="true"]', group).map(function (c) { return c.textContent.trim(); });
     };
 
-    /* Prefill from /contact/?service=… (Services page "Discuss this →") */
+    /* Prefill from /contact/?service=… (Services page "Discuss this →").
+       Chips are matched by data-svc slug, so it works in every locale. */
     var svcParam = new URLSearchParams(location.search).get("service");
-    if (svcParam) {
-      var svcMap = { brand: "Brand Identity", digital: "Digital", direction: "Art Direction" };
-      var wanted = svcMap[svcParam] || svcParam;
-      $$('[data-chip-group="services"] .chip', form).forEach(function (c) {
-        if (c.textContent.trim().toLowerCase().indexOf(wanted.toLowerCase()) === 0) {
-          c.setAttribute("aria-pressed", "true");
-        }
-      });
+    if (svcParam && /^[a-z]+$/.test(svcParam)) {
+      var svcChip = $('[data-chip-group="services"] .chip[data-svc="' + svcParam + '"]', form);
+      if (svcChip) svcChip.setAttribute("aria-pressed", "true");
+    }
+
+    /* Pack fast-track: /contact/?pack=… (Services page "Start this pack →").
+       Packs are fixed scope, fixed price — no scoping or budget questions,
+       jump straight to the contact step. */
+    var packParam = new URLSearchParams(location.search).get("pack");
+    if (packParam && /^[a-z]+$/.test(packParam)) {
+      var packNote = $("[data-pack-note]", form);
+      var packName = packNote && $('[data-pack-name="' + packParam + '"]', packNote);
+      if (packName) {
+        packName.hidden = false;
+        packNote.hidden = false;
+        var packDesc = $("#f-desc", form);
+        if (packDesc && !packDesc.value) packDesc.value = "Pack: " + packName.textContent.trim();
+        goTo(steps.length - 1);
+      }
     }
 
     var validateStep = function (i) {
@@ -560,7 +572,7 @@
       if (s) { s.classList.add("active"); s.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" }); }
     };
 
-    goTo(0);
+    goTo(current); // fast-track may have advanced past step 1
   }
 
   /* ---------- Booking CTA (§7.3) ----------
