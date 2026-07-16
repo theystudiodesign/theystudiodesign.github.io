@@ -181,8 +181,8 @@ STRINGS = {
     "A retainer: THE’Y as your external design department. Priority access, compounding context.":
         "Un retainer\u00A0: THE’Y comme votre studio de design externe. Accès prioritaire, contexte qui se cumule.",
     ">On pricing</h2>": ">À propos des prix</h2>",
-    "Every engagement is scoped to the problem, not the hour. Signature brand engagements typically start in the mid four figures (USD); we’ll give you a precise, fixed quote after one call — and we’ll tell you honestly if we’re not the right fit, or if a smaller sprint would serve you better.":
-        "Chaque engagement est calibré sur le problème, pas sur l’heure. Les engagements Signature démarrent généralement autour du milieu des quatre chiffres (USD)\u00A0; nous vous donnons un devis ferme et précis après un appel — et nous vous dirons honnêtement si nous ne sommes pas le bon choix, ou si un sprint plus court vous servirait mieux.",
+    "Every engagement is scoped to the problem, not the hour. Signature brand engagements typically start around 40,000 DH; we’ll give you a precise, fixed quote after one call — and we’ll tell you honestly if we’re not the right fit, or if a smaller sprint would serve you better.":
+        "Chaque engagement est calibré sur le problème, pas sur l’heure. Les engagements Signature démarrent généralement autour de 40\u202f000\u00A0DH\u00A0; nous vous donnons un devis ferme et précis après un appel — et nous vous dirons honnêtement si nous ne sommes pas le bon choix, ou si un sprint plus court vous servirait mieux.",
     ">The process, one level deeper</h2>": ">Le processus, un niveau plus loin</h2>",
     "<strong>What happens:</strong> stakeholder interviews, market and audience review, audit of everything you have.<br><br><strong>You get:</strong> a findings memo. <strong>We need:</strong> honesty and access.":
         "<strong>Ce qui se passe\u00A0:</strong> entretiens, revue du marché et de l’audience, audit de tout l’existant.<br><br><strong>Vous recevez\u00A0:</strong> une note de synthèse. <strong>Nous avons besoin\u00A0:</strong> d’honnêteté et d’accès.",
@@ -295,7 +295,7 @@ STRINGS = {
     'placeholder="e.g. We’ve outgrown our brand and it shows."': 'placeholder="ex. Nous avons dépassé notre marque, et ça se voit."',
     "Continue <span": "Continuer <span",
     "Budget &amp; timing — roughly.": "Budget &amp; délais — en gros.",
-    ">Budget range (USD)</p>": ">Fourchette de budget (USD)</p>",
+    ">Budget range (DH)</p>": ">Fourchette de budget (DH)</p>",
     '>Advise me</button>': '>Conseillez-moi</button>',
     ">Timeline</p>": ">Délais</p>",
     '>ASAP</button>': '>Au plus vite</button>',
