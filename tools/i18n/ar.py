@@ -50,7 +50,7 @@ STRINGS = {
     ">Terms</a>": ">الشروط</a>",
 
     # ===== الرئيسية =====
-    "Brands that refuse<br>to be ignored.": "علامات ترفض<br>أن تُتجاهل.",
+    "Brands that refuse<br>to be ignored.": "علامات يستحيل<br>تجاهلها.",
     '<span class="label">Brand &amp; digital design studio</span>': '<span class="label">ستوديو تصميم علامات وتجارب رقمية</span>',
     "</span>Available for new projects": "</span>متاحون لمشاريع جديدة",
     'THE’Y is an independent design studio crafting brand identities and digital experiences for ambitious companies. Casablanca&nbsp;→&nbsp;<span class="serif-accent">worldwide</span>.':
