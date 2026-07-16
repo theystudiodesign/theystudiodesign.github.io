@@ -176,8 +176,8 @@ STRINGS = {
     "A retainer: THE’Y as your external design department. Priority access, compounding context.":
         "عقد شهري: THE’Y قسمَ التصميم الخارجي لديك. أولوية في الوصول، وسياق يتراكم.",
     ">On pricing</h2>": ">عن الأسعار</h2>",
-    "Every engagement is scoped to the problem, not the hour. Signature brand engagements typically start around 12,000 DH; we’ll give you a precise, fixed quote after one call — and we’ll tell you honestly if we’re not the right fit, or if a smaller sprint would serve you better.":
-        "كل مشروع يُقاس على حجم المشكلة لا على الساعة. مشاريع Signature تبدأ عادة من حوالي 12,000 درهم؛ نمنحك عرضًا ثابتًا ودقيقًا بعد مكالمة واحدة — ونخبرك بصدق إن لم نكن الخيار المناسب، أو إن كان سباق أصغر يخدمك أفضل.",
+    "Every engagement is scoped to the problem, not the hour. Signature brand engagements typically start around 5,000 DH; we’ll give you a precise, fixed quote after one call — and we’ll tell you honestly if we’re not the right fit, or if a smaller sprint would serve you better.":
+        "كل مشروع يُقاس على حجم المشكلة لا على الساعة. مشاريع Signature تبدأ عادة من حوالي 5,000 درهم؛ نمنحك عرضًا ثابتًا ودقيقًا بعد مكالمة واحدة — ونخبرك بصدق إن لم نكن الخيار المناسب، أو إن كان سباق أصغر يخدمك أفضل.",
     ">The process, one level deeper</h2>": ">العملية، بمستوى أعمق</h2>",
     "<strong>What happens:</strong> stakeholder interviews, market and audience review, audit of everything you have.<br><br><strong>You get:</strong> a findings memo. <strong>We need:</strong> honesty and access.":
         "<strong>ما يحدث:</strong> مقابلات مع المعنيين، ومراجعة السوق والجمهور، وتدقيق كل ما لديك.<br><br><strong>تحصل على:</strong> مذكرة نتائج. <strong>نحتاج إلى:</strong> الصدق وإمكانية الوصول.",
@@ -288,10 +288,10 @@ STRINGS = {
     "Continue <span": "متابعة <span",
     "Budget &amp; timing — roughly.": "الميزانية والتوقيت — تقريبًا.",
     ">Budget range (DH)</p>": ">نطاق الميزانية (بالدرهم)</p>",
-    '>&lt; 5&nbsp;000&nbsp;DH</button>': '>أقل من 5&nbsp;000 درهم</button>',
-    '>5&nbsp;000 – 15&nbsp;000&nbsp;DH</button>': '>5&nbsp;000 – 15&nbsp;000 درهم</button>',
-    '>15&nbsp;000 – 30&nbsp;000&nbsp;DH</button>': '>15&nbsp;000 – 30&nbsp;000 درهم</button>',
-    '>30&nbsp;000&nbsp;DH +</button>': '>أكثر من 30&nbsp;000 درهم</button>',
+    '>&lt; 2&nbsp;500&nbsp;DH</button>': '>أقل من 2&nbsp;500 درهم</button>',
+    '>2&nbsp;500 – 5&nbsp;000&nbsp;DH</button>': '>2&nbsp;500 – 5&nbsp;000 درهم</button>',
+    '>5&nbsp;000 – 10&nbsp;000&nbsp;DH</button>': '>5&nbsp;000 – 10&nbsp;000 درهم</button>',
+    '>10&nbsp;000&nbsp;DH +</button>': '>أكثر من 10&nbsp;000 درهم</button>',
     '>Advise me</button>': '>انصحوني</button>',
     ">Timeline</p>": ">الإطار الزمني</p>",
     '>ASAP</button>': '>في أقرب وقت</button>',
