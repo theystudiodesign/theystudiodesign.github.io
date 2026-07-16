@@ -50,9 +50,16 @@ STRINGS = {
     ">Terms</a>": ">الشروط</a>",
 
     # ===== الرئيسية =====
-    "Brands that refuse to be ignored.": "علامات ترفض أن تُتجاهل.",
-    "THE’Y is an independent design studio crafting brand identities and digital experiences for ambitious companies. Casablanca&nbsp;→&nbsp;worldwide.":
-        "‏THE’Y ستوديو تصميم مستقل يبتكر هويات العلامات والتجارب الرقمية للشركات الطموحة. الدار البيضاء&nbsp;→&nbsp;العالم.",
+    "Brands that refuse<br>to be ignored.": "علامات ترفض<br>أن تُتجاهل.",
+    '<span class="label">Brand &amp; digital design studio</span>': '<span class="label">ستوديو تصميم علامات وتجارب رقمية</span>',
+    "</span>Available for new projects": "</span>متاحون لمشاريع جديدة",
+    'THE’Y is an independent design studio crafting brand identities and digital experiences for ambitious companies. Casablanca&nbsp;→&nbsp;<span class="serif-accent">worldwide</span>.':
+        '‏THE’Y ستوديو تصميم مستقل يبتكر هويات العلامات والتجارب الرقمية للشركات الطموحة. الدار البيضاء&nbsp;→&nbsp;<span class="serif-accent">العالم</span>.',
+    '"hero-cta-note label">Replies within 24 hours<': '"hero-cta-note label">نرد خلال 24 ساعة<',
+    "</span> brands launched</span>": "</span> علامة أُطلقت</span>",
+    "</span> industries</span>": "</span> قطاعات</span>",
+    "</span> repeat &amp; referral</span>": "</span> ولاء وترشيح</span>",
+    '<span class="hero-clock label">Casablanca · ': '<span class="hero-clock label">الدار البيضاء · ',
     "See the work <span": "شاهد الأعمال <span",
     '>Scroll</span>': '>مرّر</span>',
     "Selected work (01–04)": "أعمال مختارة (01–04)",

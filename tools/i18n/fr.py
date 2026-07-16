@@ -53,9 +53,15 @@ STRINGS = {
     ">Terms</a>": ">Conditions</a>",
 
     # ===== home =====
-    "Brands that refuse to be ignored.": "Des marques impossibles à ignorer.",
-    "THE’Y is an independent design studio crafting brand identities and digital experiences for ambitious companies. Casablanca&nbsp;→&nbsp;worldwide.":
-        "THE’Y est un studio de design indépendant qui crée des identités de marque et des expériences digitales pour des entreprises ambitieuses. Casablanca&nbsp;→&nbsp;le monde.",
+    "Brands that refuse<br>to be ignored.": "Des marques<br>impossibles à ignorer.",
+    '<span class="label">Brand &amp; digital design studio</span>': '<span class="label">Studio de design de marque &amp; digital</span>',
+    "</span>Available for new projects": "</span>Disponible pour de nouveaux projets",
+    'THE’Y is an independent design studio crafting brand identities and digital experiences for ambitious companies. Casablanca&nbsp;→&nbsp;<span class="serif-accent">worldwide</span>.':
+        'THE’Y est un studio de design indépendant qui crée des identités de marque et des expériences digitales pour des entreprises ambitieuses. Casablanca&nbsp;→&nbsp;<span class="serif-accent">le monde</span>.',
+    '"hero-cta-note label">Replies within 24 hours<': '"hero-cta-note label">Réponse sous 24 heures<',
+    "</span> brands launched</span>": "</span> marques lancées</span>",
+    "</span> industries</span>": "</span> secteurs</span>",
+    "</span> repeat &amp; referral</span>": "</span> fidélité &amp; recommandation</span>",
     "See the work <span": "Voir les projets <span",
     '>Scroll</span>': '>Défiler</span>',
     "Selected work (01–04)": "Projets sélectionnés (01–04)",
