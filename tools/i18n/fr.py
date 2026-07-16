@@ -184,6 +184,13 @@ STRINGS = {
     "<strong>Ideal for:</strong> brands that look right once and wrong everywhere else, small teams who need a system they can run themselves, companies whose feed undoes their identity.":
         "<strong>Idéal pour\u00A0:</strong> les marques justes une fois et fausses partout ailleurs, les petites équipes qui ont besoin d’un système autonome, les entreprises dont le feed défait l’identité.",
     "One voice, every channel.": "Une seule voix, tous les canaux.",
+    ">Packs — fixed scope, fixed price</h2>": ">Packs — périmètre fixe, prix fixe</h2>",
+    "Label Design <span class=\"dur\">From 800 DH</span>": "Design d’étiquette <span class=\"dur\">À partir de 800 DH</span>",
+    "Premium product label design focused on shelf impact, clarity and brand recognition.": "Design d’étiquette produit premium, pensé pour l’impact en rayon, la clarté et la reconnaissance de marque.",
+    "Packaging Design <span class=\"dur\">From 1,500 DH</span>": "Design de packaging <span class=\"dur\">À partir de 1 500 DH</span>",
+    "Strategic packaging design that combines aesthetics, functionality and market positioning.": "Un packaging stratégique qui allie esthétique, fonctionnalité et positionnement marché.",
+    "Product Launch Pack <span class=\"dur\">From 5,500 DH</span>": "Pack Lancement Produit <span class=\"dur\">À partir de 5 500 DH</span>",
+    "An end-to-end launch solution including brand identity, packaging, label design, print-ready files and launch assets.": "Une solution de lancement de A à Z : identité de marque, packaging, étiquette, fichiers prêts à imprimer et supports de lancement.",
     ">How to work with THE’Y</h2>": ">Travailler avec THE’Y</h2>",
     "Sprint <span class=\"dur\">2–4 weeks</span>": "Sprint <span class=\"dur\">2–4 semaines</span>",
     "One focused problem, fixed scope. A naming sprint, a landing page, a pitch deck that has to land.":
