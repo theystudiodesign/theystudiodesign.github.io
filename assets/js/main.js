@@ -559,7 +559,7 @@
           "Company: " + data.company,
           "Current site/brand: " + data.link
         ].join("\n");
-        window.location.href = "mailto:hello@theystudiodesign.com"
+        window.location.href = "mailto:contact@theystudiodesign.com"
           + "?subject=" + encodeURIComponent("Project inquiry — " + (data.name || "New project"))
           + "&body=" + encodeURIComponent(body);
         finish();
