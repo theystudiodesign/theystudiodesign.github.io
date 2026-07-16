@@ -430,6 +430,53 @@ strong, b { font-weight: 700; }
   padding-bottom: var(--sp-6);
 }
 
+/* ---- Premium ambient background (hero v2, all locales) ----
+   Four stacked layers, all beneath the content (z-index 0 vs 1):
+     1. radial glow      — existing .hero::before (kept, very subtle)
+     2. gradient orb     — softness baked into the radial falloff
+                           (no filter:blur — cheap to paint, then the
+                           26s float is transform-only on its own layer)
+     3. animated grain   — tiny inline-SVG turbulence tile, oversized
+                           element repositioned by stepped translate3d
+     4. vignette         — static radial gradient, no animation
+   GPU budget: only transform animates; orb + grain are promoted via
+   will-change. No JS, no libraries, ~1.5KB of CSS. Reduced-motion
+   users get the static composition (global kill switch + explicit). */
+.hero-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: clip; }
+.hero-v2 > :not(.hero-bg) { position: relative; z-index: 1; }
+.hero-v2::before { z-index: 0; }
+.hero-v2::after {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: var(--hero-vignette);
+}
+.hero-bg-orb {
+  position: absolute; top: -18%; inset-inline-end: -10%;
+  width: clamp(520px, 58vw, 960px); aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle, var(--hero-orb) 0%, var(--hero-orb-soft) 40%, transparent 70%);
+  will-change: transform;
+  animation: orb-float 26s ease-in-out infinite;
+}
+@keyframes orb-float {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(-9%, 12%, 0) scale(1.12); }
+}
+.hero-bg-grain {
+  position: absolute; top: -60%; left: -60%; width: 220%; height: 220%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23g)' opacity='.55'/></svg>");
+  background-size: 160px 160px;
+  opacity: var(--hero-grain);
+  will-change: transform;
+  animation: grain-shift 1.6s steps(2, jump-none) infinite;
+}
+@keyframes grain-shift {
+  0%   { transform: translate3d(0, 0, 0); }
+  20%  { transform: translate3d(-3%, 2%, 0); }
+  40%  { transform: translate3d(2%, -3%, 0); }
+  60%  { transform: translate3d(-1%, -2%, 0); }
+  80%  { transform: translate3d(3%, 1%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
 .hero-top {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
   gap: var(--sp-4);
@@ -932,7 +979,7 @@ strong, b { font-weight: 700; }
   .reveal, .reveal-word, .footer-watermark { opacity: 1 !important; transform: none !important; }
   .reveal-media::after { display: none; }
   .ink-reveal .w { opacity: 1; }
-  .hero::before { animation: none; }
+  .hero::before, .hero-bg-orb, .hero-bg-grain { animation: none; }
 }
 
 /* ---------- 24. i18n — language switcher ---------- */
@@ -1018,6 +1065,11 @@ html[lang="ar"] .cap-title, html[lang="ar"] .pillar-title { letter-spacing: 0; l
   color-scheme: dark;
   --focus: var(--accent);
   --hero-glow: rgba(255, 255, 255, .05);
+  /* Premium hero ambience (§9b): orb tint, grain strength, vignette */
+  --hero-orb: rgba(232, 255, 71, .09);
+  --hero-orb-soft: rgba(232, 255, 71, .035);
+  --hero-grain: .05;
+  --hero-vignette: radial-gradient(ellipse 130% 110% at 50% 42%, transparent 58%, rgba(0, 0, 0, .34) 100%);
 }
 html[data-theme="light"] {
   color-scheme: light;
@@ -1035,6 +1087,11 @@ html[data-theme="light"] {
   --accent-ink: #F8F8F6;       /* warm white text on the black accent fill */
   --focus: #111111;
   --hero-glow: rgba(17, 17, 16, .045);
+  /* Light surfaces: ink-only ambience — no lime (see accent rule above) */
+  --hero-orb: rgba(17, 17, 16, .05);
+  --hero-orb-soft: rgba(17, 17, 16, .02);
+  --hero-grain: .035;
+  --hero-vignette: radial-gradient(ellipse 130% 110% at 50% 42%, transparent 62%, rgba(17, 17, 16, .05) 100%);
 }
 /* Light mode, hero typography: pure ink, no accent word — the accent retreats
    to interaction (CTA, active-language dot, availability dot, hovers, small UI).
