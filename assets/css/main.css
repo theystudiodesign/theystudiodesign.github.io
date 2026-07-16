@@ -635,11 +635,6 @@ html[data-theme="light"] .hero-bg::after {
 .ph-d { background: linear-gradient(140deg, #232027, #121016 60%); color: #DFD9E8; }
 .ph-e { background: linear-gradient(155deg, #262420, #100F0D 60%); color: #EDEAE2; }
 
-/* Real project media — licensed photography fills the same frames */
-img.media-fill, .cs-hero .cs-visual img, .cs-figure .frame img {
-  width: 100%; height: 100%; object-fit: cover;
-}
-
 /* ---------- 11. Home — Capabilities (§3.3) ---------- */
 .cap-list { list-style: none; }
 .cap-row {
