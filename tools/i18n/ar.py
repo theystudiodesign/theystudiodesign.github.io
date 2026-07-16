@@ -62,7 +62,7 @@ STRINGS = {
     '<span class="hero-clock label">Casablanca · ': '<span class="hero-clock label">الدار البيضاء · ',
     "See the work <span": "شاهد الأعمال <span",
     '>Scroll</span>': '>مرّر</span>',
-    "Selected work (01–04)": "أعمال مختارة (01–04)",
+    ">Selected work</h2>": ">أعمال مختارة</h2>",
     "All work <span": "كل الأعمال <span",
     'data-cursor-chip="View case study →"': 'data-cursor-chip="اعرض دراسة الحالة →"',
     'data-cursor-chip="All work →"': 'data-cursor-chip="كل الأعمال →"',

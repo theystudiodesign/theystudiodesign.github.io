@@ -134,6 +134,25 @@ strong, b { font-weight: 700; }
   color: var(--text-2);
   font-weight: 400;
 }
+
+/* Section headings — editorial hierarchy upgrade. Section titles used to
+   be bare 12.5px mono labels; each now pairs a small mono index eyebrow
+   with a light display-scale title (same voice as .cap-title /
+   .pillar-title). The old label class stays for tags, metadata and
+   footer columns. (.section-head, below in §5, is the one flex row on
+   the home Selected-work section: heading block + "All work" link.) */
+.section-heading { margin-bottom: var(--sp-7); }
+.section-heading .label { display: block; margin-bottom: var(--sp-4); }
+.section-title {
+  font-size: clamp(30px, 3.8vw, 52px);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-wrap: balance;
+  color: var(--text-1);
+  max-width: 22ch;
+}
+html[lang="ar"] .section-title { letter-spacing: 0; line-height: 1.25; }
 .serif-accent {
   font-family: var(--font-serif);
   font-style: italic;
@@ -153,9 +172,10 @@ strong, b { font-weight: 700; }
 .section { padding-block: var(--section); }
 .section-tight { padding-block: clamp(64px, 9vw, 160px); }
 .section-head {
-  display: flex; align-items: baseline; justify-content: space-between;
+  display: flex; align-items: flex-end; justify-content: space-between;
   gap: var(--sp-5); margin-bottom: clamp(40px, 6vw, 96px);
 }
+.section-head .section-heading { margin-bottom: 0; }
 .grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
