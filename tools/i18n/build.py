@@ -71,7 +71,7 @@ def switcher(active, path):
 # Arabic fonts: self-hosted (OFL) — preload the two weights used above the fold,
 # small same-origin stylesheet loads normally (no third-party swap delay).
 AR_FONTS = ('<link rel="preload" href="/assets/fonts/IBMPlexSansArabic-300-arabic.woff2" as="font" type="font/woff2" crossorigin>\n'
-            '<link rel="stylesheet" href="/assets/css/fonts-ar.css">')
+            '<link rel="stylesheet" href="/assets/css/fonts-ar.css?v=49">')
 
 def inject_switcher(html, active, path):
     sw = switcher(active, path)
@@ -141,8 +141,8 @@ def generate(loc, mod, path):
     html = re.sub(r'<meta property="og:description" content="[^"]*">',
                   f'<meta property="og:description" content="{desc}">', html, count=1)
     if loc == 'ar':
-        html = html.replace('<link rel="stylesheet" href="/assets/css/main.css">',
-                            AR_FONTS + '\n<link rel="stylesheet" href="/assets/css/main.css">')
+        html = re.sub(r'<link rel="stylesheet" href="/assets/css/main\.css[^"]*">',
+                      lambda m: AR_FONTS + '\n' + m.group(0), html, count=1)
     # links then switcher (switcher hrefs are absolute per locale, added after rewriting)
     html = localize_links(html, loc)
     html = inject_switcher(html, loc, path)
