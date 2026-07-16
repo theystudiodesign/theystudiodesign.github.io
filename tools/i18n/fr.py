@@ -296,7 +296,7 @@ STRINGS = {
     "Continue <span": "Continuer <span",
     "Budget &amp; timing — roughly.": "Budget &amp; délais — en gros.",
     ">Budget range (DH)</p>": ">Fourchette de budget (DH)</p>",
-    '>Advise me</button>': '>Conseillez-moi</button>',
+    '>Let’s discuss</button>': '>Parlons-en</button>',
     ">Timeline</p>": ">Délais</p>",
     '>ASAP</button>': '>Au plus vite</button>',
     '>1–3 months</button>': '>1–3 mois</button>',
