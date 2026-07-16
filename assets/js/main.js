@@ -234,7 +234,7 @@
 
   /* ---------- Magnetic buttons ≤8px (§9.5) ---------- */
   if (!reduced && window.matchMedia("(pointer: fine)").matches) {
-    $$("[data-magnetic]").forEach(function (el) {
+    $$("[data-magnetic], .header-cta").forEach(function (el) {
       el.addEventListener("mousemove", function (e) {
         var r = el.getBoundingClientRect();
         var x = (e.clientX - r.left - r.width / 2) / (r.width / 2);
@@ -578,4 +578,45 @@
       // no URL: the element's own href (mailto/contact) applies
     });
   });
+
+  /* ---------- Page transitions (§9.5) ----------
+     Internal navigations fade <main> out (230ms) before leaving; the CSS
+     page-enter animation fades it back in on arrival. bfcache-safe. */
+  if (!reduced) {
+    document.addEventListener("click", function (e) {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var a = e.target.closest ? e.target.closest("a[href]") : null;
+      if (!a || a.target === "_blank" || a.hasAttribute("download") || a.hasAttribute("data-book")) return;
+      var url;
+      try { url = new URL(a.href, location.href); } catch (err) { return; }
+      if (url.origin !== location.origin) return;
+      if (url.protocol !== "http:" && url.protocol !== "https:") return;
+      if (url.pathname === location.pathname && url.hash) return; /* in-page anchors */
+      e.preventDefault();
+      document.documentElement.classList.add("page-leave");
+      setTimeout(function () { location.href = url.href; }, 230);
+    });
+    /* restore instantly when returning via back/forward cache */
+    window.addEventListener("pageshow", function () {
+      document.documentElement.classList.remove("page-leave");
+    });
+  }
+
+  /* ---------- Auto section reveal (§9.5) ----------
+     Below-the-fold sections get a soft fade/slide as they enter. Applied
+     by JS only, so no-JS and reduced-motion users see everything at once;
+     sections already on screen at load are never touched (zero flicker). */
+  if ("IntersectionObserver" in window && !reduced) {
+    var vh0 = window.innerHeight;
+    var below = $$("main > section").filter(function (s) {
+      return !s.classList.contains("hero") && s.getBoundingClientRect().top > vh0 * 0.9;
+    });
+    below.forEach(function (s) { s.classList.add("sec-pre"); });
+    var sio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add("sec-in"); sio.unobserve(en.target); }
+      });
+    }, { rootMargin: "0px 0px -6% 0px", threshold: 0.05 });
+    below.forEach(function (s) { sio.observe(s); });
+  }
 })();
