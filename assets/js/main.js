@@ -537,21 +537,18 @@
         link: ($("#f-link", form) || {}).value || "—"
       };
 
-      /* Submission seam: set data-endpoint on the form to a
-         Formspree/Basin URL to POST silently. Until then, the
-         inquiry opens the visitor's mail client fully composed. */
+      /* Submission (§7.2): the form's data-endpoint points at
+         FormSubmit's AJAX API, which emails every inquiry straight
+         to contact@theystudiodesign.com (one-time activation).
+         If the request fails — offline, endpoint down — we fall
+         back to opening the visitor's mail client fully composed,
+         so no inquiry is ever lost. */
       var endpoint = form.getAttribute("data-endpoint");
       var finish = function () {
         track("form_completed", { services: data.services, budget: data.budget });
         showSuccess(data.email);
       };
-      if (endpoint) {
-        fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          body: JSON.stringify(data)
-        }).then(finish).catch(finish);
-      } else {
+      var mailtoFallback = function () {
         var body = [
           "Project inquiry — " + data.name,
           "",
@@ -568,6 +565,35 @@
         window.location.href = "mailto:contact@theystudiodesign.com"
           + "?subject=" + encodeURIComponent("Project inquiry — " + (data.name || "New project"))
           + "&body=" + encodeURIComponent(body);
+      };
+      if (endpoint) {
+        var payload = {
+          _subject: "Project inquiry — " + (data.name || "New project"),
+          _template: "table",
+          _captcha: "false",
+          _replyto: data.email,
+          name: data.name,
+          email: data.email,
+          company: data.company,
+          services: data.services,
+          project: data.description,
+          budget: data.budget,
+          timeline: data.timeline,
+          current_site: data.link
+        };
+        fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify(payload)
+        }).then(function (r) {
+          if (!r.ok) mailtoFallback();
+          finish();
+        }).catch(function () {
+          mailtoFallback();
+          finish();
+        });
+      } else {
+        mailtoFallback();
         finish();
       }
     });
