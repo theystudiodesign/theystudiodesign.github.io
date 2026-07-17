@@ -182,9 +182,9 @@
         <span class="label">Vous préférez parler ?</span>
         <h2 class="h2" style="margin-top: var(--sp-4)">Appel découverte — 30 min</h2>
         <p class="muted" style="margin-top: var(--sp-4); max-width: 52ch">Une demi-heure concentrée sur votre problème, pas un argumentaire commercial. En visio par défaut, sans engagement, avec un conseil honnête même si nous ne sommes pas le bon choix.</p>
-        <!-- §7.3: set data-calendly="https://calendly.com/…/discovery" once the
-             Calendly account + 30-min event exist (Definition of Done, item 7).
-             Until then the button falls back to email. -->
+        <!-- §7.3: booking is wired site-wide in main.js
+             (window.THEY_CALENDLY_URL → https://cal.com/theystudiodesign/30min).
+             The mailto href below is the no-JS fallback. -->
         <div class="hero-actions" style="margin-top: var(--sp-6)">
           <a class="btn btn-primary" href="mailto:contact@theystudiodesign.com?subject=Demande%20d%27appel%20d%C3%A9couverte" data-book data-magnetic>Réserver un appel <span class="arrow">→</span></a>
         </div>

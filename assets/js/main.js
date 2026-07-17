@@ -10,6 +10,12 @@
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  /* ---------- Booking URL (§7.3) ----------
+     Cal.com — every [data-book] button on the site opens this
+     scheduling page (30-min discovery call) in a new tab. Each
+     button's own mailto href stays as the no-JS fallback. */
+  window.THEY_CALENDLY_URL = "https://cal.com/theystudiodesign/30min";
+
   /* ---------- Analytics seam (§2.3 / §8.2) ----------
      Micro-conversion events are emitted here. Wire a
      privacy-friendly provider (Plausible/Fathom) by defining
