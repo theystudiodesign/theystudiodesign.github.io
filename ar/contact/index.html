@@ -184,9 +184,9 @@
         <span class="label">تفضّل الحديث مباشرة؟</span>
         <h2 class="h2" style="margin-top: var(--sp-4)">مكالمة تعارف — 30 دقيقة</h2>
         <p class="muted" style="margin-top: var(--sp-4); max-width: 52ch">نصف ساعة مركزة على مشكلتك، لا عرض مبيعات. بالفيديو افتراضيًا، دون التزام، وبنصيحة صادقة حتى إن لم نكن الخيار المناسب.</p>
-        <!-- §7.3: set data-calendly="https://calendly.com/…/discovery" once the
-             Calendly account + 30-min event exist (Definition of Done, item 7).
-             Until then the button falls back to email. -->
+        <!-- §7.3: booking is wired site-wide in main.js
+             (window.THEY_CALENDLY_URL → https://cal.com/theystudiodesign/30min).
+             The mailto href below is the no-JS fallback. -->
         <div class="hero-actions" style="margin-top: var(--sp-6)">
           <a class="btn btn-primary" href="mailto:contact@theystudiodesign.com?subject=Discovery%20call%20request" data-book data-magnetic>احجز مكالمة <span class="arrow">←</span></a>
         </div>
