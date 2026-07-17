@@ -632,3 +632,68 @@
     below.forEach(function (s) { sio.observe(s); });
   }
 })();
+
+/* ---------- Featured work (home) ----------
+   The home "Selected work" section mirrors the Work index automatically.
+   On load we fetch the language's /work/ page, keep only *real* case
+   studies (cards that link into /work/<slug>/ and carry an actual photo —
+   placeholders and "your project here" teasers are skipped), rank them by
+   a curated quality order, and pour the top three into the static slots.
+   If a project is ever removed from the Work page, the next strongest
+   real project takes its place here — no home edit required.
+   The static HTML underneath is a full fallback: no JS, same real work. */
+(function () {
+  "use strict";
+  var wrap = document.querySelector("[data-featured-work]");
+  if (!wrap || !window.fetch || !window.DOMParser) return;
+
+  /* Curated order — strongest presentation first. Projects not listed
+     rank after these, in Work-page order. */
+  var PRIORITY = ["almeida-quiami", "mira-beauty", "priscy-skincare", "techcit", "shadow-cosmetics"];
+
+  var src = wrap.getAttribute("data-featured-src") || "/work/";
+  var chip = wrap.getAttribute("data-featured-chip") || "View case study →";
+
+  function slugOf(a) {
+    var href = a.getAttribute("href") || "";
+    var m = href.match(/^\/work\/([^\/]+)\/?$/);
+    return m ? m[1] : null;
+  }
+
+  fetch(src).then(function (r) { return r.ok ? r.text() : Promise.reject(); }).then(function (html) {
+    var doc = new DOMParser().parseFromString(html, "text/html");
+    var all = [].slice.call(doc.querySelectorAll(".work-list .work-entry"));
+    var real = all.filter(function (a) {
+      return slugOf(a) && a.querySelector(".work-media img");
+    });
+    if (!real.length) return;
+
+    var ranked = real.map(function (a, i) {
+      var p = PRIORITY.indexOf(slugOf(a));
+      return { a: a, r: p === -1 ? PRIORITY.length + i : p };
+    }).sort(function (x, y) { return x.r - y.r; });
+
+    var slots = [].slice.call(wrap.querySelectorAll("[data-featured-slot]"));
+    slots.forEach(function (slot, i) {
+      var pick = ranked[i] && ranked[i].a;
+      if (!pick) return;
+      slot.setAttribute("href", pick.getAttribute("href"));
+      slot.setAttribute("data-cursor-chip", chip);
+      var img = pick.querySelector(".work-media img");
+      var sImg = slot.querySelector(".media-fill img");
+      if (img && sImg && sImg.getAttribute("src") !== img.getAttribute("src")) {
+        sImg.setAttribute("src", img.getAttribute("src"));
+        sImg.setAttribute("alt", img.getAttribute("alt") || "");
+      }
+      var map = [[".work-meta h2, .work-meta .h2", ".work-meta .h2"], [".work-outcome", ".work-outcome"]];
+      map.forEach(function (pair) {
+        var from = pick.querySelector(pair[0]);
+        var to = slot.querySelector(pair[1]);
+        if (from && to) to.textContent = from.textContent;
+      });
+      var fromTags = pick.querySelector(".work-tags");
+      var toTags = slot.querySelector(".work-tags");
+      if (fromTags && toTags) toTags.innerHTML = fromTags.innerHTML;
+    });
+  }).catch(function () { /* offline / fetch blocked: static fallback stands */ });
+})();
