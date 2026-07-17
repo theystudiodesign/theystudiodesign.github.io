@@ -634,6 +634,7 @@ html[data-theme="light"] .hero-bg::after {
 .ph-c { background: linear-gradient(150deg, #1B2320, #0E1311 60%); color: #D7E4DB; }
 .ph-d { background: linear-gradient(140deg, #232027, #121016 60%); color: #DFD9E8; }
 .ph-e { background: linear-gradient(155deg, #262420, #100F0D 60%); color: #EDEAE2; }
+.ph-f { background: linear-gradient(150deg, #1C1B18, #0A0A09 60%); color: #C8A57B; }
 
 /* ---------- 11. Home — Capabilities (§3.3) ---------- */
 .cap-list { list-style: none; }
