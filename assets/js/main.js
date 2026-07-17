@@ -99,14 +99,9 @@
       apply(next, true);
       track("theme_toggle", { theme: next });
     });
-    /* follow OS changes only while the user hasn't chosen explicitly */
-    try {
-      if (!localStorage.getItem("they_theme")) {
-        window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", function (e) {
-          apply(e.matches ? "light" : "dark", true);
-        });
-      }
-    } catch (e) {}
+    /* Dark is the default for everyone; light is an explicit choice
+       via the toggle (persisted in localStorage). The OS preference
+       is deliberately ignored. */
   });
 
   /* ---------- Local time, Casablanca (§1.4) ---------- */
