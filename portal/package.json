@@ -1,0 +1,10 @@
+{
+  "name": "they-portal",
+  "private": true,
+  "description": "THE'Y Client Portal — vanilla ES modules + Supabase, token-driven, server-authorized.",
+  "scripts": {
+    "qa": "node tests/qa.js",
+    "serve": "python3 -m http.server 8600"
+  },
+  "devDependencies": { "playwright": "^1.49.0" }
+}
