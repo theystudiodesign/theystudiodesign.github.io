@@ -20,8 +20,8 @@ Two moves, one commit.
 
 **Move 2 — a home page that curates itself.** The “Selected work” section is rebuilt with real projects *twice over*:
 
-1. **Statically** — the HTML now ships with the three strongest real case studies (Almeida Quiami Building as the full-width lead, Mira Beauty and Priscy Skin Care as the tall pair), using the same `logo.jpg` images as the Work index. No JS, no problem: the page is already real, premium and correct.
-2. **Dynamically** — a small module at the end of `main.js` fetches the language's own Work index, keeps only *real* case studies (cards that link into `/work/<slug>/` **and** contain an actual `<img>` — placeholder tiles and the “your product here” teaser card have neither), ranks them against a curated quality order, and pours the top three into the static slots.
+1. **Statically** — the HTML now ships with the four strongest real case studies (Almeida Quiami Building as the full-width lead, Mira Beauty and Priscy Skin Care as the tall pair, Techcit as a second full-width entry), using the same `logo.jpg` images as the Work index. No JS, no problem: the page is already real, premium and correct.
+2. **Dynamically** — a small module at the end of `main.js` fetches the language's own Work index, keeps only *real* case studies (cards that link into `/work/<slug>/` **and** contain an actual `<img>` — placeholder tiles and the “your product here” teaser card have neither), ranks them against a curated quality order, and pours the top picks into the static slots (one per `[data-featured-slot]` — currently four).
 
 The consequence is the requirement, verbatim: **if a project is later removed from Work, Home replaces it automatically.** Remove the Almeida Quiami card from `/work/` and the home hero becomes Mira Beauty, the pair becomes Priscy + Techcit — no home edit, in any language, because each home fetches its own index (`/work/`, `/fr/work/`, `/ar/work/`) and therefore inherits its own translations.
 
