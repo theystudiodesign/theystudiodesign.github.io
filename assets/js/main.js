@@ -155,6 +155,28 @@
     revealables.forEach(function (el) { el.classList.add("in", "words-in"); });
   }
 
+  /* ---------- Font gate for split reveals ----------
+     The masked word reveal must not start until the element's own webfont
+     has actually loaded, otherwise the swap from the fallback font lands
+     mid-animation and the headline renders a garbled glyph on first paint.
+     Polls document.fonts.check() for the element's computed face, capped
+     at 1.2s so a blocked font CDN can never hold the hero hostage. */
+  function fontGate(el, go) {
+    if (!(document.fonts && document.fonts.check)) return go();
+    var cs, probe;
+    try {
+      cs = getComputedStyle(el);
+      probe = cs.fontStyle + " " + cs.fontWeight + " 1em " + cs.fontFamily.split(",")[0];
+    } catch (e) { return go(); }
+    var t0 = Date.now();
+    (function poll() {
+      var ok = false;
+      try { ok = document.fonts.check(probe); } catch (e) { ok = true; }
+      if (ok || Date.now() - t0 > 1200) go();
+      else setTimeout(poll, 40);
+    })();
+  }
+
   /* ---------- Hero word split (masked stagger, 80ms/word §3.1) ----------
      Authored <br> elements are preserved so every locale can compose the
      same deliberate line structure (identical hero anatomy EN/FR/AR). */
@@ -186,8 +208,10 @@
       if (li < lines.length - 1) el.appendChild(document.createElement("br"));
     });
     if (reduced) el.classList.add("words-in");
-    else requestAnimationFrame(function () {
-      requestAnimationFrame(function () { el.classList.add("words-in"); });
+    else fontGate(el, function () {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { el.classList.add("words-in"); });
+      });
     });
   });
 

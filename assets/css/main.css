@@ -602,6 +602,20 @@ html[data-theme="light"] .hero-bg::after {
 .hero-v2 .scroll-cue { position: static; bottom: auto; left: auto; }
 .hero-proof { display: flex; flex-wrap: wrap; gap: var(--sp-6); color: var(--text-2); font-size: 15px; }
 .hero-proof .num { font-family: var(--font-serif); color: var(--text-1); font-weight: 400; }
+.hero-proof .proof-note {
+  flex-basis: 100%; margin-top: calc(var(--sp-6) * -0.5);
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: .04em;
+  color: var(--text-2); opacity: .75;
+}
+.proof-footnote {
+  font-family: var(--font-mono); font-size: 13px; line-height: 1.6;
+  color: var(--text-2); margin-top: var(--sp-5); max-width: 62ch;
+}
+.proof-footnote a {
+  color: var(--text-1); text-decoration: underline;
+  text-decoration-thickness: 1px; text-underline-offset: 3px;
+}
+html[lang="ar"] .hero-proof .proof-note { letter-spacing: 0; }
 .hero-clock { white-space: nowrap; }
 @media (max-width: 700px) { .hero-clock { display: none; } }
 
@@ -724,6 +738,10 @@ html[data-theme="light"] .hero-bg::after {
 }
 .quote-block blockquote::before { content: "“"; color: var(--accent); }
 .quote-block figcaption { margin-top: var(--sp-5); color: var(--text-2); font-size: var(--fs-body-sm); }
+.quote-block figcaption a {
+  color: var(--text-1); text-decoration: underline;
+  text-decoration-thickness: 1px; text-underline-offset: 3px;
+}
 .quote-nav { display: flex; gap: var(--sp-3); margin-top: var(--sp-6); }
 .quote-nav button {
   width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%;
@@ -975,6 +993,16 @@ html[lang="ar"] .pack-price .from { font-family: var(--font-sans); letter-spacin
   color: var(--text-1);
 }
 .pack-price .cur { font-size: clamp(18px, 1.8vw, 22px); font-weight: 400; color: var(--text-2); }
+.price-eq {
+  font-family: var(--font-mono); font-size: 13px; color: var(--text-2);
+  margin-top: var(--sp-2); font-variant-numeric: tabular-nums;
+}
+.price-eq-inline { color: var(--text-2); font-size: .85em; white-space: nowrap; }
+.packs-note {
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: .03em;
+  color: var(--text-2); opacity: .8; margin-top: var(--sp-5);
+}
+html[lang="ar"] .packs-note { letter-spacing: 0; }
 .pack-desc { color: var(--text-2); font-size: var(--fs-body-sm); margin-top: var(--sp-5); flex: 1; }
 .pack-cta { margin-top: var(--sp-6); justify-content: center; }
 [dir="rtl"] .pack-price .amount { direction: ltr; unicode-bidi: isolate; }
@@ -1492,6 +1520,52 @@ html[lang="ar"] .marquee-track span { letter-spacing: 0; }
   color: var(--text-1); opacity: .07;
   user-select: none; pointer-events: none;
 }
+
+/* 28.4b The shift — honest before/after. The "before" is the starting
+   position told as designed typography (prior identities aren't ours to
+   show); the "after" is the real delivered mark. No slider promising an
+   image that doesn't exist. */
+.shift-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--line);
+}
+.shift-pane { position: relative; min-height: clamp(300px, 36vw, 520px); }
+.shift-before {
+  display: flex; flex-direction: column; justify-content: space-between;
+  gap: var(--sp-6); padding: clamp(24px, 3.5vw, 56px);
+  border-inline-end: 1px solid var(--line);
+  background-color: var(--surface-raised);
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--text-1) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--text-1) 5%, transparent) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+.shift-tag {
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text-2);
+}
+.shift-phrase {
+  font-family: var(--font-serif); font-style: italic; font-weight: 400;
+  font-size: clamp(26px, 3vw, 44px); line-height: 1.12; letter-spacing: 0;
+  color: var(--text-1); margin: 0; text-wrap: balance;
+}
+.shift-note { font-size: 15px; line-height: 1.65; color: var(--text-2); max-width: 38ch; margin: 0; }
+.shift-after img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+.shift-after .shift-tag {
+  position: absolute; bottom: 16px; inset-inline-end: 16px; z-index: 1;
+  color: #F4F4F2;
+  background: rgba(12, 12, 12, .58);
+  padding: 6px 12px; border-radius: 999px;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+@media (max-width: 760px) {
+  .shift-grid { grid-template-columns: 1fr; }
+  .shift-before { border-inline-end: 0; border-block-end: 1px solid var(--line); min-height: 0; }
+}
+html[lang="ar"] .shift-tag { letter-spacing: 0; }
 
 /* 28.5 Case-study figures — a slow breath on hover, matching the
    work-card zoom language. */
