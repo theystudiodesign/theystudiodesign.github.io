@@ -162,7 +162,6 @@ html[lang="ar"] .section-title { letter-spacing: 0; line-height: 1.25; }
 }
 .muted { color: var(--text-2); }
 .measure { max-width: 68ch; }
-.measure-narrow { max-width: 44ch; }
 
 /* ---------- 4. Layout ---------- */
 .container {
@@ -182,7 +181,6 @@ html[lang="ar"] .section-title { letter-spacing: 0; line-height: 1.25; }
   grid-template-columns: repeat(12, 1fr);
   gap: clamp(16px, 2.2vw, 32px);
 }
-.hairline { border: 0; border-top: 1px solid var(--line); }
 
 /* ---------- 5. Buttons & links (§9.8) ---------- */
 .btn {
@@ -217,10 +215,11 @@ html[lang="ar"] .section-title { letter-spacing: 0; line-height: 1.25; }
 .link-u::after {
   content: ""; position: absolute; left: 0; bottom: -3px;
   width: 100%; height: 1px; background: currentColor;
-  transform: scaleX(0); transform-origin: left;
+  transform: scaleX(0);
   transition: transform var(--t-micro) var(--ease-out);
 }
-.link-u:hover::after { transform: scaleX(1); }
+.link-u:hover::after,
+.link-u:focus-visible::after { transform: scaleX(1); }
 
 /* ---------- 6. Header (§1.3) ---------- */
 .site-header {
@@ -305,6 +304,15 @@ html[lang="ar"] .section-title { letter-spacing: 0; line-height: 1.25; }
   opacity: 0; transition: opacity 600ms var(--ease-out) 420ms;
 }
 .menu-open .mobile-menu-foot { opacity: 1; }
+/* The language switcher in the menu foot keeps its compact mono voice —
+   the display scale above belongs to the primary destinations only. */
+.mobile-menu .lang-nav { flex-direction: row; gap: var(--sp-2); }
+.mobile-menu .lang-nav a {
+  font-family: var(--font-mono);
+  font-size: 12.5px; letter-spacing: .08em; font-weight: 400; line-height: normal;
+  transform: none; opacity: 1;
+  transition: color var(--t-micro) var(--ease-out);
+}
 
 @media (max-width: 900px) {
   .main-nav, .header-cta { display: none; }
@@ -323,7 +331,7 @@ html[lang="ar"] .section-title { letter-spacing: 0; line-height: 1.25; }
   display: grid; grid-template-columns: repeat(3, 1fr);
   gap: var(--sp-7);
 }
-.footer-cols h4 { margin-bottom: var(--sp-4); }
+.footer-cols .label { margin-bottom: var(--sp-4); }
 .footer-cols ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
 .footer-cols a { color: var(--text-2); transition: color var(--t-micro); font-size: var(--fs-body-sm); }
 .footer-cols a:hover { color: var(--text-1); }
@@ -345,7 +353,6 @@ html[lang="ar"] .section-title { letter-spacing: 0; line-height: 1.25; }
 }
 .footer-baseline .legal { display: flex; gap: var(--sp-4); }
 .footer-baseline a:hover { color: var(--text-1); }
-.lang-switch span[aria-disabled="true"] { opacity: .45; cursor: default; }
 
 .footer-watermark {
   pointer-events: none; user-select: none;
@@ -582,8 +589,11 @@ html[data-theme="light"] .hero-bg::after {
   margin-top: clamp(var(--sp-6), 3.5vw, var(--sp-8));
 }
 .hero-v2 .hero-sub { margin-top: 0; max-width: 46ch; }
+/* CTA cluster: buttons on one row, the reassurance note quietly beneath —
+   a caption to the action, never a competitor on its baseline. */
+.hero-v2 .hero-actions { flex-direction: column; align-items: flex-start; gap: 0; }
 .hero-cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-5); }
-.hero-cta-note { display: block; margin-top: var(--sp-3); }
+.hero-cta-note { display: block; margin-top: var(--sp-4); }
 
 .hero-bottom {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
@@ -611,7 +621,8 @@ html[data-theme="light"] .hero-bg::after {
   will-change: transform;
   display: flex; align-items: center; justify-content: center;
 }
-.work-entry:hover .media-fill { transform: scale(1.05); }
+.work-entry:hover .media-fill,
+.work-entry:focus-visible .media-fill { transform: scale(1.05); }
 .work-meta {
   display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
   gap: var(--sp-3); margin-top: var(--sp-5);
@@ -631,10 +642,8 @@ html[data-theme="light"] .hero-bg::after {
 .ph-mark { font-size: clamp(48px, 8vw, 130px); opacity: .92; line-height: 1; }
 .ph-a { background: linear-gradient(135deg, #23231F, #0F0F0E 60%); color: #E8E6DF; }
 .ph-b { background: linear-gradient(160deg, #2A2118, #14100C 65%); color: #E9DCC8; }
-.ph-c { background: linear-gradient(150deg, #1B2320, #0E1311 60%); color: #D7E4DB; }
 .ph-d { background: linear-gradient(140deg, #232027, #121016 60%); color: #DFD9E8; }
 .ph-e { background: linear-gradient(155deg, #262420, #100F0D 60%); color: #EDEAE2; }
-.ph-f { background: linear-gradient(150deg, #1C1B18, #0A0A09 60%); color: #C8A57B; }
 
 /* Real project media */
 .media-fill img, .cs-figure .frame img, .cs-hero .cs-visual img, .ba-pane img {
@@ -661,7 +670,8 @@ html[data-theme="light"] .hero-bg::after {
   transition: opacity var(--t-micro) var(--ease-out), transform var(--t-micro) var(--ease-out);
   white-space: nowrap; font-size: 15px; color: var(--text-1);
 }
-.cap-row:hover .go { opacity: 1; transform: none; }
+.cap-row:hover .go,
+.cap-row:focus-visible .go { opacity: 1; transform: none; }
 @media (max-width: 700px) {
   .cap-row { grid-template-columns: auto 1fr; }
   .cap-desc { grid-column: 2; text-align: left; }
@@ -679,7 +689,6 @@ html[data-theme="light"] .hero-bg::after {
 .ethos-body { max-width: 52ch; margin: var(--sp-7) auto 0; color: var(--text-2); }
 
 /* ---------- 13. Home — Process (§3.5) ---------- */
-.process-track { position: relative; }
 .process-steps {
   display: grid; grid-template-columns: repeat(4, 1fr);
   gap: var(--sp-6); list-style: none;
@@ -863,7 +872,8 @@ html[data-theme="light"] .hero-bg::after {
   display: flex; flex-direction: column; gap: var(--sp-4);
 }
 .next-project .display { transition: transform 600ms var(--ease-out); }
-.next-project:hover .display { transform: translateX(12px); }
+.next-project:hover .display,
+.next-project:focus-visible .display { transform: translateX(12px); }
 
 /* ---------- 18. Services (§5) ---------- */
 .pillar-card {
@@ -1216,11 +1226,12 @@ html[lang="ar"] .cap-title, html[lang="ar"] .pillar-title { letter-spacing: 0; l
 /* Directional geometry that must flip */
 [dir="rtl"] .scroll-cue { left: auto; right: var(--margin); }
 [dir="rtl"] .btn:hover .arrow, [dir="rtl"] .link-arrow:hover .arrow { transform: translateX(-4px); }
-[dir="rtl"] .link-u::after { transform-origin: right; }
 [dir="rtl"] .draw-line { transform-origin: right; }
 [dir="rtl"] .cap-row .go { transform: translateX(8px); }
-[dir="rtl"] .cap-row:hover .go { transform: none; }
-[dir="rtl"] .next-project:hover .display { transform: translateX(-12px); }
+[dir="rtl"] .cap-row:hover .go,
+[dir="rtl"] .cap-row:focus-visible .go { transform: none; }
+[dir="rtl"] .next-project:hover .display,
+[dir="rtl"] .next-project:focus-visible .display { transform: translateX(-12px); }
 [dir="rtl"] .hero::before { transform: scaleX(-1); }
 
 /* Deliberately NOT flipped: before/after slider (media is neutral),
@@ -1376,11 +1387,14 @@ html[data-theme="light"] .theme-toggle .i-moon { display: block; }
   background: linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, .22));
   opacity: 0; transition: opacity 600ms var(--ease-out);
 }
-.work-entry:hover .work-media::after { opacity: 1; }
+.work-entry:hover .work-media::after,
+.work-entry:focus-visible .work-media::after { opacity: 1; }
 
 /* Underlines wipe through: enter from the start edge, exit through the
    end edge instead of retracting — logical properties keep RTL correct. */
 .link-u::after { transform-origin: 100% 50%; }
-.link-u:hover::after { transform-origin: 0 50%; }
+.link-u:hover::after,
+.link-u:focus-visible::after { transform-origin: 0 50%; }
 [dir="rtl"] .link-u::after { transform-origin: 0 50%; }
-[dir="rtl"] .link-u:hover::after { transform-origin: 100% 50%; }
+[dir="rtl"] .link-u:hover::after,
+[dir="rtl"] .link-u:focus-visible::after { transform-origin: 100% 50%; }

@@ -212,7 +212,7 @@
       var lit = Math.round(progress * spans.length);
       spans.forEach(function (s, i) { s.classList.toggle("lit", i < lit); });
     };
-    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("scroll", function () { requestAnimationFrame(update); }, { passive: true });
     update();
   });
 
@@ -319,6 +319,11 @@
     var prev = $("[data-quote-prev]"), next = $("[data-quote-next]");
     if (prev) prev.addEventListener("click", function () { show(idx - 1); arm(); });
     if (next) next.addEventListener("click", function () { show(idx + 1); arm(); });
+    /* Pause auto-rotation while the visitor is reading (hover / keyboard focus) */
+    quoteWrap.addEventListener("pointerenter", function () { clearInterval(timer); });
+    quoteWrap.addEventListener("pointerleave", arm);
+    quoteWrap.addEventListener("focusin", function () { clearInterval(timer); });
+    quoteWrap.addEventListener("focusout", arm);
     show(0); arm();
   }
 
@@ -687,6 +692,7 @@
     return m ? m[1] : null;
   }
 
+  var run = function () {
   fetch(src).then(function (r) { return r.ok ? r.text() : Promise.reject(); }).then(function (html) {
     var doc = new DOMParser().parseFromString(html, "text/html");
     var all = [].slice.call(doc.querySelectorAll(".work-list .work-entry"));
@@ -723,4 +729,9 @@
       if (fromTags && toTags) toTags.innerHTML = fromTags.innerHTML;
     });
   }).catch(function () { /* offline / fetch blocked: static fallback stands */ });
+  };
+  /* Defer the mirror fetch out of the critical path — the static markup
+     underneath is already the same real work, so nothing waits on this. */
+  if ("requestIdleCallback" in window) requestIdleCallback(run, { timeout: 2500 });
+  else setTimeout(run, 250);
 })();
