@@ -307,9 +307,20 @@
   if (quoteWrap) {
     var slides = $$(".quote-slide", quoteWrap);
     var idx = 0, timer = null;
+    /* Editorial index between the arrows — "01 / 03" */
+    var quoteNav = $(".quote-nav", quoteWrap);
+    var quoteCount = null;
+    if (quoteNav && slides.length > 1) {
+      quoteCount = document.createElement("span");
+      quoteCount.className = "label quote-count";
+      quoteCount.setAttribute("aria-hidden", "true");
+      var nextBtn = $("[data-quote-next]", quoteNav);
+      quoteNav.insertBefore(quoteCount, nextBtn);
+    }
     var show = function (i) {
       idx = (i + slides.length) % slides.length;
       slides.forEach(function (s, j) { s.classList.toggle("active", j === idx); });
+      if (quoteCount) quoteCount.textContent = "0" + (idx + 1) + " / 0" + slides.length;
     };
     var arm = function () {
       if (reduced) return;
