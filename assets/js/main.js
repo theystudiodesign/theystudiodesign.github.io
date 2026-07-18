@@ -500,7 +500,9 @@
     var chipValues = function (name) {
       var group = $('[data-chip-group="' + name + '"]', form);
       if (!group) return [];
-      return $$('.chip[aria-pressed="true"]', group).map(function (c) { return c.textContent.trim(); });
+      return $$('.chip[aria-pressed="true"]', group).map(function (c) {
+        return (c.getAttribute("data-value") || c.textContent).trim();
+      });
     };
 
     /* Prefill from /contact/?service=… (Services page "Discuss this →").
