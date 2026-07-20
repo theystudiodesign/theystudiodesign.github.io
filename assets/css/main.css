@@ -1107,6 +1107,11 @@ html[lang="ar"] .form-pack-note .note-label { font-family: var(--font-sans); let
 }
 .chip:hover { color: var(--text-1); border-color: rgba(255,255,255,.35); }
 .chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.chip .chip-eq {
+  display: block; font-family: var(--font-mono); font-size: 11px;
+  margin-top: 2px; opacity: .6; font-variant-numeric: tabular-nums;
+}
+.chip[aria-pressed="true"] .chip-eq { opacity: .75; }
 
 .field { margin-top: var(--sp-7); position: relative; }
 .field label { display: block; font-family: var(--font-mono); font-size: 12.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--text-2); margin-bottom: var(--sp-2); }
