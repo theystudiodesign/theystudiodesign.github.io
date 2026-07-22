@@ -4,13 +4,13 @@
 
 META = {
     '': ("THE’Y ستوديو ديزاين — علامات يستحيل تجاهلها",
-         "‏THE’Y ستوديو تصميم مستقل يبتكر هويات العلامات والتجارب الرقمية للشركات الطموحة. الدار البيضاء ← العالم."),
+         "‏THE’Y ستوديو تصميم مستقل يبتكر هويات العلامات والتجارب الرقمية للشركات الطموحة. أكادير ← العالم."),
     'work/': ("الأعمال — THE’Y ستوديو ديزاين",
               "أعمال مختارة، 2023 → اليوم. هويات علامات وتجارب رقمية وإدارة فنية — كل مشروع قصة بنهاية مالية."),
     'services/': ("الخدمات — THE’Y ستوديو ديزاين",
                   "نتقن أربعة أشياء إتقانًا تامًا: هوية العلامة، التصميم الرقمي والويب، الإدارة الفنية والمحتوى، الملصقات والتغليف. Sprint أو Signature أو Partner — عروض أسعار ثابتة ونصيحة صادقة."),
     'studio/': ("الستوديو — THE’Y ستوديو ديزاين",
-                "‏THE’Y ستوديو تصميم رفيع الخبرة في الدار البيضاء يعمل مع العالم. معظم التصميم زخرفة. تصميمنا قرار."),
+                "‏THE’Y ستوديو تصميم رفيع الخبرة في أكادير يعمل مع العالم. معظم التصميم زخرفة. تصميمنا قرار."),
     'contact/': ("تواصل معنا — THE’Y ستوديو ديزاين",
                  "ابدأ مشروعًا مع THE’Y. طلب في 60 ثانية، ردّ خلال 24 ساعة، وعرض ثابت خلال 3 أيام من مكالمة التعارف."),
     'privacy/': ("الخصوصية — THE’Y ستوديو ديزاين", "سياسة الخصوصية لدى THE’Y ستوديو ديزاين."),
@@ -43,7 +43,7 @@ STRINGS = {
     '<p class="label">Sitemap</p>': '<p class="label">خريطة الموقع</p>',
     '<p class="label">Socials</p>': '<p class="label">التواصل الاجتماعي</p>',
     '<p class="label">Contact</p>': '<p class="label">التواصل</p>',
-    "<p>Casablanca, Morocco</p>": "<p>الدار البيضاء، المغرب</p>",
+    "<p>Agadir, Morocco</p>": "<p>أكادير، المغرب</p>",
     "<p>Local time: <span data-local-time>": "<p>التوقيت المحلي: <span data-local-time>",
     'title="Click to copy"': 'title="انقر للنسخ"',
     ">Privacy</a>": ">الخصوصية</a>",
@@ -53,13 +53,13 @@ STRINGS = {
     "Brands that refuse<br>to be ignored.": "علامات يستحيل<br>تجاهلها.",
     '<span class="label">Brand &amp; digital design studio</span>': '<span class="label">ستوديو تصميم علامات وتجارب رقمية</span>',
     "</span>Available for new projects": "</span>متاحون لمشاريع جديدة",
-    'THE’Y is an independent design studio crafting brand identities and digital experiences for ambitious companies. Casablanca&nbsp;→&nbsp;<span class="serif-accent">worldwide</span>.':
-        '‏THE’Y ستوديو تصميم مستقل يبتكر هويات العلامات والتجارب الرقمية للشركات الطموحة. الدار البيضاء&nbsp;→&nbsp;<span class="serif-accent">العالم</span>.',
+    'THE’Y is an independent design studio crafting brand identities and digital experiences for ambitious companies. Agadir&nbsp;→&nbsp;<span class="serif-accent">worldwide</span>.':
+        '‏THE’Y ستوديو تصميم مستقل يبتكر هويات العلامات والتجارب الرقمية للشركات الطموحة. أكادير&nbsp;→&nbsp;<span class="serif-accent">العالم</span>.',
     '"hero-cta-note label">Replies within 24 hours<': '"hero-cta-note label">نرد خلال 24 ساعة<',
     "</span> brands launched</span>": "</span> علامة أُطلقت</span>",
     "</span> industries</span>": "</span> قطاعات</span>",
     "</span> repeat &amp; referral</span>": "</span> ولاء وترشيح</span>",
-    '<span class="hero-clock label">Casablanca · ': '<span class="hero-clock label">الدار البيضاء · ',
+    '<span class="hero-clock label">Agadir · ': '<span class="hero-clock label">أكادير · ',
     "See the work <span": "شاهد الأعمال <span",
     '>Scroll</span>': '>مرّر</span>',
     ">Selected work</h2>": ">أعمال مختارة</h2>",
@@ -91,8 +91,8 @@ STRINGS = {
     ">Explore →</span>": ">استكشف →</span>",
     ">The studio</h2>": ">الستوديو</h2>",
     "We believe design is a business decision disguised as an aesthetic one.": "نؤمن أن التصميم قرار تجاري متنكّر في هيئة قرار جمالي.",
-    "A senior studio, not a big one. We take on few projects, think before we draw, and stay until the work performs — from Casablanca, for clients anywhere.":
-        "ستوديو رفيع الخبرة، لا ستوديو ضخم. نقبل مشاريع قليلة، نفكر قبل أن نرسم، ونبقى حتى يؤدي العمل — من الدار البيضاء، لعملاء في كل مكان.",
+    "A senior studio, not a big one. We take on few projects, think before we draw, and stay until the work performs — from Agadir, for clients anywhere.":
+        "ستوديو رفيع الخبرة، لا ستوديو ضخم. نقبل مشاريع قليلة، نفكر قبل أن نرسم، ونبقى حتى يؤدي العمل — من أكادير، لعملاء في كل مكان.",
     "About the studio <span": "عن الستوديو <span",
     ">How it works</h2>": ">كيف نعمل</h2>",
     "<span class=\"n\">01</span> Discover</h3>": "<span class=\"n\">01</span> نستكشف</h3>",
@@ -223,8 +223,8 @@ STRINGS = {
     "<p>Structured rounds, not unlimited laps: typically two per phase, plus a final polish pass. In practice, the weekly working sessions catch direction issues before they become “revisions.”</p>":
         "<p>جولات منظمة لا لفّات بلا نهاية: عادة جولتان في كل مرحلة، مع جولة صقل أخيرة. عمليًا، تلتقط جلسات العمل الأسبوعية قضايا الاتجاه قبل أن تصير «تعديلات».</p>",
     "Who do you work with? <span": "مع من تعملون؟ <span",
-    "<p>Ambitious companies of any size that take design seriously as a business tool — from funded startups to established firms repositioning. Geography doesn’t matter; we work remotely with clients worldwide from Casablanca.</p>":
-        "<p>شركات طموحة من كل الأحجام تأخذ التصميم بجدية كأداة عمل — من الناشئة الممولة إلى الراسخة التي تعيد تموضعها. الجغرافيا لا تهم؛ نعمل عن بُعد مع عملاء حول العالم من الدار البيضاء.</p>",
+    "<p>Ambitious companies of any size that take design seriously as a business tool — from funded startups to established firms repositioning. Geography doesn’t matter; we work remotely with clients worldwide from Agadir.</p>":
+        "<p>شركات طموحة من كل الأحجام تأخذ التصميم بجدية كأداة عمل — من الناشئة الممولة إلى الراسخة التي تعيد تموضعها. الجغرافيا لا تهم؛ نعمل عن بُعد مع عملاء حول العالم من أكادير.</p>",
     "We’re pre-launch and don’t have everything figured out. Too early? <span": "لم نُطلق بعد ولم تتضح كل الأمور. هل الوقت مبكر؟ <span",
     "<p>Not necessarily — strategy is the first half of every engagement, and the Discover/Define phases exist precisely to sharpen what’s fuzzy. If it truly is too early, we’ll tell you on the first call and suggest what to do first.</p>":
         "<p>ليس بالضرورة — فالاستراتيجية نصف كل مشروع، ومرحلتا الاستكشاف والتحديد وُجدتا تحديدًا لشحذ ما هو ضبابي. وإن كان الوقت مبكرًا حقًا، نخبرك في المكالمة الأولى ونقترح ما ينبغي فعله أولًا.</p>",
@@ -246,11 +246,11 @@ STRINGS = {
     ">Why THE’Y exists</h2>": ">لماذا وُجد THE’Y</h2>",
     "<p>THE’Y started with an irritation: watching good companies lose arguments they should win, because their image spoke more quietly than their work. Somewhere between the big agencies that bill for meetings and the marketplaces that sell logos by the pound, there was a missing kind of studio — small enough to care about every pixel, senior enough to argue about the business behind it.</p>":
         "<p>بدأ THE’Y من ضيق: رؤية شركات جيدة تخسر نقاشات كان يجب أن تكسبها، لأن صورتها تتكلم بصوت أخفت من عملها. في مكان ما بين الوكالات الكبرى التي تفوتر الاجتماعات والأسواق التي تبيع الشعارات بالوزن، كان هناك نوع مفقود من الستوديوهات — صغير بما يكفي ليهتم بكل بكسل، ورفيع الخبرة بما يكفي ليناقش العمل الذي وراءه.</p>",
-    "<p>So we built it. In Casablanca, on purpose: close to a market full of ambitious companies underserved by world-class design, and connected to clients everywhere who care about the work, not the postcode.</p>":
-        "<p>فبنيناه. في الدار البيضاء، عن قصد: قريبًا من سوق مليء بشركات طموحة لا يصلها تصميم من الطراز العالمي، ومتصلًا بعملاء في كل مكان يهمهم العمل لا الرمز البريدي.</p>",
+    "<p>So we built it. In Agadir, on purpose: close to a market full of ambitious companies underserved by world-class design, and connected to clients everywhere who care about the work, not the postcode.</p>":
+        "<p>فبنيناه. في أكادير، عن قصد: قريبًا من سوق مليء بشركات طموحة لا يصلها تصميم من الطراز العالمي، ومتصلًا بعملاء في كل مكان يهمهم العمل لا الرمز البريدي.</p>",
     "<p>We take on few projects at a time. We think before we draw. And we stay until the work performs — because a beautiful thing that doesn’t work is just an expensive apology.</p>":
         "<p>نقبل مشاريع قليلة في الوقت نفسه. نفكر قبل أن نرسم. ونبقى حتى يؤدي العمل — لأن الشيء الجميل الذي لا يعمل ليس سوى اعتذار باهظ.</p>",
-    ">Studio — Casablanca</span>": ">الستوديو — الدار البيضاء</span>",
+    ">Studio — Agadir</span>": ">الستوديو — أكادير</span>",
     ">What we refuse to negotiate</h2>": ">ما نرفض التفاوض عليه</h2>",
     ">Taste is non-negotiable</h3>": ">الذوق غير قابل للتفاوض</h3>",
     "We decline projects we can’t make excellent. Saying no is how the yes keeps its value.":
@@ -306,7 +306,7 @@ STRINGS = {
     # ===== التواصل =====
     ">Contact</span>": ">تواصل</span>",
     "Let’s make something they can’t ignore.": "لنصنع شيئًا يستحيل تجاهله.",
-    "Casablanca · GMT+1 · Local time: <span data-local-time>": "الدار البيضاء · GMT+1 · التوقيت المحلي: <span data-local-time>",
+    "Agadir · GMT+1 · Local time: <span data-local-time>": "أكادير · GMT+1 · التوقيت المحلي: <span data-local-time>",
     "<span>Replies within 24 hours</span>": "<span>ردّ خلال 24 ساعة</span>",
     "What do you need?": "ما الذي تحتاجه؟",
     '>Not sure yet</button>': '>لست متأكدًا بعد</button>',
@@ -381,14 +381,14 @@ STRINGS = {
     "<p>You may request access to, correction of, or deletion of your personal data — in line with Moroccan Law 09-08 and, where applicable, the GDPR. Write to <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a> and we’ll act within 30 days.</p>":
         "<p>يحق لك طلب الوصول إلى بياناتك الشخصية أو تصحيحها أو حذفها — وفق القانون المغربي 09-08 وكذلك اللائحة الأوروبية GDPR عند الاقتضاء. راسلنا على <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a> وسنستجيب خلال 30 يومًا.</p>",
     "<h2>Contact</h2>": "<h2>التواصل</h2>",
-    "<p>THE’Y Studio Design, Casablanca, Morocco — <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a></p>":
-        "<p>THE’Y ستوديو ديزاين، الدار البيضاء، المغرب — <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a></p>",
+    "<p>THE’Y Studio Design, Agadir, Morocco — <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a></p>":
+        "<p>THE’Y ستوديو ديزاين، أكادير، المغرب — <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a></p>",
 
     # ===== الشروط =====
     "Terms of use": "شروط الاستخدام",
     "<h2>The website</h2>": "<h2>الموقع</h2>",
-    "<p>theystudiodesign.com is published by THE’Y Studio Design, Casablanca, Morocco. By using this site you accept these terms.</p>":
-        "<p>يُنشر theystudiodesign.com من قبل THE’Y ستوديو ديزاين، الدار البيضاء، المغرب. باستخدامك هذا الموقع فأنت تقبل هذه الشروط.</p>",
+    "<p>theystudiodesign.com is published by THE’Y Studio Design, Agadir, Morocco. By using this site you accept these terms.</p>":
+        "<p>يُنشر theystudiodesign.com من قبل THE’Y ستوديو ديزاين، أكادير، المغرب. باستخدامك هذا الموقع فأنت تقبل هذه الشروط.</p>",
     "<h2>Intellectual property</h2>": "<h2>الملكية الفكرية</h2>",
     "<p>All content on this site — texts, designs, case studies, imagery, the THE’Y wordmark and visual identity — belongs to THE’Y Studio Design or its clients, and may not be reproduced without written permission. Client work is shown with permission and remains the property of the respective clients where agreed.</p>":
         "<p>كل محتوى هذا الموقع — النصوص والتصاميم ودراسات الحالة والصور وشعار THE’Y والهوية البصرية — ملك لـ THE’Y ستوديو ديزاين أو لعملائه، ولا يجوز نسخه دون إذن كتابي. تُعرض أعمال العملاء بإذن وتبقى ملكًا لأصحابها حيثما اتُّفق.</p>",
@@ -402,6 +402,6 @@ STRINGS = {
     "<p>This site is provided “as is.” To the extent permitted by law, THE’Y Studio Design accepts no liability for damages arising from the use of this site or of third-party sites it links to.</p>":
         "<p>يُقدَّم هذا الموقع «كما هو». وفي الحدود التي يسمح بها القانون، لا يتحمل THE’Y ستوديو ديزاين أي مسؤولية عن أضرار ناتجة عن استخدام هذا الموقع أو مواقع الأطراف الثالثة التي يحيل إليها.</p>",
     "<h2>Governing law</h2>": "<h2>القانون المعمول به</h2>",
-    "<p>These terms are governed by the laws of the Kingdom of Morocco. Any dispute falls under the jurisdiction of the courts of Casablanca.</p>":
-        "<p>تخضع هذه الشروط لقوانين المملكة المغربية. ويعود الاختصاص في أي نزاع لمحاكم الدار البيضاء.</p>",
+    "<p>These terms are governed by the laws of the Kingdom of Morocco. Any dispute falls under the jurisdiction of the courts of Agadir.</p>":
+        "<p>تخضع هذه الشروط لقوانين المملكة المغربية. ويعود الاختصاص في أي نزاع لمحاكم أكادير.</p>",
 }

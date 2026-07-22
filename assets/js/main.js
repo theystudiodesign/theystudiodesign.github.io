@@ -104,7 +104,7 @@
        is deliberately ignored. */
   });
 
-  /* ---------- Local time, Casablanca (§1.4) ---------- */
+  /* ---------- Local time, Agadir (§1.4) — Africa/Casablanca is the IANA zone for all of Morocco ---------- */
   var clocks = $$("[data-local-time]");
   if (clocks.length) {
     var fmt = new Intl.DateTimeFormat("en-GB", {

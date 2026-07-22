@@ -21,7 +21,7 @@ Constats clés :
 
 ## 2. Positionnement retenu pour THE'Y
 
-Studio indépendant premium à Casablanca, clients au Maroc et à l'international :
+Studio indépendant premium à Agadir, clients au Maroc et à l'international :
 
 - **Ancre publique « Signature » : à partir de ~40 000 DH.** Assez haut pour filtrer les demandes à 5 000 DH et signaler la seniorité ; assez accessible pour la PME marocaine ambitieuse. (Équivaut à l'ancien « mid four figures USD » ≈ 4 000 $ ≈ 40 000 DH — la conversion réelle valide l'ancre.)
 - **Sprint (2–4 sem.)** : sous l'ancre, typiquement 15 000 – 35 000 DH.
@@ -50,7 +50,7 @@ Pourquoi ces paliers : 20K est le seuil « projet sérieux » au Maroc ; 50K sé
 ## 5. Recommandations (non appliquées, à décider)
 
 1. Réviser l'ancre annuellement (inflation ~2–3 %/an, montée en gamme du portfolio).
-2. Pour les leads internationaux (hors Maroc), donner l'équivalent EUR/USD dans le devis, pas sur le site — le DH affiché ancre le positionnement local sans brider l'international (« Casablanca → worldwide »).
+2. Pour les leads internationaux (hors Maroc), donner l'équivalent EUR/USD dans le devis, pas sur le site — le DH affiché ancre le positionnement local sans brider l'international (« Agadir → worldwide »).
 3. Si le taux de conversion du formulaire chute sur la chip « < 20K », c'est un signal de qualification sain, pas un problème.
 
 

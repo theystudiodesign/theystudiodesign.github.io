@@ -4,13 +4,13 @@
 
 META = {
     '': ("THE’Y Studio Design — Des marques impossibles à ignorer",
-         "THE’Y est un studio de design indépendant qui crée des identités de marque et des expériences digitales pour des entreprises ambitieuses. Casablanca → le monde."),
+         "THE’Y est un studio de design indépendant qui crée des identités de marque et des expériences digitales pour des entreprises ambitieuses. Agadir → le monde."),
     'work/': ("Projets — THE’Y Studio Design",
               "Projets sélectionnés, 2023 → aujourd’hui. Identités de marque, expériences digitales et direction artistique — chaque projet est une histoire avec un dénouement financier."),
     'services/': ("Services — THE’Y Studio Design",
                   "Nous faisons quatre choses, extrêmement bien : identité de marque, design digital & web, direction artistique & contenu, étiquettes & packaging. Sprint, Signature ou Partner — devis fixes, conseils honnêtes."),
     'studio/': ("Le studio — THE’Y Studio Design",
-                "THE’Y est un studio de design senior basé à Casablanca, actif dans le monde entier. La plupart du design est de la décoration. Le nôtre est une décision."),
+                "THE’Y est un studio de design senior basé à Agadir, actif dans le monde entier. La plupart du design est de la décoration. Le nôtre est une décision."),
     'contact/': ("Contact — THE’Y Studio Design",
                  "Lancez un projet avec THE’Y. Une demande en 60 secondes, une réponse sous 24 heures et une proposition ferme sous 3 jours après l’appel découverte."),
     'privacy/': ("Confidentialité — THE’Y Studio Design", "Politique de confidentialité de THE’Y Studio Design."),
@@ -36,7 +36,7 @@ STRINGS = {
     ">Start a project</a>": ">Lancer un projet</a>",
     "Start a project <span": "Lancer un projet <span",
     'aria-label="Menu"': 'aria-label="Menu"',
-    "Casablanca · <span data-local-time>": "Casablanca · <span data-local-time>",
+    "Agadir · <span data-local-time>": "Agadir · <span data-local-time>",
     "THE’Y Studio Design — home": "THE’Y Studio Design — accueil",
 
     # footer
@@ -45,7 +45,7 @@ STRINGS = {
     '<p class="label">Sitemap</p>': '<p class="label">Plan du site</p>',
     '<p class="label">Socials</p>': '<p class="label">Réseaux</p>',
     '<p class="label">Contact</p>': '<p class="label">Contact</p>',
-    "<p>Casablanca, Morocco</p>": "<p>Casablanca, Maroc</p>",
+    "<p>Agadir, Morocco</p>": "<p>Agadir, Maroc</p>",
     "<p>Local time: <span data-local-time>": "<p>Heure locale\u00A0: <span data-local-time>",
     'title="Click to copy"': 'title="Cliquer pour copier"',
     "© 2026 THE’Y Studio Design": "© 2026 THE’Y Studio Design",
@@ -56,8 +56,8 @@ STRINGS = {
     "Brands that refuse<br>to be ignored.": "Des marques<br>impossibles à ignorer.",
     '<span class="label">Brand &amp; digital design studio</span>': '<span class="label">Studio de design de marque &amp; digital</span>',
     "</span>Available for new projects": "</span>Disponible pour de nouveaux projets",
-    'THE’Y is an independent design studio crafting brand identities and digital experiences for ambitious companies. Casablanca&nbsp;→&nbsp;<span class="serif-accent">worldwide</span>.':
-        'THE’Y est un studio de design indépendant qui crée des identités de marque et des expériences digitales pour des entreprises ambitieuses. Casablanca&nbsp;→&nbsp;<span class="serif-accent">le monde</span>.',
+    'THE’Y is an independent design studio crafting brand identities and digital experiences for ambitious companies. Agadir&nbsp;→&nbsp;<span class="serif-accent">worldwide</span>.':
+        'THE’Y est un studio de design indépendant qui crée des identités de marque et des expériences digitales pour des entreprises ambitieuses. Agadir&nbsp;→&nbsp;<span class="serif-accent">le monde</span>.',
     '"hero-cta-note label">Replies within 24 hours<': '"hero-cta-note label">Réponse sous 24 heures<',
     "</span> brands launched</span>": "</span> marques lancées</span>",
     "</span> industries</span>": "</span> secteurs</span>",
@@ -95,8 +95,8 @@ STRINGS = {
     ">Explore →</span>": ">Explorer →</span>",
     ">The studio</h2>": ">Le studio</h2>",
     "We believe design is a business decision disguised as an aesthetic one.": "Nous croyons que le design est une décision business déguisée en choix esthétique.",
-    "A senior studio, not a big one. We take on few projects, think before we draw, and stay until the work performs — from Casablanca, for clients anywhere.":
-        "Un studio senior, pas un grand studio. Nous acceptons peu de projets, réfléchissons avant de dessiner et restons jusqu’à ce que le travail performe — depuis Casablanca, pour des clients partout.",
+    "A senior studio, not a big one. We take on few projects, think before we draw, and stay until the work performs — from Agadir, for clients anywhere.":
+        "Un studio senior, pas un grand studio. Nous acceptons peu de projets, réfléchissons avant de dessiner et restons jusqu’à ce que le travail performe — depuis Agadir, pour des clients partout.",
     "About the studio <span": "Découvrir le studio <span",
     ">How it works</h2>": ">Comment ça marche</h2>",
     "<span class=\"n\">01</span> Discover</h3>": "<span class=\"n\">01</span> Découvrir</h3>",
@@ -228,8 +228,8 @@ STRINGS = {
     "<p>Structured rounds, not unlimited laps: typically two per phase, plus a final polish pass. In practice, the weekly working sessions catch direction issues before they become “revisions.”</p>":
         "<p>Des tours structurés, pas des allers-retours illimités\u00A0: en général deux par phase, plus une passe finale de polish. En pratique, les sessions hebdomadaires attrapent les questions de direction avant qu’elles ne deviennent des «\u00A0révisions\u00A0».</p>",
     "Who do you work with? <span": "Avec qui travaillez-vous\u00A0? <span",
-    "<p>Ambitious companies of any size that take design seriously as a business tool — from funded startups to established firms repositioning. Geography doesn’t matter; we work remotely with clients worldwide from Casablanca.</p>":
-        "<p>Des entreprises ambitieuses de toute taille qui prennent le design au sérieux comme outil business — des startups financées aux entreprises établies en repositionnement. La géographie importe peu\u00A0: nous travaillons à distance avec des clients du monde entier depuis Casablanca.</p>",
+    "<p>Ambitious companies of any size that take design seriously as a business tool — from funded startups to established firms repositioning. Geography doesn’t matter; we work remotely with clients worldwide from Agadir.</p>":
+        "<p>Des entreprises ambitieuses de toute taille qui prennent le design au sérieux comme outil business — des startups financées aux entreprises établies en repositionnement. La géographie importe peu\u00A0: nous travaillons à distance avec des clients du monde entier depuis Agadir.</p>",
     "We’re pre-launch and don’t have everything figured out. Too early? <span": "Nous sommes en pré-lancement et tout n’est pas encore clair. Trop tôt\u00A0? <span",
     "<p>Not necessarily — strategy is the first half of every engagement, and the Discover/Define phases exist precisely to sharpen what’s fuzzy. If it truly is too early, we’ll tell you on the first call and suggest what to do first.</p>":
         "<p>Pas forcément — la stratégie est la première moitié de chaque engagement, et les phases Découvrir/Définir existent précisément pour affûter ce qui est flou. Si c’est vraiment trop tôt, nous vous le dirons dès le premier appel, avec la marche à suivre.</p>",
@@ -251,11 +251,11 @@ STRINGS = {
     ">Why THE’Y exists</h2>": ">Pourquoi THE’Y existe</h2>",
     "<p>THE’Y started with an irritation: watching good companies lose arguments they should win, because their image spoke more quietly than their work. Somewhere between the big agencies that bill for meetings and the marketplaces that sell logos by the pound, there was a missing kind of studio — small enough to care about every pixel, senior enough to argue about the business behind it.</p>":
         "<p>THE’Y est né d’un agacement\u00A0: voir de bonnes entreprises perdre des débats qu’elles devraient gagner, parce que leur image parlait moins fort que leur travail. Quelque part entre les grandes agences qui facturent des réunions et les places de marché qui vendent des logos au kilo, il manquait un type de studio — assez petit pour soigner chaque pixel, assez senior pour discuter le business derrière.</p>",
-    "<p>So we built it. In Casablanca, on purpose: close to a market full of ambitious companies underserved by world-class design, and connected to clients everywhere who care about the work, not the postcode.</p>":
-        "<p>Alors nous l’avons construit. À Casablanca, délibérément\u00A0: proche d’un marché plein d’entreprises ambitieuses mal servies par le design de classe mondiale, et connecté à des clients partout qui s’intéressent au travail, pas au code postal.</p>",
+    "<p>So we built it. In Agadir, on purpose: close to a market full of ambitious companies underserved by world-class design, and connected to clients everywhere who care about the work, not the postcode.</p>":
+        "<p>Alors nous l’avons construit. À Agadir, délibérément\u00A0: proche d’un marché plein d’entreprises ambitieuses mal servies par le design de classe mondiale, et connecté à des clients partout qui s’intéressent au travail, pas au code postal.</p>",
     "<p>We take on few projects at a time. We think before we draw. And we stay until the work performs — because a beautiful thing that doesn’t work is just an expensive apology.</p>":
         "<p>Nous acceptons peu de projets à la fois. Nous réfléchissons avant de dessiner. Et nous restons jusqu’à ce que le travail performe — parce qu’une belle chose qui ne fonctionne pas n’est qu’une excuse coûteuse.</p>",
-    ">Studio — Casablanca</span>": ">Studio — Casablanca</span>",
+    ">Studio — Agadir</span>": ">Studio — Agadir</span>",
     ">What we refuse to negotiate</h2>": ">Ce que nous refusons de négocier</h2>",
     ">Taste is non-negotiable</h3>": ">Le goût n’est pas négociable</h3>",
     "We decline projects we can’t make excellent. Saying no is how the yes keeps its value.":
@@ -311,7 +311,7 @@ STRINGS = {
     # ===== contact =====
     ">Contact</span>": ">Contact</span>",
     "Let’s make something they can’t ignore.": "Créons quelque chose d’impossible à ignorer.",
-    "Casablanca · GMT+1 · Local time: <span data-local-time>": "Casablanca · GMT+1 · Heure locale\u00A0: <span data-local-time>",
+    "Agadir · GMT+1 · Local time: <span data-local-time>": "Agadir · GMT+1 · Heure locale\u00A0: <span data-local-time>",
     "<span>Replies within 24 hours</span>": "<span>Réponse sous 24 heures</span>",
     "What do you need?": "De quoi avez-vous besoin\u00A0?",
     'aria-label="Services"': 'aria-label="Services"',
@@ -386,14 +386,14 @@ STRINGS = {
     "<p>You may request access to, correction of, or deletion of your personal data — in line with Moroccan Law 09-08 and, where applicable, the GDPR. Write to <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a> and we’ll act within 30 days.</p>":
         "<p>Vous pouvez demander l’accès, la rectification ou la suppression de vos données personnelles — conformément à la loi marocaine 09-08 et, le cas échéant, au RGPD. Écrivez à <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a> et nous agirons sous 30 jours.</p>",
     "<h2>Contact</h2>": "<h2>Contact</h2>",
-    "<p>THE’Y Studio Design, Casablanca, Morocco — <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a></p>":
-        "<p>THE’Y Studio Design, Casablanca, Maroc — <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a></p>",
+    "<p>THE’Y Studio Design, Agadir, Morocco — <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a></p>":
+        "<p>THE’Y Studio Design, Agadir, Maroc — <a class=\"link-u\" href=\"mailto:contact@theystudiodesign.com\">contact@theystudiodesign.com</a></p>",
 
     # ===== terms =====
     "Terms of use": "Conditions d’utilisation",
     "<h2>The website</h2>": "<h2>Le site</h2>",
-    "<p>theystudiodesign.com is published by THE’Y Studio Design, Casablanca, Morocco. By using this site you accept these terms.</p>":
-        "<p>theystudiodesign.com est édité par THE’Y Studio Design, Casablanca, Maroc. En utilisant ce site, vous acceptez ces conditions.</p>",
+    "<p>theystudiodesign.com is published by THE’Y Studio Design, Agadir, Morocco. By using this site you accept these terms.</p>":
+        "<p>theystudiodesign.com est édité par THE’Y Studio Design, Agadir, Maroc. En utilisant ce site, vous acceptez ces conditions.</p>",
     "<h2>Intellectual property</h2>": "<h2>Propriété intellectuelle</h2>",
     "<p>All content on this site — texts, designs, case studies, imagery, the THE’Y wordmark and visual identity — belongs to THE’Y Studio Design or its clients, and may not be reproduced without written permission. Client work is shown with permission and remains the property of the respective clients where agreed.</p>":
         "<p>Tout le contenu de ce site — textes, designs, études de cas, images, le logotype THE’Y et l’identité visuelle — appartient à THE’Y Studio Design ou à ses clients, et ne peut être reproduit sans autorisation écrite. Les travaux clients sont présentés avec autorisation et restent la propriété des clients concernés le cas échéant.</p>",
@@ -407,6 +407,6 @@ STRINGS = {
     "<p>This site is provided “as is.” To the extent permitted by law, THE’Y Studio Design accepts no liability for damages arising from the use of this site or of third-party sites it links to.</p>":
         "<p>Ce site est fourni «\u00A0tel quel\u00A0». Dans la mesure permise par la loi, THE’Y Studio Design décline toute responsabilité pour les dommages résultant de l’utilisation de ce site ou des sites tiers vers lesquels il renvoie.</p>",
     "<h2>Governing law</h2>": "<h2>Droit applicable</h2>",
-    "<p>These terms are governed by the laws of the Kingdom of Morocco. Any dispute falls under the jurisdiction of the courts of Casablanca.</p>":
-        "<p>Ces conditions sont régies par le droit du Royaume du Maroc. Tout litige relève de la compétence des tribunaux de Casablanca.</p>",
+    "<p>These terms are governed by the laws of the Kingdom of Morocco. Any dispute falls under the jurisdiction of the courts of Agadir.</p>":
+        "<p>Ces conditions sont régies par le droit du Royaume du Maroc. Tout litige relève de la compétence des tribunaux d’Agadir.</p>",
 }
