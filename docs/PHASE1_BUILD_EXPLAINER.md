@@ -73,7 +73,7 @@ Pages are plain static HTML with the header/footer repeated per page — no buil
 
 **Header & navigation**: fixed slim bar that hides on scroll-down and reveals on scroll-up; background blur after 40px; active page marked with an accent dot (never an underline). Mobile gets the full-screen overlay with staggered oversized links — a brand moment, not a drawer.
 
-**Footer** (§1.4): the oversized CTA block, the three columns with **live Casablanca time** (`Intl.DateTimeFormat` with `Africa/Casablanca`, updating every 30 s), **copy-on-click email**, and the giant cropped `THE'Y` watermark that rises into view at page end.
+**Footer** (§1.4): the oversized CTA block, the three columns with **live Agadir time** (`Intl.DateTimeFormat` with `Africa/Casablanca`, the IANA zone for all of Morocco, updating every 30 s), **copy-on-click email**, and the giant cropped `THE'Y` watermark that rises into view at page end.
 
 **Homepage** (§3): all seven sections, including the two signature moments — the hero's masked word-stagger (80 ms/word) and the manifesto's scroll-linked ink reveal:
 
@@ -119,7 +119,7 @@ spans.forEach((s, i) => s.classList.toggle("lit", i < lit));
 3. Click a project card → the case study opens on the light Paper surface; the thin accent line under the meta bar tracks your reading; drag the before/after slider.
 4. Go to Services → click "Discuss this →" on a pillar → the contact form should have that service pre-selected. Complete all three steps; verify your mail client opens with the composed inquiry; the success block appears.
 5. On a phone (or narrow window): open the menu — full-screen overlay, staggered links, local time at the bottom.
-6. In the footer: click the email (it should copy and confirm), and check the Casablanca clock is right.
+6. In the footer: click the email (it should copy and confirm), and check the Agadir clock is right.
 7. Set your OS to reduce motion and reload — everything should appear instantly with no animation.
 
 ## Alternatives

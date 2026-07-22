@@ -19,7 +19,8 @@ SITE = 'https://theystudiodesign.com'
 LOCALIZED = ['', 'work/', 'services/', 'studio/', 'contact/', 'privacy/', 'terms/']
 # EN-only pages that still carry a switcher (mapped to nearest locale page)
 EN_ONLY = {
-    'work/atlas-capital/': 'work/', 'work/noor-skincare/': 'work/', 'work/dar-mimosa/': 'work/',
+    'work/almeida-quiami/': 'work/', 'work/mira-beauty/': 'work/', 'work/priscy-skincare/': 'work/',
+    'work/shadow-cosmetics/': 'work/', 'work/techcit/': 'work/',
 }
 LOCALES = ['fr', 'ar']
 
